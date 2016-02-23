@@ -1,11 +1,108 @@
 """ multitask_sfan.py: Generate the super-network for the given multi-task network-guided
 feature selection problem and run maxflow on it.
+
+Single task examples, equivalent to SConES [1]:
+>>> import subprocess
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '1', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
+                           '-l', '0.001', '-e', '0.02', '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n4 6 13 17 18 19 20 22 24 26 28 30 49 '
+
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '1', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_1.txt', \
+                           '-l', '0.001', '-e', '0.02', '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n3 4 7 9 12 16 19 20 22 23 24 27 29 41 43 '
+
+Multi-task with correlation matrix meant to be equivalent to MultiSConES [2]
+(Example created with the R code in [2]):
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
+                           '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
+                                             '../data/simu_ms/simu_ms.scores_1.txt', \
+                           '--correlation_matrix', '../data/simu_ms/simu_ms.task_similarities.txt', \
+                           '-l', '0.2', '-e', '0.15', '-m', '0.1', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.2\\n# eta 0.15\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+
+Same result without giving the correlation matrix (adjusting the value of eta):
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
+                           '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
+                                             '../data/simu_ms/simu_ms.scores_1.txt', \
+                           '-l', '0.2', '-e', '0.25', '-m', '0.1', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.2\\n# eta 0.25\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+
+The result is different if we do not adjust the value of eta:
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
+                           '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
+                                             '../data/simu_ms/simu_ms.scores_1.txt', \
+                           '-l', '0.2', '-e', '0.15', '-m', '0.1', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.2\\n# eta 0.15\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 1882 1883 1884 1885 1886 1887 1888 1889 1890 1891 1892 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+ 
+Multitask with correlation matrix:
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
+                                             '../data/simu_01/simu_01.scores_1.txt', \
+                           '--correlation_matrix', '../data/simu_01/simu_01.task_similarities.txt', \
+                           '-l', '0.001', '-e', '0.02', '-m', '0.01', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n# mu 0.01\\n4 6 13 17 18 19 20 22 24 26 28 30 49 \\n3 4 7 9 12 16 19 22 23 27 29 41 43 '
+
+Same problem, without correlation matrix:
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
+                                             '../data/simu_01/simu_01.scores_1.txt', \
+                           '-l', '0.001', '-e', '0.02', '-m', '0.01', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n# mu 0.01\\n4 6 13 17 18 19 20 22 24 26 28 30 49 \\n3 4 7 9 12 16 19 20 22 23 24 27 29 41 43 '
+    
+Same problem, with mu=0 (equivalent to solving both tasks independently, as with SCoNES above):
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
+                                             '../data/simu_01/simu_01.scores_1.txt', \
+                           '-l', '0.001', '-e', '0.02', '-m', '0', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n4 6 13 17 18 19 20 22 24 26 28 30 49 \\n3 4 7 9 12 16 19 20 22 23 24 27 29 41 43 '
+
+References
+----------
+[1] Azencott, C.-A., Grimm, D., Sugiyama, M., Kawahara, Y., and Borgwardt, K.M. (2013).
+    Efficient network-guided multi-locus association mapping with graph cuts.
+    Bioinformatics 29, i171--i179.
+[2] Sugiyama, M., Azencott, C., Grimm, D., Kawahara, Y., and Borgwardt, K. (2014).
+    Multi-Task Feature Selection on Multiple Networks via Maximum Flows.
+    In Proceedings of the 2014 SIAM International Conference on Data Mining, pp. 19--207.
 """
 
 import argparse
-import sys
+import doctest
 import numpy as np
 from numpy.linalg import inv
+import sys
 import time
 
 import gt_maxflow
@@ -146,7 +243,10 @@ class Sfan(object):
                 self.inv_correlation_matrix = inv(correlation_matrix)
             else:
                 # Build the canonical inverse correlation matrix
-                eps = self.eta / (10.*self.mu)
+                if self.mu > 0:
+                    eps = self.eta / (10.*self.mu)
+                else:
+                    eps = 0.01 * self.eta
                 self.inv_correlation_matrix = -np.ones((self.num_tasks, self.num_tasks)) + \
                                               np.diag(np.ones(self.num_tasks) * \
                                                       (self.num_tasks - 1 + eps) + 1)
@@ -162,6 +262,9 @@ class Sfan(object):
 
             # Sum rows of the correlation matrix
             self.phi = self.inv_correlation_matrix.sum(axis=1, dtype='float')
+
+            # print self.inv_correlation_matrix
+            # sys.exit(0)
 
             
     def create_dimacs(self):
@@ -254,7 +357,6 @@ class Sfan(object):
         """
         # Pass super network to gt_maxflow
         gt_maxflow.python_entry_point(self.dimacs_graph, self.num_nodes_each_network)
-    
 
 
 def main() : 
@@ -289,101 +391,84 @@ def main() :
 
     Examples
     --------
-    Single task (equivalent to SConES [1]):
-    $ python multitask_sfan.py --num_task 1 \
-             --networks ../data/simu_multitask_01.network.dimacs \
-             --node_weights ../data/simu_multitask_01.scores_0.txt \
-             -l 0.001 -e 0.02
-    Returns:
-        # lambda 0.001                       
-        # eta 0.02                           
-        4 6 13 17 18 19 20 22 24 26 28 30 49 
+    Also see: test_multitask_sfan.sh
 
-    Multi-task without correlation matrix (equivalent to MultiSConES [2]):
     $ python multitask_sfan.py --num_tasks 2 \
-             --networks ../data/simu_multitask_01.network.dimacs \
-             --node_weights ../data/simu_multitask_01.scores_0.txt \
-                            ../data/simu_multitask_01.scores_1.txt \
-             -l 0.001 -e 0.02 -m 0.01 
-    Returns:
-        # lambda 0.001                           
-        # eta 0.02                               
-        # mu 0.01                                
-        4 6 13 17 18 19 20 22 24 26 28 30 49     
-        3 4 7 9 16 19 22 23 27 29 41 43          
-    
-    Multi-task with correlation matrix:
-    $ python multitask_sfan.py --num_tasks 2 \
-             --networks ../data/simu_multitask_01.network.dimacs \
-             --node_weights ../data/simu_multitask_01.scores_0.txt ../data/simu_multitask_01.scores_1.txt \
-             --correlation_matrix ../data/simu_multitask_01.task_similarities.txt \
-             -l 0.001 -e 0.02 -m 0.01 193
+             --networks ../data/simu_01/simu_01.network.dimacs \
+             --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
+             --correlation_matrix ../data/simu_01/simu_01.task_similarities.txt \
+             -l 0.001 -e 0.02 -m 0.01
     Returns:
         # lambda 0.001
         # eta 0.02
         # mu 0.01
         4 6 13 17 18 19 20 22 24 26 28 30 49
-        3 4 7 9 12 16 19 22 23 27 29 41 43  
-
-    References
-    ----------
-    [1] Azencott, C.-A., Grimm, D., Sugiyama, M., Kawahara, Y., and Borgwardt, K.M. (2013).
-    Efficient network-guided multi-locus association mapping with graph cuts.
-    Bioinformatics 29, i171--i179.
-    [2] Sugiyama, M., Azencott, C., Grimm, D., Kawahara, Y., and Borgwardt, K. (2014).
-    Multi-Task Feature Selection on Multiple Networks via Maximum Flows.
-    In Proceedings of the 2014 SIAM International Conference on Data Mining, pp. 19--207.
+        3 4 7 9 12 16 19 22 23 27 29 41 43
     """
     # Get arguments values
-    parser = argparse.ArgumentParser(description = "Generate the super network", add_help = True)
-    parser.add_argument("-k", "--num_tasks", help = "Number of tasks", type = int)
-    parser.add_argument("-w", "--networks", help = "Paths of networks", nargs = '+')
-    parser.add_argument("-r", "--node_weights", help = "Paths of node weights", nargs = '+')
-    parser.add_argument("-c", "--correlation_matrix", help = "Path of correlation matrix")
-    parser.add_argument("-l", "--lambdA", help = "lambda parameter", type = float)
-    parser.add_argument("-e", "--eta", help = "eta parameter", type = float)
-    parser.add_argument("-m", "--mu", help = "mu parameter", type = float)
+    parser = argparse.ArgumentParser(description="Generate the super network", add_help=True)
+    parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
+    parser.add_argument("-w", "--networks", help="Paths of networks", nargs='+')
+    parser.add_argument("-r", "--node_weights", help="Paths of node weights", nargs='+')
+
+    parser.add_argument("-t", "--test", help="Run tests", action='store_true')
+    parser.add_argument("-c", "--correlation_matrix", help="Path of correlation matrix")
+    parser.add_argument("-l", "--lambdA", help="lambda parameter", type=float)
+    parser.add_argument("-e", "--eta", help="eta parameter", type=float)
+    parser.add_argument("-m", "--mu", help="mu parameter", type=float)
     parser.add_argument("-o", "--output", help="File name for runtime output")
     
     args = parser.parse_args()
     num_tasks = args.num_tasks
+
+    # Testing (with docstring)
+    if args.test:
+        sys.stdout.write("If no output, all tests passed!\n")
+        doctest.testmod()
+        sys.exit(0)
 
     # Check arguments integrity
     try:
         assert(args.num_tasks >= 1)
     except AssertionError:
         sys.stderr.write("There must be at least one task specified.\n")
+        sys.stderr.write("Use --help for help.\n")
         sys.exit(-1)
         
     try:
         assert(len(args.networks) == args.num_tasks or len(args.networks) == 1)
     except AssertionError:
         sys.stderr.write("There must be either 1 network or as many networks as tasks specified.\n")
+        sys.stderr.write("Use --help for help.\n")
         sys.exit(-1)
         
     try:
         assert(len(args.node_weights) == args.num_tasks)
     except AssertionError:
         sys.stderr.write("There must be as many weight lists as tasks specified.\n")
+        sys.stderr.write("Use --help for help.\n")
         sys.exit(-1)
         
     try:
         assert(args.lambdA is not None and args.lambdA > 0.0)
     except AssertionError:
         sys.stderr.write("The lambda parameter must be strictly positive.\n")
+        sys.stderr.write("Use --help for help.\n")
         sys.exit(-1)
         
     try:
         assert(args.eta is not None and args.eta > 0.0)
     except AssertionError:
         sys.stderr.write("The eta parameter must be strictly positive.\n")
+        sys.stderr.write("Use --help for help.\n")
         sys.exit(-1)
         
     if (args.num_tasks > 1) :
         try:
-            assert(args.mu is not None and args.mu > 0.0)
+            assert(args.mu is not None and args.mu >= 0.0)
         except AssertionError:
             sys.stderr.write("The mu parameter must be strictly positive.\n")
+            sys.stderr.write("Use --help for help.\n")
             sys.exit(-1)
 
     # Time stamp: beginning of computations
