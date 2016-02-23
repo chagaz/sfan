@@ -42,6 +42,13 @@ cd code
 ```
 Create `gt_maxflow.so`.
 
+# Testing
+For testing (doctest) the core optimization module run by `code/multitask_sfan.py`:
+```
+cd code/multitask_sfan.py
+python multitask_sfan.py -t
+```
+
 # Usage
 The core optimization (for given regularization parameters) is run by `code/multitask_sfan.py`. See `code/test_multitask_sfan.sh` for usage.
 
