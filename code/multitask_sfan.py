@@ -410,7 +410,6 @@ def main() :
     parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
     parser.add_argument("-w", "--networks", help="Paths of networks", nargs='+')
     parser.add_argument("-r", "--node_weights", help="Paths of node weights", nargs='+')
-
     parser.add_argument("-t", "--test", help="Run tests", action='store_true')
     parser.add_argument("-c", "--correlation_matrix", help="Path of correlation matrix")
     parser.add_argument("-l", "--lambdA", help="lambda parameter", type=float)

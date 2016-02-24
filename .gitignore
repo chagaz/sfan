@@ -61,5 +61,11 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-#Results file
+#Results files
 results/
+
+#Data that's not part of test/examples
+data/simu_02
+
+#Temporary files
+*~
