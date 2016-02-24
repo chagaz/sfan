@@ -32,8 +32,10 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
 * g++
 * Python2.7
 * Python header files (libpython-dev)
-* Python libraries:
-  * Numpy
+* Python libraries/packages/ecosystems:
+  * [NumPy](http://www.numpy.org)/
+  * [SciPy](http://www.scipy.org/)
+  * [PyTables](http://www.pytables.org/), at least for data generation.
 
 # Installation
 ```
@@ -50,7 +52,28 @@ python multitask_sfan.py -t
 ```
 
 # Usage
+## Core optimization
 The core optimization (for given regularization parameters) is run by `code/multitask_sfan.py`. See `code/test_multitask_sfan.sh` for usage.
+Example:
+```
+ python multitask_sfan.py --num_tasks 2 --networks ../data/simu_01/simu_01.network.dimacs \
+       --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
+       --correlation_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
+```
+
+## Data generation
+`generate_data.py` generates synthetic data for experiments:
+* a modular network (modules are fully connected) over the features;
+* a genotype (SNP) matrix X of random integers between 0 and 2;
+* a similarity matrix Omega between tasks;
+* causal features (SNPs), with corresponding weights, generated so as to respect the covariance structure given by
+Omega;
+* the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
+
+Example:
+```
+ python generate_data.py -k 2 -m 1000 -n 10 ../data/simu_02 simu_02
+```
 
 # File formats
 ## Relevance scores
@@ -59,7 +82,10 @@ Each line is the (floating point) relevance score of the corresponding node (in 
 Example: `data/simu_multitask_01.scores_0.txt`.
 
 ## Networks
-Networks built over features are given as dimacs files. They begin with a header of the form:
+Networks built over features are given as "DIMACS for maxmimum flow" files. 
+For details about this format see [DIMACS maximum flow problems](http://lpsolve.sourceforge.net/5.5/DIMACS_maxf.htm).
+
+Network files begin with a header of the form:
 ```
 p max number_of_nodes number_of_edges
 ```
@@ -73,6 +99,8 @@ __Important__
 * Node indices start at 1.
 
 Example: `data/simu_multitask_01.network.dimacs`. Note that edge weights can be given as floats.
+
+We use this format because it is the one that `gt_maxflow` (Shekhovtsov & Hlavac, 2011) understands. 
 
 ## Correlation between tasks
 number_of_tasks x number_of_tasks symmetric matrix (space-separated columns).
