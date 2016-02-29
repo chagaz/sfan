@@ -69,7 +69,8 @@ class SyntheticDataGenerator(object):
         <root_dir>/<simu_id>.readme:
             README file describing the simulation paramters.
         <root_dir>/<simu_id>.task_similarities.txt:
-            args.num_tasks x args.num_tasks matrix Omega of correlation between tasks.
+            args.num_tasks x args.num_tasks matrix Omega
+            of correlation between tasks.
         <root_dir>/<simu_id>.causal_features:
             args.num_tasks lists of NUM_CAUSAL_EACHT causal features,
             chosen from the first NUM_CAUSAL_TOTAL features.
@@ -77,7 +78,7 @@ class SyntheticDataGenerator(object):
         <root_dir>/<simu_id>.causal_weights:
             Lists of the weights given to the causal features,
             generated so as to respect the covariance structure given by Omega.
-            One list per task. Same order as in <root_dir>/<simu_id>.causal_features.
+            One list per task, in the order of <simu_id>.causal_features.
         <root_dir>/<simu_id>.genotypes.txt:
             num_features x num_samples matrix of {0, 1, 2} (representing SNPs).
         <root_dir>/<simu_id>.network.dimacs:
@@ -85,7 +86,7 @@ class SyntheticDataGenerator(object):
             with fully connected modules of size MOD_SIZE.
         For task_id in 0, ..., args.num_tasks:
             <root_dir>/<simu_id>.phenotype_<task_id>.txt:
-                Phenotype (outcome) vector (of size args.num_samples) for task <task_id>.
+                Phenotype vector (of size args.num_samples) for task <task_id>.
             <root_dir>/<simu_id>.scores_<task_id>.txt
                 Node weights (of size args.num_features) for task <task_id>.
                 Computed as Pearson correlation.

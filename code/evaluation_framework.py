@@ -24,7 +24,8 @@ def consistency_index(sel1, sel2, num_features):
 
     Reference
     ---------
-    Kuncheva, L.I. (2007). A Stability Index for Feature Selection. AIAC, pp. 390--395.
+    Kuncheva, L.I. (2007). A Stability Index for Feature Selection.
+    AIAC, pp. 390--395.
     """
     observed = float(len(sel1.intersection(sel2)))
     expected = len(sel1) * len(sel2) / float(num_features)
@@ -54,7 +55,8 @@ def consistency_index_k(sel_list, num_features):
 
     Reference
     ---------
-    Kuncheva, L.I. (2007). A Stability Index for Feature Selection. AIAC, pp. 390--395.
+    Kuncheva, L.I. (2007). A Stability Index for Feature Selection.
+    AIAC, pp. 390--395.
     """
     cidx = 0.
     for k1, sel1 in enumerate(sel_list):
@@ -71,7 +73,7 @@ class Framework(object):
     Attributes
     ----------
     """
-    def __init__(self, num_samples, num_folds, num_bootstraps):
+    def __init__(self, num_samples, num_folds, num_subsamples):
         """
         Parameters
         ----------
@@ -79,7 +81,7 @@ class Framework(object):
 
         
     def compute_indices(self):
-        """ Compute the cross-validation folds and bootstrap indices.
+        """ Compute the cross-validation folds and subsample indices.
 
         Parameters
         ----------
@@ -89,17 +91,17 @@ class Framework(object):
         xp_indices: dict
             fold_idx:{trIndices: list of train indices,
                       teIndices: list of test indices,
-                      bsIndices: list of list of bootstrap indices}
+                      ssIndices: list of list of subsample indices}
         """
         # use skcv
         # Generate cross-validation indices
 
-        # For each train set, generate self.num_bootstraps bootstrap sets of indices
+        # For each train set, generate self.num_subsamples subsample sets of indices
         
 
         
     def save_indices(self, data_dir, simu_id):
-        """ Save the cross-validation folds and bootstrap indices to files.
+        """ Save the cross-validation folds and subsample indices to files.
 
         Parameters
         ----------
@@ -107,9 +109,13 @@ class Framework(object):
         Generated files
         ---------------
         For each fold_idx:
-            <data_dir>/<simu_id>.<fold_id>.trIndices
-            <data_dir>/<simu_id>.<fold_id>.teIndices
-            For each bootstrap_idx:
-                <data_dir>/<simu_id>.<fold_id>.<bs_id>.bsIndices
+            <data_dir>/<simu_id>.<fold_idx>.trIndices:
+                Space-separated list of training indices.
+            <data_dir>/<simu_id>.<fold_idx>.teIndices:
+                Space-separated list of test indices.
+            For each subsample_idx:
+                <data_dir>/<simu_id>.<fold_idx>.<ss_idx>.ssIndices
+                    Space-separated lists of subsample indices,
+                    one line per list / subsample.
         """
         # use np.savetxt 
