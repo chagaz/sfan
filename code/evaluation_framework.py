@@ -72,26 +72,48 @@ class Framework(object):
 
     Attributes
     ----------
+    self.num_samples: int
+        Number of samples.
+    self.num_folds: int
+        Number of cross-validation folds
+    self.num_subsamples: int
+        Number of subsamples (to evaluate stability)
+    self.xp_indices: dictionary
+        fold_idx:{
+            'trIndices': list of train indices,
+            'teIndices': list of test indices,
+            'ssIndices': list of list of subsample indices}
+
     """
     def __init__(self, num_samples, num_folds, num_subsamples):
         """
         Parameters
         ----------
+        num_samples: int
+            Number of samples.
+        num_folds: int
+            Number of cross-validation folds
+        num_subsamples: int
+            Number of subsamples (to evaluate stability)
         """
 
         
-    def compute_indices(self):
+    def compute_indices(self, seed=None):
         """ Compute the cross-validation folds and subsample indices.
 
         Parameters
         ----------
+        seed: {int, None}, optional
+            random seed.
+            Will always return the same with the same random seed.
 
         Modified attributes
         -------------------
-        xp_indices: dict
-            fold_idx:{trIndices: list of train indices,
-                      teIndices: list of test indices,
-                      ssIndices: list of list of subsample indices}
+        xp_indices: dictionary
+            fold_idx:{
+                'trIndices': list of train indices,
+                'teIndices': list of test indices,
+                'ssIndices': list of list of subsample indices}
         """
         # use skcv
         # Generate cross-validation indices

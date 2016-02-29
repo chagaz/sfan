@@ -154,11 +154,14 @@ class SyntheticDataGenerator(object):
         with tb.open_file(fname, 'r') as h5f:
             Xtr = h5f.root.Xtr
             for task_idx in range(self.num_tasks):
-                y = Xtr[:NUM_CAUSAL_TOTAL,:].transpose().dot(beta.transpose()[:, task_idx])
+                y = Xtr[:NUM_CAUSAL_TOTAL,:].transpose().dot(beta.transpose()[:,
+                                                                              task_idx])
                 y += np.random.normal(scale=0.1, size=(self.num_samples, ))
-                fname = "%s/%s.phenotype_%d.txt" % (self.root_dir, self.simu_id, task_idx)
+                fname = "%s/%s.phenotype_%d.txt" % (self.root_dir,
+                                                    self.simu_id, task_idx)
                 np.savetxt(fname, y, fmt='%.3f')
-                logging.info("Phenotype for task %d saved under %s\n" % (task_idx, fname))
+                logging.info("Phenotype for task %d saved under %s\n" % (task_idx,
+                                                                         fname))
 
                 # compute feature-phenotype correlations
                 r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
