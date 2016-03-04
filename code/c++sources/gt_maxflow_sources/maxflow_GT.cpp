@@ -130,16 +130,20 @@ void maxflow_GT::save_nodes(int num_nodes)
 	
     int v_multitask;
     int i_aux = -1;
-	
+
+    int num_tasks_printed = 0;
+
     flow = g.flow;
 	
     for (int v = 0; v < g.n; v++)
 	{
 	    if (g.is_weak_source(&g.nodes[v]) && (v != (g.source - g.nodes)))
 		{
+		    // v attached to source and is not source
 		    vertices++;
 			
 		    if (num_nodes <= 0)
+			// ignore multi-task, print as before
 			std::cout << (v+1) << " ";
 			
 		    else
@@ -150,18 +154,26 @@ void maxflow_GT::save_nodes(int num_nodes)
 				{
 				    v_multitask -= num_nodes;
 					
-				    if (i > i_aux)
-					{
+				    if (i > i_aux) // change task
+					{					    
 					    i_aux = i;
 					    std::cout << std::endl;
+					    num_tasks_printed++;
 					}
 				}
-				
 			    std::cout << v_multitask << " ";
 			}
 			
 		}
 	}
+    // print line returns for all tasks with no selected nodes
+    // that appear after the last task for which nodes were selected
+    num_tasks_printed = (g.n/num_nodes) - 1 - num_tasks_printed; // number to print
+    for (int i=0; i < num_tasks_printed; i++){
+	std::cout << std::endl;
+    }
+    
+    std::cout << std::endl; // final line return
 }
 
 void maxflow_GT::save_cut_to_file(const std::string & filename){

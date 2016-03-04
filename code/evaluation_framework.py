@@ -1,8 +1,9 @@
 """evaluation_framework.py -- All that is needed to evaluate feature selection algorithms."""
 
 import numpy as np
+import sklearn
+import subprocess 
 
-from sklearn import cross_validation as skcv 
 
 
 def consistency_index(sel1, sel2, num_features):
@@ -66,7 +67,218 @@ def consistency_index_k(sel_list, num_features):
     return cidx
 
 
+def run_sfan(num_tasks, network_fname, weights_fnames, params):
+    """ Run single task sfan (on each task).
 
+    Arguments
+    ---------
+    num_tasks: int
+        Number of tasks. 
+    network_fname: filename
+        Path to the network file.
+    weights_fnames: list of filenames
+        List of paths to the network nodes files (one per task).
+    params: string
+        Hyperparameters, in the '-l <lambda> -e <eta> -m <mu>' format.
+
+    Returns
+    -------
+    sel_list: list of lists
+        For each task, a list of selected features, as indices,
+        STARTING AT 0.
+    """
+    # Ideally, I'd do the following:
+    # sfan_solver = Sfan(num_tasks, network_fname, weights_fname,
+    #                    lbd, eta, 0, precision_fname)
+    # tt = sfan_solver.create_dimacs()
+    # sfan_solver.run_maxflow()
+
+    # But because cython output to screen is NOT caught by sys.stdout, 
+    # we need to run this externally
+    argum = ['python', 'multitask_sfan.py',
+             '--num_tasks', str(num_tasks),
+             '--networks', network_fname,
+             '--node_weights']
+    argum.extend(weights_fnames)
+    argum.extend(params.split())
+    argum.extend(['-m', '0'])
+
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
+
+    p_out = p.communicate()[0].split("\n")[2:2+num_tasks]
+
+    # Process the output to get lists of selected
+    # features
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+
+    return sel_list
+                 
+
+def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
+    """ Run multitask sfan (no precision matrix).
+
+    Arguments
+    ---------
+    num_tasks: int
+        Number of tasks. 
+    network_fname: filename
+        Path to the network file.
+    weights_fnames: list of filenames
+        List of paths to the network nodes files (one per task).
+    params: string
+        Hyperparameters, in the '-l <lambda> -e <eta> -m <mu>' format.
+
+    Returns
+    -------
+    sel_list: list of lists
+        For each task, a list of selected features, as indices,
+        STARTING AT 0.
+    """
+    argum = ['python', 'multitask_sfan.py',
+             '--num_tasks', str(num_tasks),
+             '--networks', network_fname,
+             '--node_weights']
+    argum.extend(weights_fnames)
+    argum.extend(params.split())
+
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
+
+    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
+
+    # Process the output to get lists of selected features
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+
+    return sel_list
+                 
+
+def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params):
+    """ Run multitask sfan.
+
+    Arguments
+    ---------
+    num_tasks: int
+        Number of tasks. 
+    network_fname: filename
+        Path to the network file.
+    weights_fnames: list of filenames
+        List of paths to the network nodes files (one per task).
+    precision_fname: filename
+        Path to the matrix of precision (similarity) of tasks.
+    params: string
+        Hyperparameters, in the '-l <lambda> -e <eta> -m <mu>' format.
+
+    Returns
+    -------
+    sel_list: list of lists
+        For each task, a list of selected features, as indices,
+        STARTING AT 0.
+    """
+    argum = ['python', 'multitask_sfan.py',
+             '--num_tasks', str(num_tasks),
+             '--networks', network_fname,
+             '--node_weights']
+    argum.extend(weights_fnames)
+    argum.extend(['--precision_matrix', precision_fname])
+    argum.extend(params.split())
+    print " ".join(argum)
+
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
+
+    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
+
+    # Process the output to get lists of selected features
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+
+    return sel_list
+                 
+
+def get_optimal_parameters_from_dict(selected_dict):
+    """ Find optimal parameters from dictionary of selected features
+
+    Arguments
+    ---------
+    selected_dict: dictionary
+        keys = parameters
+        values = dictionary
+            keys = task index
+            values = list of list of selected features (for each subsample)
+
+    Returns
+    -------
+    opt_params: string
+        Optimal parameters, leading to highest consistency index.
+    """
+    opt_params = ''
+    opt_cindex = 0
+    for (params, selected_dict_p) in selected_dict.iteritems():
+        for (task_idx, sel_list) in selected_dict_p.iteritems():
+            cidx = consistency_index_k(sel_list)
+            if cidx > opt_cindex:
+                opt_cindex = cidx
+                opt_params = params
+    return opt_params
+
+
+def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
+                       tr_indices, te_indices, output_fname):
+    """ Run a ridge-regression using only the selected features.
+
+    Arguments
+    ---------
+    selected_features: list
+        List of indices of selected features.
+    genotype_fname: filename
+        Path to genotype data.
+    phenotype_fname: filename
+        Path to phenotype data.
+    tr_indices: list
+        List of training indices.
+    te_indices: list
+        List of test indices.                    
+    output_fname: filename
+        Path to file where to write list of predictions on the test set.
+
+    Side effects
+    ------------
+    Write predictions on the test set to output_fname
+    """
+    # TODO: Read the data
+
+    # Instantiate a ridge regression
+    model = sklearn.linear_model.RidgeCV()
+
+    # Train the ridge regression on the training set
+    model.fit(Xtr, ytr)
+
+    # Make predictions on the test set
+    preds = model.predict(Xte)
+
+    # Save predictions
+    np.savetxt(output_fname, preds, fmt='%.3e')
+
+
+def compute_ppv_sensitivity(causal_fname, selected_list):
+    """ Compute PPV and sensitivity (true positive rate) for all tasks.
+
+    Arguments
+    ---------
+    causal_fname: filename
+        File containing causal features (one line per task, space-separated).
+    selected_list: list of lists
+        List of lists of selected features (one list per task).
+
+    Returns
+    -------
+    ppv_list: list
+        List of PPV (task per task).
+    tpr_list: list
+        List of sensitivities (TPR), task per task.
+    """
+    # TODO (use sklearn.metrics)
+    
+    return ppv_list, tpr_list
+
+    
 class Framework(object):
     """ Setting up evaluation framework.
 
@@ -115,7 +327,7 @@ class Framework(object):
                 'teIndices': list of test indices,
                 'ssIndices': list of list of subsample indices}
         """
-        # use skcv
+        # use sklearn.cross_validation
         # Generate cross-validation indices
 
         # For each train set, generate self.num_subsamples subsample sets of indices
