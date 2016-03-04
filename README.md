@@ -33,7 +33,7 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
 * Python2.7
 * Python header files (libpython-dev)
 * Python libraries/packages/ecosystems:
-  * [NumPy](http://www.numpy.org)/
+  * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
   * [PyTables](http://www.pytables.org/), at least for data generation.
 
