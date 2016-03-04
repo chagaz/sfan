@@ -66,6 +66,7 @@ results/
 
 #Data that's not part of test/examples
 data/simu_02
+data/simu_synth_01
 
 #Temporary files
 *~

@@ -62,15 +62,16 @@ class SyntheticDataGenerator(object):
 
     def generate_modular(self):
         """
-        Generate synthetic data with a modular network and a genotype matrix made of random {0, 1, 2}.
+        Generate synthetic data with a modular network and a genotype matrix
+        made of random {0, 1, 2}.
         
         Generated files
         ---------------
         <root_dir>/<simu_id>.readme:
             README file describing the simulation paramters.
         <root_dir>/<simu_id>.task_similarities.txt:
-            args.num_tasks x args.num_tasks matrix Omega
-            of correlation between tasks.
+            args.num_tasks x args.num_tasks matrix \Omega^{-1}
+            of similarities between tasks.
         <root_dir>/<simu_id>.causal_features:
             args.num_tasks lists of NUM_CAUSAL_EACHT causal features,
             chosen from the first NUM_CAUSAL_TOTAL features.
@@ -102,24 +103,26 @@ class SyntheticDataGenerator(object):
         logging.info("README file created under %s\n" % readme_f)
 
         # Generate a matrix of similarities between tasks
-        omega = np.random.uniform(size = (self.num_tasks, self.num_tasks))
-        omega = omega.transpose().dot(omega)
-        d = np.diag(omega)
+        omega_inv = np.random.uniform(size = (self.num_tasks, self.num_tasks))
+        omega_inv = omega_inv.transpose().dot(omega_inv)
+        d = np.diag(omega_inv)
         d.shape = (self.num_tasks, 1)
-        omega = omega / np.sqrt(d.dot(d.transpose()))
+        omega_inv = omega_inv / np.sqrt(d.dot(d.transpose()))
 
-        # Save omega to file
+        # Save omega_inv to file
         fname = "%s/%s.task_similarities.txt" % (self.root_dir, self.simu_id)
-        np.savetxt(fname, omega, fmt='%.3f')
-        logging.info("Correlation matrix saved under %s\n" % fname)
+        np.savetxt(fname, omega_inv, fmt='%.3f')
+        logging.info("Precision matrix saved under %s\n" % fname)
 
         # Generate beta vectors that are correlated according to omega
         # Trick: cov(Ax) = Acov(x)A'
+        omega = np.linalg.inv(omega_inv)
         L = np.linalg.cholesky(omega) # i.e. LL' = omega
         b = np.random.normal(size=(self.num_tasks, NUM_CAUSAL_TOTAL))
         beta = L.dot(b)
 
-        # For each task, keep the NUM_CAUSAL_EACHT features with highest weight as causal;
+        # For each task, keep the NUM_CAUSAL_EACHT features with highest weight
+        # as causal;
         # drop the weight of the others to 0.
         causal_features = []
         for k in range(self.num_tasks):
@@ -168,19 +171,19 @@ class SyntheticDataGenerator(object):
                       for feat_idx in range(self.num_features)]
                 fname = "%s/%s.scores_%d.txt" % (self.root_dir, self.simu_id, task_idx)
                 np.savetxt(fname, r2, fmt='%.3e')
-                logging.info("Node weights for task %d saved under %s\n" % (task_idx, fname))
+                logging.info("Node weights for task %d saved under %s\n" % (task_idx,
+                                                                            fname))
 
 
         # Generate network in dimacs format
         # Careful: node indices must start at 1
         num_modules = self.num_features / MOD_SIZE
         num_edges = MOD_SIZE * (MOD_SIZE - 1) * num_modules + \
-                    2 * (num_modules - 1) + 2 * (self.num_features - MOD_SIZE * num_modules)
+                    2 * (num_modules - 1) + 2 * (self.num_features - \
+                                                 MOD_SIZE * num_modules)
         dimacs_f = '%s/%s.network.dimacs' % (self.root_dir, self.simu_id)
         with open(dimacs_f, 'w') as g:
-            g.write("p max %d %d\n" % ((self.num_features+2), num_edges))
-            # g.write("n %d s\n" % (args.num_features+1))
-            # g.write("n %d t\n" % (args.num_features+2))
+            g.write("p max %d %d\n" % ((self.num_features), num_edges))
 
             # create fully connected modules of size MOD_SIZE
             # connect each to the next one
@@ -213,10 +216,11 @@ def main():
     generate
     - a modular network of size m, with fully connected modules of size MOD_SIZE;
     - a genotype matrix X of size n x m (as random integers between 0 and 2);
-    - a kxk similarity matrix $\Omega$ between tasks;
-    - k lists of NUM_CAUSAL_EACHT causal features, chosen from the first NUM_CAUSAL_TOTAL features,
-    with corresponding weights (beta) generated so as to respect the covariance structure given by
-    $\Omega$;
+    - a kxk similarity matrix $\Omega^{-1}$ between tasks;
+    - k lists of NUM_CAUSAL_EACHT causal features, chosen from the first
+    NUM_CAUSAL_TOTAL features,
+    with corresponding weights (beta) generated so as to respect the covariance
+    structure given by $\Omega$;    
     - the corresponding k phenotypes and vectors of node weights.
 
     Arguments
@@ -237,7 +241,7 @@ def main():
     <root_dir>/<simu_id>.readme:
         README file describing the simulation paramters
     <root_dir>/<simu_id>.task_similarities.txt:
-        Matrix of correlation between tasks
+        Matrix of precision between tasks
     <root_dir>/<simu_id>.causal_features:
         Lists of causal features.
         One list per task. Indices start at 0.
@@ -259,10 +263,11 @@ def main():
 
     Example
     -------
-    $ python generate_data.py -k 2 -m 1000 -n 10 ../data/simu_02 simu_02 --verbose
+    $ python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 -v
     """
     # Get arguments values
-    parser = argparse.ArgumentParser(description="Generate data for multitask_sfan", add_help=True)
+    parser = argparse.ArgumentParser(description="Generate data for multitask_sfan",
+                                     add_help=True)
     parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
     parser.add_argument("-m", "--num_features", help="Number of features", type=int)
     parser.add_argument("-n", "--num_samples", help="Number of samples", type=int)
@@ -283,8 +288,8 @@ def main():
     try:
         assert(args.num_features >= NUM_CAUSAL_TOTAL)
     except AssertionError:
-        logging.error("The number of features must be larger than NUM_CAUSAL_TOTAL (%d).\n" % \
-                         NUM_CAUSAL_TOTAL)
+        logging.error("The number of features must be larger than " + \
+                      "NUM_CAUSAL_TOTAL (%d).\n" % NUM_CAUSAL_TOTAL)
         logging.error("Use --help for help.\n")
         sys.exit(-1)
 
@@ -303,7 +308,8 @@ def main():
         logging.basicConfig(format="%[(levelname)s] %(message)s")
 
     # Instantiate data generator
-    data_gen = SyntheticDataGenerator(args.num_tasks, args.num_features, args.num_samples,
+    data_gen = SyntheticDataGenerator(args.num_tasks, args.num_features,
+                                      args.num_samples,
                                       args.root_dir, args.simu_id)
 
     # Generate modular data
