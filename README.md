@@ -47,33 +47,43 @@ Create `gt_maxflow.so`.
 # Testing
 For testing (doctest) the core optimization module run by `code/multitask_sfan.py`:
 ```
-cd code/multitask_sfan.py
-python multitask_sfan.py -t
+cd code
+python multitask_sfan.py -t -v
 ```
 
 # Usage
 ## Core optimization
 The core optimization (for given regularization parameters) is run by `code/multitask_sfan.py`. See `code/test_multitask_sfan.sh` for usage.
+
 Example:
 ```
  python multitask_sfan.py --num_tasks 2 --networks ../data/simu_01/simu_01.network.dimacs \
        --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
-       --correlation_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
+       --precision_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
 ```
 
+If no precision matrix (encoding the similarity between tasks) is given, a matrix of all ones (plus epsilon on the diagonal) is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
+
 ## Data generation
-`generate_data.py` generates synthetic data for experiments:
+`code/generate_data.py` generates synthetic data for experiments:
 * a modular network (modules are fully connected) over the features;
 * a genotype (SNP) matrix X of random integers between 0 and 2;
-* a similarity matrix Omega between tasks;
+* a similarity (precision) matrix Omega^{-1} between tasks;
 * causal features (SNPs), with corresponding weights, generated so as to respect the covariance structure given by
-Omega;
+Omega (inverse of the precision matrix);
 * the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
 
 Example:
 ```
- python generate_data.py -k 2 -m 1000 -n 10 ../data/simu_02 simu_02
+cd code
+python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbose
 ```
+
+## Synthetic data experiments -- TO BE COMPLETED
+`code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
+
+`code/synthetic_data_experiment.py` runs experiments on synthetic data.
+
 
 # File formats
 ## Relevance scores
