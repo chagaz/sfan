@@ -2,6 +2,14 @@
 
 In this version all experiments are run sequentially.
 """
+
+# Importing local libraries first,
+# because otherwise Error in `python': free(): invalid pointer
+import multitask_sfan
+import evaluation_framework as ef
+import generate_data
+
+
 import argparse
 import logging
 import os
@@ -11,11 +19,6 @@ import subprocess
 import sys
 import tables as tb
 import tempfile
-
-
-import evaluation_framework as ef
-import generate_data
-import multitask_sfan
 
 
 def main():
@@ -345,7 +348,7 @@ def main():
                 # Generate sample-specific network scores from phenotypes and genotypes
                 weights_fnames = [] # to hold temp files storing these scores
                 with tb.open_file(genotype_fname, 'r') as h5f:
-                    Xtr = h5f.root.Xtr[, sample_indices]
+                    Xtr = h5f.root.Xtr[:, sample_indices]
                     for task_idx in range(args.num_tasks):
                         # Read phenotype
                         y = np.loadtxt(phenotype_fnames[task_idx][sample_indices])
@@ -549,7 +552,7 @@ def main():
     # END for repeat_idx in range(args.num_repeats)
 
 
-    # TODO: Add line breaks in PPV and sensitiviy files.
+    # TODO: Add line breaks in PPV and sensitivity files.
 
 
                             
@@ -571,4 +574,7 @@ def main():
 
     #-------------
 
+
+if __name__ == "__main__":
+    main()
         
