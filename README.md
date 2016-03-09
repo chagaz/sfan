@@ -36,7 +36,7 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
   * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
   * [PyTables](http://www.pytables.org/), at least for data generation.
-
+* python-dev
 # Installation
 ```
 cd code
