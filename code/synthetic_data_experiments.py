@@ -306,7 +306,7 @@ def main():
                 tmp_scores_f_list.append(tmp_fname)
 
         # Compute grid (WARNING: STILL NOT WORKING WELL)
-        sfan_ = multitask_sfan.Sfan(args.num_tasks, network_fname,
+        sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
                                     tmp_scores_f_list, 0, 0, 0,
                                     precision_matrix_f=precision_fname)
         lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
