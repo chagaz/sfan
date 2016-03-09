@@ -10,7 +10,7 @@ import scipy.stats as st
 import sys
 
 NUM_CAUSAL_TOTAL = 30 # total number of causal features
-NUM_CAUSAL_EACHT = 20 # how many of these features are causal for each task
+NUM_CAUSAL_EACH = 20 # how many of these features are causal for each task
 MOD_SIZE = 15 # number of nodes in each fully connected module of the network.
 
 
@@ -73,7 +73,7 @@ class SyntheticDataGenerator(object):
             args.num_tasks x args.num_tasks matrix \Omega^{-1}
             of similarities between tasks.
         <root_dir>/<simu_id>.causal_features:
-            args.num_tasks lists of NUM_CAUSAL_EACHT causal features,
+            args.num_tasks lists of NUM_CAUSAL_EACH causal features,
             chosen from the first NUM_CAUSAL_TOTAL features.
             One list per task. Indices start at 0.
         <root_dir>/<simu_id>.causal_weights:
@@ -121,15 +121,15 @@ class SyntheticDataGenerator(object):
         b = np.random.normal(size=(self.num_tasks, NUM_CAUSAL_TOTAL))
         beta = L.dot(b)
 
-        # For each task, keep the NUM_CAUSAL_EACHT features with highest weight
+        # For each task, keep the NUM_CAUSAL_EACH features with highest weight
         # as causal;
         # drop the weight of the others to 0.
         causal_features = []
         for k in range(self.num_tasks):
             b = [x for x in beta[k, :]]
             b.sort()
-            causal_features.append(np.where(beta[k, :] >= b[-NUM_CAUSAL_EACHT])[0])
-            beta[k, np.where(beta[k, :] < b[-NUM_CAUSAL_EACHT])[0]] = 0.
+            causal_features.append(np.where(beta[k, :] >= b[-NUM_CAUSAL_EACH])[0])
+            beta[k, np.where(beta[k, :] < b[-NUM_CAUSAL_EACH])[0]] = 0.
 
         # Save causal features to file
         fname = "%s/%s.causal_features.txt"  % (self.root_dir, self.simu_id)
@@ -217,7 +217,7 @@ def main():
     - a modular network of size m, with fully connected modules of size MOD_SIZE;
     - a genotype matrix X of size n x m (as random integers between 0 and 2);
     - a kxk similarity matrix $\Omega^{-1}$ between tasks;
-    - k lists of NUM_CAUSAL_EACHT causal features, chosen from the first
+    - k lists of NUM_CAUSAL_EACH causal features, chosen from the first
     NUM_CAUSAL_TOTAL features,
     with corresponding weights (beta) generated so as to respect the covariance
     structure given by $\Omega$;    
