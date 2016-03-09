@@ -308,6 +308,13 @@ class Framework(object):
         num_subsamples: int
             Number of subsamples (to evaluate stability)
         """
+        self.num_samples = num_samples
+        self.num_folds = num_folds
+        self.num_subsamples = num_subsamples
+        self.xp_indices = {key: {'trIndices': None, 'teIndices':None, 'ssIndices':list()} for key in xrange(num_folds)}
+        
+
+
 
         
     def compute_indices(self, seed=None):
@@ -327,10 +334,30 @@ class Framework(object):
                 'teIndices': list of test indices,
                 'ssIndices': list of list of subsample indices}
         """
-        # use sklearn.cross_validation
-        # Generate cross-validation indices
 
-        # For each train set, generate self.num_subsamples subsample sets of indices
+        # use sklearn.cross_validation
+        from sklearn.cross_validation import KFold
+
+        import pdb; pdb.set_trace()
+        
+        # Generate cross-validation indices
+        kf = KFold(self.num_samples, n_folds=self.num_folds)
+        for i, (train_index, test_index) in enumerate(kf):
+            self.xp_indices[i]['trIndices'] = train_index.tolist()
+            self.xp_indices[i]['teIndices'] = test_index.tolist()
+
+            # For each train set, generate self.num_subsamples subsample sets of indices
+            ss = KFold(self.num_samples, n_folds=self.num_folds)
+            for train_index, test_index in ss:
+                print train_index.tolist()
+                self.xp_indices[i]['ssIndices'].append(train_index.tolist())
+
+        import pdb; pdb.set_trace()
+
+
+        
+        
+
         
 
         
