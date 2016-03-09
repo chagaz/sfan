@@ -219,14 +219,14 @@ def main():
                 raise
 
     # Create files to hold PPV and sensitivity values
-    ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, simu_id)
-    tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, simu_id)
+    ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, args.simu_id)
+    tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, args.simu_id)
 
-    ppv_np_fname = '%s/%s.msfan_np.ppv' % (args.resu_dir, simu_id)
-    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, simu_id)
+    ppv_np_fname = '%s/%s.msfan_np.ppv' % (args.resu_dir, args.simu_id)
+    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, args.simu_id)
 
-    ppv_fname = '%s/%s.msfan.ppv' % (args.resu_dir, simu_id)
-    tpr_fname = '%s/%s.msfan.sensitivity' % (args.resu_dir, simu_id)
+    ppv_fname = '%s/%s.msfan.ppv' % (args.resu_dir, args.simu_id)
+    tpr_fname = '%s/%s.msfan.sensitivity' % (args.resu_dir, args.simu_id)
 
     # TODO: Create files to hold RMSE and consistency values
 
@@ -252,10 +252,10 @@ def main():
         causal_fname = '%s/%s.causal_features' % (data_dir, args.simu_id)
         phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
                             (data_dir, args.simu_id, task_idx) \
-                            for task_idx in range(num_tasks)]
+                            for task_idx in range(args.num_tasks)]
         scores_fnames = ['%s/%s.scores_%d.txt' % \
                          (data_dir, args.simu_id, task_idx) \
-                         for task_idx in range(num_tasks)]
+                         for task_idx in range(args.num_tasks)]
 
         
 
@@ -307,7 +307,7 @@ def main():
 
         # Compute grid (WARNING: STILL NOT WORKING WELL)
         sfan_ = multitask_sfan.Sfan(args.num_tasks, network_fname,
-                                    tmp_scores, 0, 0, 0,
+                                    tmp_scores_f_list, 0, 0, 0,
                                     precision_matrix_f=precision_fname)
         lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
         lbd_eta_values = [" ".join(plist.split()[:-2]) \
