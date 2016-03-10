@@ -351,7 +351,7 @@ def main():
                     Xtr = h5f.root.Xtr[:, sample_indices]
                     for task_idx in range(args.num_tasks):
                         # Read phenotype
-                        y = np.loadtxt(phenotype_fnames[task_idx][sample_indices])
+                        y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
 
                         # Compute feature-phenotype correlations
                         r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
