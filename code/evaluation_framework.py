@@ -313,10 +313,6 @@ class Framework(object):
         self.num_subsamples = num_subsamples
         self.xp_indices = {key: {'trIndices': None, 'teIndices':None, 'ssIndices':list()} for key in xrange(num_folds)}
         
-
-
-
-        
     def compute_indices(self, seed=None):
         """ Compute the cross-validation folds and subsample indices.
 
@@ -337,8 +333,6 @@ class Framework(object):
 
         # use sklearn.cross_validation
         from sklearn.cross_validation import KFold
-
-        import pdb; pdb.set_trace()
         
         # Generate cross-validation indices
         kf = KFold(self.num_samples, n_folds=self.num_folds)
@@ -349,17 +343,7 @@ class Framework(object):
             # For each train set, generate self.num_subsamples subsample sets of indices
             ss = KFold(self.num_samples, n_folds=self.num_folds)
             for train_index, test_index in ss:
-                print train_index.tolist()
                 self.xp_indices[i]['ssIndices'].append(train_index.tolist())
-
-        import pdb; pdb.set_trace()
-
-
-        
-        
-
-        
-
         
     def save_indices(self, data_dir, simu_id):
         """ Save the cross-validation folds and subsample indices to files.
