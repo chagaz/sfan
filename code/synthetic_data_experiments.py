@@ -123,7 +123,7 @@ def main():
     
     Example
     -------
-    $ python synthetic_data_experiments -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+    $ python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
     """
     # Get arguments values
