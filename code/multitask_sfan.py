@@ -325,11 +325,24 @@ class Sfan(object):
                 lbd_values = ['%.2e' % lbd for lbd in lbd_values]
                 params_dict['%.2e' % mu]['%.2e' % eta] = lbd_values
 
-        
+                # TODO : to repare
+                # llmax = - inf  car  np.log10(0.0) = -inf  car amax = 0
+                # llmin = inf
+                # (llmax-llmin) = - inf
+                # so all lbd_values are nan
+
         hyperparams = ['-l %s -e %s -m %s' % (lbd, eta, mu) \
                        for mu, eta_dict in params_dict.iteritems() \
                        for eta, lbd_values in eta_dict.iteritems() \
                        for lbd in lbd_values]
+
+        hyperparams = [
+            '-l 0 -e 0 -m 0',
+            '-l 1 -e 1 -m 1',
+            '-l 2 -e 2 -m 2',
+            '-l 3 -e 3 -m 3',
+            '-l 4 -e 4 -m 4'
+        ]
         return hyperparams
                 
 
