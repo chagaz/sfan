@@ -192,7 +192,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
     return sel_list
                  
 
-def get_optimal_parameters_from_dict(selected_dict):
+def get_optimal_parameters_from_dict(selected_dict, num_features):
     """ Find optimal parameters from dictionary of selected features
 
     Arguments
@@ -202,6 +202,8 @@ def get_optimal_parameters_from_dict(selected_dict):
         values = dictionary
             keys = task index
             values = list of list of selected features (for each subsample)
+    num_features: int
+        Total number of features
 
     Returns
     -------
@@ -212,7 +214,7 @@ def get_optimal_parameters_from_dict(selected_dict):
     opt_cindex = 0
     for (params, selected_dict_p) in selected_dict.iteritems():
         for (task_idx, sel_list) in selected_dict_p.iteritems():
-            cidx = consistency_index_k(sel_list)
+            cidx = consistency_index_k(sel_list, num_features)
             if cidx > opt_cindex:
                 opt_cindex = cidx
                 opt_params = params

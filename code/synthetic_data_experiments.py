@@ -403,9 +403,11 @@ def main():
             # END for ss_idx in range(args.num_subsamples)
                             
             # Get optimal parameter values for each algo.
-            opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict)
-            opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict)
-            opt_params = ef.get_optimal_parameters_from_dict(sf_dict)
+            # ??? some lists are empty, is it normal ??? 
+            import pdb; pdb.set_trace()
+            opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
+            opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
+            opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
 
             # For each algorithm, save optimal parameters to file
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO SIMPLE"
