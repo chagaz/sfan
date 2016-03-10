@@ -231,6 +231,7 @@ def main():
     # TODO: Create files to hold RMSE and consistency values
 
     for repeat_idx in range(args.num_repeats):
+        print "==================================================== REPETITION :"+`repeat_idx`
         # Instantiate data generator
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
 
@@ -319,6 +320,7 @@ def main():
         #-----------------------------------
         
         for fold_idx in range(args.num_folds):
+            print "==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`
             # Inititalize dictionary to store selected features
             # sf is a list of lists of selected features
             # (one per subsample iteration)
@@ -342,6 +344,7 @@ def main():
                     sf_dict[params][task_idx] = []
 
             for ss_idx in range(args.num_subsamples):
+                print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`
                 # Get samples
                 sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
 
@@ -367,19 +370,23 @@ def main():
                         weights_fnames.append(tmp_fname)
 
                 for params in lbd_eta_values:
+                    print"==================================================== XXX lbd_eta_values"
                     # Select features with single-task sfan
                     sel_ = ef.run_sfan(args.num_tasks, network_fname,
                                        weights_fnames, params)
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
+                        print"==================================================== ___sf_st_dict"
                         sf_st_dict[params][task_idx].append(sel_list)
 
                 for params in lbd_eta_mu_values:
+                    print"==================================================== XXX lbd_eta_mu_values"
                     # Select features with multi-task (no precision) sfan
                     sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                weights_fnames, params)
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
+                        print"==================================================== ___sf_np_dict"
                         sf_np_dict[params][task_idx].append(sel_list)
                     
                     # Select features with multi-task sfan
@@ -388,6 +395,7 @@ def main():
                                         params)                                        
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
+                        print"==================================================== ___ sf_dict"
                         sf_dict[params][task_idx].append(sel_list)
                         
                 # TODO: Delete the temporary files stored in weights_fnames
@@ -400,18 +408,19 @@ def main():
             opt_params = ef.get_optimal_parameters_from_dict(sf_dict)
 
             # For each algorithm, save optimal parameters to file
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO SIMPLE"
             # Single task
             fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_st)
                 f.close()
-
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTISAN"
             # Multitask (no precision)
             fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_np)
                 f.close()
-
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTIAVEC"
             # Multitask (precision)
             fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
             with open(fname, 'w') as f:
@@ -422,8 +431,11 @@ def main():
             # TODO: For each algorithm, run algorithms again to select features,
             # using the whole training set (i.e. scores_fnames)
             # and optimal parameters.
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN ALGO SIMPLE"
             selected_st = [] # <-- TODO (list of list of selected features)
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN ALGO MULTISAN"
             selected_np = [] # <-- TODO 
+            print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN PARAM ALGO MULTIAVEC"
             selected = [] # <-- TODO
                 
     
