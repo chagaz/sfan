@@ -325,7 +325,7 @@ def main():
         for fname in tmp_scores_f_list:
             os.remove(fname)
         #-----------------------------------
-        
+
         for fold_idx in range(args.num_folds):
             print "==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`
             # Inititalize dictionary to store selected features
@@ -356,7 +356,7 @@ def main():
                 sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
 
                 # Generate sample-specific network scores from phenotypes and genotypes
-                weights_fnames = [] # to hold temp files storing these scores
+                tmp_weights_f_list = [] # to hold temp files storing these scores
                 with tb.open_file(genotype_fname, 'r') as h5f:
                     Xtr = h5f.root.Xtr[:, sample_indices]
                     for task_idx in range(args.num_tasks):
@@ -367,20 +367,19 @@ def main():
                         r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
                               for feat_idx in range(args.num_features)]
 
-                        # Save to temporary file weights_fnames[task_idx]
-                        # TODO: Create temporary file of name tmp_fname (use tempfile)
-
+                        # Save to temporary file tmp_weights_f_list[task_idx]
+                        # Create temporary file of name tmp_fname (use tempfile)
+                        fd, tmp_fname = tempfile.mkstemp()
                         # Save to temporary file
                         np.savetxt(tmp_fname, r2, fmt='%.3e')
-
                         # Append temporary file to list
-                        weights_fnames.append(tmp_fname)
+                        tmp_weights_f_list.append(tmp_fname)
 
                 for params in lbd_eta_values:
                     print"\n\n\n==================================================== XXX lbd_eta_values"
                     # Select features with single-task sfan
                     sel_ = ef.run_sfan(args.num_tasks, network_fname,
-                                       weights_fnames, params)
+                                       tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace() 
                     print "SEL_ sf = \n", sel_
                     # Store selected features in the dictionary
@@ -393,7 +392,7 @@ def main():
                     print"\n\n\n==================================================== XXX lbd_eta_mu_values"
                     # Select features with multi-task (no precision) sfan
                     sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                                               weights_fnames, params)
+                                               tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace()
                     print "SEL_ no corr = \n", sel_
                     # Store selected features in the dictionary
@@ -402,7 +401,7 @@ def main():
                         sf_np_dict[params][task_idx].append(sel_list)
                     # Select features with multi-task sfan
                     sel_ = ef.run_msfan(args.num_tasks, network_fname,
-                                        weights_fnames, precision_fname,
+                                        tmp_weights_f_list, precision_fname,
                                         params)  
                     print "SEL_ multi_corr = \n", sel_
                     if not sel_ : import pdb; pdb.set_trace()                                       
@@ -412,8 +411,9 @@ def main():
 
                         sf_dict[params][task_idx].append(sel_list)
                         
-                # TODO: Delete the temporary files stored in weights_fnames
-                        
+                # Delete the temporary files stored in tmp_weights_f_list
+                for fname in tmp_weights_f_list:
+                    os.remove(fname)
             # END for ss_idx in range(args.num_subsamples)
                             
             # Get optimal parameter values for each algo.
