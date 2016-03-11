@@ -464,20 +464,34 @@ def main():
                                         scores_fnames, precision_fname,
                                         opt_params)
 
-            # TODO: For each algorithm, save selected features to file
+            # For each algorithm, save selected features to file
+            
             # Single task
             fname = '%s/%s.sfan.fold_%d.selected_features' % \
-                    (resu_dir, simu_id, fold_idx)
-
+                    (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'w') as f:
+                for selected_features_list in selected_st:
+                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+                                            # selected_features_list is a list of int 
+                                            # that have to be cast as string so we can join them
+                f.close()
             # Multitask (no precision)
             fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
-                    (resu_dir, simu_id, fold_idx)
-
+                    (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'w') as f:
+                for selected_features_list in selected_np:
+                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+                f.close()
             # Multitask (precision)
             fname = '%s/%s.msfan.fold_%d.selected_features' % \
-                    (resu_dir, simu_id, fold_idx)
+                    (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'w') as f:
+                for selected_features_list in selected:
+                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+                f.close()
             #------------------------------------------------------------------
-            
+            print ("EXIT")
+            exit(1)
 
             #-----------------------------------------------------------
             # TODO: For each algorithm, and for each task, compute PPV
