@@ -370,32 +370,39 @@ def main():
                         weights_fnames.append(tmp_fname)
 
                 for params in lbd_eta_values:
-                    print"==================================================== XXX lbd_eta_values"
+                    print"\n\n\n==================================================== XXX lbd_eta_values"
                     # Select features with single-task sfan
                     sel_ = ef.run_sfan(args.num_tasks, network_fname,
                                        weights_fnames, params)
+                    if not sel_ : import pdb; pdb.set_trace() 
+                    print "SEL_ sf = \n", sel_
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         print"==================================================== ___sf_st_dict"
                         sf_st_dict[params][task_idx].append(sel_list)
+                    print "\n\nsf_st_dict = \n", sf_st_dict
 
                 for params in lbd_eta_mu_values:
-                    print"==================================================== XXX lbd_eta_mu_values"
+                    print"\n\n\n==================================================== XXX lbd_eta_mu_values"
                     # Select features with multi-task (no precision) sfan
                     sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                weights_fnames, params)
+                    if not sel_ : import pdb; pdb.set_trace()
+                    print "SEL_ no corr = \n", sel_
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         print"==================================================== ___sf_np_dict"
                         sf_np_dict[params][task_idx].append(sel_list)
-                    
                     # Select features with multi-task sfan
                     sel_ = ef.run_msfan(args.num_tasks, network_fname,
                                         weights_fnames, precision_fname,
-                                        params)                                        
+                                        params)  
+                    print "SEL_ multi_corr = \n", sel_
+                    if not sel_ : import pdb; pdb.set_trace()                                       
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         print"==================================================== ___ sf_dict"
+
                         sf_dict[params][task_idx].append(sel_list)
                         
                 # TODO: Delete the temporary files stored in weights_fnames
@@ -404,7 +411,6 @@ def main():
                             
             # Get optimal parameter values for each algo.
             # ??? some lists are empty, is it normal ??? 
-            import pdb; pdb.set_trace()
             opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
             opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
             opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
