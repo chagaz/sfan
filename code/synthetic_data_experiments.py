@@ -271,8 +271,15 @@ def main():
         evalf.save_indices(data_dir, args.simu_id)
 
 
-        # TODO: Create <resu_dir>/repeat_<repeat_id> if it does not exist
+        # Create <resu_dir>/repeat_<repeat_id> if it does not exist
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
+        if not os.path.isdir(resu_dir):
+            logging.info("Creating %s\n" % resu_dir)
+            try:
+                os.makedirs(resu_dir)
+            except OSError:
+                if not os.path.isdir(resu_dir):
+                    raise
 
         #-----------------------------------
         # Define the grid of hyperparameters
@@ -414,7 +421,8 @@ def main():
             opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
             opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
             opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
-
+            print ("EXIT")
+            exit(1)
             # For each algorithm, save optimal parameters to file
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO SIMPLE"
             # Single task
