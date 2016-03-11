@@ -283,8 +283,9 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     np.savetxt(output_fname, preds, fmt='%.3e')
 
 
-def compute_ppv_sensitivity(causal_fname, selected_list):
-    """ Compute PPV and sensitivity (true positive rate) for all tasks.
+def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
+    """ Compute PPV (Positive Predicted Values) = Accuracy = Precision
+    and sensitivity (true positive rate) for all tasks.
 
     Arguments
     ---------
@@ -292,15 +293,46 @@ def compute_ppv_sensitivity(causal_fname, selected_list):
         File containing causal features (one line per task, space-separated).
     selected_list: list of lists
         List of lists of selected features (one list per task).
+    num_features : int
+        Total number of features
 
     Returns
     -------
     ppv_list: list
-        List of PPV (task per task).
+        List of Positive Predicted Values (PPV), task per task.
     tpr_list: list
         List of sensitivities (TPR), task per task.
     """
-    # TODO (use sklearn.metrics)
+
+    ppv_list = []
+    tpr_list = []
+
+    # For each task, at the beginning, we consider that the features are neither causal nor predicted as such.
+    # Then we change the state/status of the causal ones (these are y_true True),
+    # and of those that have been predicted as such (these are y_pred True).
+    # and we compute ppv and tpr based on these 2 sets.
+    with open(causal_fname, 'r') as f:
+        for line_idx, line in enumerate(f):
+
+            y_true = [False]*num_features
+            y_pred = [False]*num_features
+
+            print 'line idx = ', line_idx
+            y_true_indx_list = map(int, line.split())
+            y_pred_indx_list = selected_list[line_idx]
+
+            for y_true_indx in y_true_indx_list :
+                y_true[y_true_indx] = True
+            for y_pred_indx in y_pred_indx_list :
+                y_pred[y_pred_indx] = True
+
+            ppv_list.append( sklearn.metrics.accuracy_score(y_true, y_pred) )
+
+            count_tpr = 0
+            for i, j in zip(y_pred, y_true):
+                if (i == j):
+                    count_tpr += 1
+            tpr_list.append( count_tpr / num_features)
     
     return ppv_list, tpr_list
 
