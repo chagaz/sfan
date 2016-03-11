@@ -123,6 +123,10 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     # features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
 
+    if not sel_list :
+        print "returned sel_list empty !! param = ", params
+        import pdb ; pdb.set_trace()
+
     return sel_list
                  
 
@@ -159,6 +163,10 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
 
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+
+    if not sel_list :
+        print "returned sel_list empty !! param = ", params
+        import pdb ; pdb.set_trace()
 
     return sel_list
                  
@@ -200,6 +208,10 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
 
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+
+    if not sel_list :
+        print "returned sel_list empty !! param = ", params
+        import pdb ; pdb.set_trace()
 
     return sel_list
                  
