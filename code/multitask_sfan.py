@@ -337,11 +337,10 @@ class Sfan(object):
                        for lbd in lbd_values]
 
         hyperparams = [
-            '-l 0 -e 0 -m 0',
-            '-l 1 -e 1 -m 1',
-            '-l 2 -e 2 -m 2',
-            '-l 3 -e 3 -m 3',
-            '-l 4 -e 4 -m 4'
+            '-l 2 -e 3 -m 1',
+            '-l 3 -e 4 -m 2',
+            '-l 4 -e 5 -m 2',
+            '-l 5 -e 6 -m 2'
         ]
         return hyperparams
                 
