@@ -443,17 +443,27 @@ def main():
                 f.close()
 
             #------------------------------------------------------------------
-            # TODO: For each algorithm, run algorithms again to select features,
+            # For each algorithm, run algorithms again to select features,
+            # (got a list of list : list of selected features for each task)
             # using the whole training set (i.e. scores_fnames)
             # and optimal parameters.
+
+            # DEBUG ???: give arbitrary optimal parameters as there are no returned due to those used at the begining of the experiment 
+            opt_params_st = '-l 2 -e 3 -m 1'
+            opt_params_np = '-l 2 -e 3 -m 1'
+            opt_params = '-l 2 -e 3 -m 1'
+
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN ALGO SIMPLE"
-            selected_st = [] # <-- TODO (list of list of selected features)
+            selected_st = ef.run_sfan(args.num_tasks, network_fname,
+                                       scores_fnames, opt_params_st)
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN ALGO MULTISAN"
-            selected_np = [] # <-- TODO 
+            selected_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                                               scores_fnames, opt_params_np)
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"RUN PARAM ALGO MULTIAVEC"
-            selected = [] # <-- TODO
-                
-    
+            selected = ef.run_msfan(args.num_tasks, network_fname,
+                                        scores_fnames, precision_fname,
+                                        opt_params)
+
             # TODO: For each algorithm, save selected features to file
             # Single task
             fname = '%s/%s.sfan.fold_%d.selected_features' % \
