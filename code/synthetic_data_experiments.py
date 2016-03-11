@@ -250,7 +250,7 @@ def main():
         network_fname = '%s/%s.network.dimacs' % (data_dir, args.simu_id)
         precision_fname = '%s/%s.task_similarities.txt' % (data_dir,
                                                              args.simu_id)
-        causal_fname = '%s/%s.causal_features' % (data_dir, args.simu_id)
+        causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
         phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
                             (data_dir, args.simu_id, task_idx) \
                             for task_idx in range(args.num_tasks)]
