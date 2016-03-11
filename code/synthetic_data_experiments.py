@@ -490,16 +490,16 @@ def main():
                     f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
                 f.close()
             #------------------------------------------------------------------
-            print ("EXIT")
-            exit(1)
+            
 
             #-----------------------------------------------------------
-            # TODO: For each algorithm, and for each task, compute PPV
+            # For each algorithm, and for each task, compute PPV
             # and sensitivity, and save to ppv_fname, tpr_fname
             
             # Single task
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected_st)
+                                                            selected_st,
+                                                            args.num_features)
             with open(ppv_st_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
                 f.close()
@@ -511,7 +511,8 @@ def main():
 
             # Multitask (no precision)
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected_np)
+                                                            selected_np,
+                                                            args.num_features)
             with open(ppv_np_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
                 f.close()
@@ -522,7 +523,8 @@ def main():
 
             # Multitask (precision)
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected)
+                                                            selected,
+                                                            args.num_features)
             with open(ppv_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
                 f.close()
@@ -531,7 +533,7 @@ def main():
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
                 f.close()
             #-----------------------------------------------------------
-
+            #??? Does f.close() is necessary when usien with open statement ??? 
 
             #------------------------------------------------------------------
             # For each algorithm, for each task,
