@@ -61,11 +61,22 @@ def consistency_index_k(sel_list, num_features):
     Kuncheva, L.I. (2007). A Stability Index for Feature Selection.
     AIAC, pp. 390--395.
     """
+    print "*********************** sel_list  = \n", sel_list
     cidx = 0.
-    for k1, sel1 in enumerate(sel_list):
-        for sel2 in sel_list[k1+1, :]:
+
+    for k1, sel1 in enumerate(sel_list[:-1]):
+        # sel_list[:-1] to not take into account the last list.
+        # avoid a problem with sel_list[k1+1:] when k1 is the last element,
+        # that give an empty list overwise
+        # the work is done at the second to last element anyway
+        print "=========="
+        print "k1 = ",k1, "sel_list[k1+1:]", sel_list[k1+1:]
+        for sel2 in sel_list[k1+1:]:
+            print sel1, sel2
             cidx += consistency_index(set(sel1), set(sel2), num_features)
+
     cidx = 2. / (len(sel_list) * (len(sel_list) - 1)) * cidx
+
     return cidx
 
 
@@ -106,7 +117,6 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     argum.extend(['-m', '0'])
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-
     p_out = p.communicate()[0].split("\n")[2:2+num_tasks]
 
     # Process the output to get lists of selected
