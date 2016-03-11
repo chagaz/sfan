@@ -421,28 +421,27 @@ def main():
             opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
             opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
             opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
-            print ("EXIT")
-            exit(1)
+
             # For each algorithm, save optimal parameters to file
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO SIMPLE"
             # Single task
-            fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
+            fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_st)
                 f.close()
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTISAN"
             # Multitask (no precision)
-            fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
+            fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_np)
                 f.close()
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTIAVEC"
             # Multitask (precision)
-            fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, simu_id, fold_idx)
+            fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params)
                 f.close()
-            
+
             #------------------------------------------------------------------
             # TODO: For each algorithm, run algorithms again to select features,
             # using the whole training set (i.e. scores_fnames)
