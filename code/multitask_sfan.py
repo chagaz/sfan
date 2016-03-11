@@ -286,13 +286,16 @@ class Sfan(object):
         mu_values = [mmax / (10*(2**idx)) for idx in range(num_values)]
 
         for mu in mu_values:
+            print "mu  ", mu
             params_dict['%.2e' % mu] = {}
             
             emax = cmax - mu * pmin
 
-            eta_values = [emax / (2**(idx+1)) for idx in range(num_values)]
-
+            #eta_values = [emax / (2**(idx+1)) for idx in range(num_values)]
+            eta_values = [emax / (10*(2**idx)) for idx in range(num_values)]
+            
             for eta in eta_values:
+                print "\teta  ", eta 
                 amax = 0
                 amin = np.inf
                 for current_task in range(self.num_tasks):
@@ -301,6 +304,7 @@ class Sfan(object):
                         avec = np.abs(cvec - mu * self.phi[current_task] - eta)
                         amax = max(amax, np.max(avec))
                         amin = min(amin, np.min(avec))
+                        amed = np.median(avec)
                         f.close()
 
                 Wmax = 0
@@ -317,12 +321,24 @@ class Sfan(object):
                         if len(self.networks_f) == 1:
                             break
 
-                llmax = np.log10(2 * amax / Wmin)
-                llmin = np.log10(amin / (2 * Wmax))
+                llmax = np.log10(amax / Wmin)
+                llmin = np.log10(amin / Wmax)
+                # llmax = np.log10(amax / Wmin)
+                # llmin = np.log10(10*amin / Wmax)
 
-                lbd_values = [10**(llmin + float(idx)/float(num_values) * \
-                                   (llmax-llmin)) for idx in range(num_values)]
+                # print "\t\t", 10**(amin/Wmax), 10**(amed/Wmax), 10**(amax/Wmin)
+
+                # lbd_values = [10**(llmin + float(idx)/float(num_values-1) * \
+                #                    (llmax-llmin)) for idx in range(num_values)]
+
+                
+                llmed = np.log10(amed / Wmax)
+                lbd_values = [10**(llmed - float(idx)/float((num_values+1)/2) * \
+                                       (llmed-llmin)) for idx in range((num_values+1)/2, 0, -1)]
+                lbd_values.extend([10**(llmed + float(idx)/float(num_values/2) * \
+                                       (llmax-llmed)) for idx in range(num_values/2)])
                 lbd_values = ['%.2e' % lbd for lbd in lbd_values]
+                print "\t\t", lbd_values
                 params_dict['%.2e' % mu]['%.2e' % eta] = lbd_values
 
                 # TODO : to repare
@@ -523,7 +539,7 @@ def main() :
                             level=logging.DEBUG)
         logging.info("Verbose output.")
     else:
-        logging.basicConfig(format="%[(levelname)s] %(message)s")
+        logging.basicConfig(format="[%(levelname)s] %(message)s")
 
 
     
