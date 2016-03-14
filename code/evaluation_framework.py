@@ -2,6 +2,9 @@
 
 import numpy as np
 import sklearn
+import sklearn.linear_model as lm
+import sklearn.cross_validation as cv
+
 import subprocess 
 
 
@@ -269,6 +272,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     Write predictions on the test set to output_fname
     """
     # TODO: Read the data
+    
 
     # Instantiate a ridge regression
     model = sklearn.linear_model.RidgeCV()
@@ -390,16 +394,15 @@ class Framework(object):
         """
 
         # use sklearn.cross_validation
-        from sklearn.cross_validation import KFold
         
         # Generate cross-validation indices
-        kf = KFold(self.num_samples, n_folds=self.num_folds)
+        kf = cv.KFold(self.num_samples, n_folds=self.num_folds)
         for i, (train_index, test_index) in enumerate(kf):
             self.xp_indices[i]['trIndices'] = train_index.tolist()
             self.xp_indices[i]['teIndices'] = test_index.tolist()
 
             # For each train set, generate self.num_subsamples subsample sets of indices
-            ss = KFold(self.num_samples, n_folds=self.num_folds)
+            ss = cv.KFold(self.num_samples, n_folds=self.num_folds)
             for train_index, test_index in ss:
                 self.xp_indices[i]['ssIndices'].append(train_index.tolist())
         
