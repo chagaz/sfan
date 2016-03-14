@@ -539,29 +539,29 @@ def main():
             # For each algorithm, for each task,
             # predict on the test set using a ridge-
             # regression trained with the selected features only.
-            tr_indices = evalf.xp_indices[fold_idx]['trIndices']
-            te_indices = evalf.xp_indices[fold_idx]['teIndices']
+            trIndices = evalf.xp_indices[fold_idx]['trIndices']
+            teIndices = evalf.xp_indices[fold_idx]['teIndices']
 
             for task_idx in range(args.num_tasks):
                 # Single task
                 fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
-                        (resu_dir, simu_id, fold_idx, task_idx)
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                                      phenotype_fname[task_idx],
+                                      phenotype_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
                 # Multitask (no precision)
                 fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
-                        (resu_dir, simu_id, fold_idx, task_idx)
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                                      phenotype_fname[task_idx],
+                                      phenotype_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
                 # Multitask (precision)
                 fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
-                        (resu_dir, simu_id, fold_idx, task_idx)
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                                      phenotype_fname[task_idx],
+                                      phenotype_fnames[task_idx],
                                       trIndices, teIndices, fname)
             #------------------------------------------------------------------
         # END for fold_idx in range(args.num_folds)
@@ -571,7 +571,7 @@ def main():
         # TODO: For each algorithm, and for each task, compute RMSE
         # (define an external function, a bit as for ppv/tpr; use sklearn.metrics)
         # use the predictions saved in files (fold per fold)
-        # the true values are given by phenotype_fname[task_idx] and te_indices
+        # the true values are given by phenotype_fnames[task_idx] and te_indices
         # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, simu_id)
 
         # Single task
@@ -616,7 +616,7 @@ def main():
 
     # TODO: Print out and save (with LaTeX table format) in
     # plain text file
-    fname = '%s/%s.results' % (args.resu_dir, simu_id)
+    fname = '%s/%s.results' % (args.resu_dir, args.simu_id)
     #--------------------------------------------------------------
 
     
