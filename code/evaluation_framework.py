@@ -4,7 +4,7 @@ import numpy as np
 import sklearn
 import sklearn.linear_model as lm
 import sklearn.cross_validation as cv
-
+import tables as tb
 import subprocess 
 
 
@@ -271,11 +271,49 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     ------------
     Write predictions on the test set to output_fname
     """
-    # TODO: Read the data
-    
+    # This function : 
+    # - Learn a Ridge Regression model that links
+    #   genotype of selected features (Xtr)
+    #   with continuous phenotype (ytr)
+    #   of the train set (tr)
+    # - Predicts continuous phenotype (preds) 
+    #   using genotype of selected features (Xte)
+    #   of the test set (te)
+    # - Save predicted continuous phenotypes in a file. 
+    # => it's a regression so il can only be used with continuous phenotype
+    # TODO : Think of how to handle discret phenotypes. 
+
+    # Read the data : 
+
+    if not selected_features : 
+        # Safeguard for when SFAN returns empty list
+        # Avoid not allowed empty selections
+        import pdb; pdb.set_trace() 
+
+    # read genotypes : 
+    #-----------------
+    with tb.open_file(genotype_fname, 'r') as h5f:
+        table = h5f.root.Xtr
+        # table.shape : 
+        # For each feature (in line), 
+        # there is the genotype of each sample (in column)
+        X = table[selected_features, :]
+
+    Xtr = [X[tr] for tr in tr_indices]
+    Xte = [X[te] for te in te_indices]
+
+    # read phenotypes : 
+    #-------------------
+    with open(phenotype_fname, 'r') as f:
+        # continuous phenotype for each sample (in line)
+        y = f.read().split()
+        y = [float(item) for item in y]
+
+    ytr = [ y[tr] for tr in tr_indices]
+
 
     # Instantiate a ridge regression
-    model = sklearn.linear_model.RidgeCV()
+    model = lm.RidgeCV()
 
     # Train the ridge regression on the training set
     model.fit(Xtr, ytr)
