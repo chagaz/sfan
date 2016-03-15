@@ -303,9 +303,9 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
         # For each feature (in line), 
         # there is the genotype of each sample (in column)
         X = table[selected_features, :]
-
-    Xtr = [X[tr] for tr in tr_indices]
-    Xte = [X[te] for te in te_indices]
+    
+    Xtr = [X[:,tr] for tr in tr_indices]
+    Xte = [X[:,te] for te in te_indices]
 
     # read phenotypes : 
     #-------------------
