@@ -169,7 +169,9 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
 
     if not sel_list :
         print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace()
+        ###???XXXDEBUGimport pdb ; pdb.set_trace()
+        sel_list = [[1,2,3,4], [5,6,7], [8,9]]
+
 
     return sel_list
                  
@@ -288,7 +290,10 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     if not selected_features : 
         # Safeguard for when SFAN returns empty list
         # Avoid not allowed empty selections
-        import pdb; pdb.set_trace() 
+        #import pdb; pdb.set_trace() 
+        ### XXX ??? 
+        selected_features = [1,2,3]
+
 
     # read genotypes : 
     #-----------------
@@ -323,6 +328,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
     # Save predictions
     np.savetxt(output_fname, preds, fmt='%.3e')
+
 
 
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
