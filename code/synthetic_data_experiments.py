@@ -568,19 +568,33 @@ def main():
 
                             
         #----------------------------------------------------------------------
-        # TODO: For each algorithm, and for each task, compute RMSE
-        # (define an external function, a bit as for ppv/tpr; use sklearn.metrics)
-        # use the predictions saved in files (fold per fold)
-        # the true values are given by phenotype_fnames[task_idx] and te_indices
+        # For each algorithm, and for each task, compute RMSE
+        # using :
+        #   - an external function 
+        #   - the predictions saved in files (fold per fold)
+        #   - the true values given by phenotype_fnames[task_idx] and te_indices
         # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, simu_id)
 
-        # Single task
+        for task_idx in range(args.num_tasks):
 
+            # Single task
+            output_fname = '%s/%s.sfan.rmse' % (resu_dir, args.simu_id)
+            predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
+            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                            evalf.xp_indices, output_fname)
 
-        # Multitask (no precision)
+            # Multitask (no precision)
+            output_fname = '%s/%s.msfan_np.rmse' % (resu_dir, args.simu_id)
+            predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
+            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                            evalf.xp_indices, output_fname)
 
+            # Multitask (precision)
+            output_fname = '%s/%s.msfan.rmse' % (resu_dir, args.simu_id)
+            predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
+            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                            evalf.xp_indices, output_fname)             
 
-        # Multitask (precision)                
         #----------------------------------------------------------------------
 
 
@@ -630,4 +644,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print("EXIT")
         
