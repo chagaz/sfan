@@ -331,6 +331,50 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
+
+def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, num_folds, output_fname):
+    """ Compute RMSE (Root Mean Squared Error)
+
+    Arguments
+    ---------
+    y_true_fname: filename
+        Path to phenotype data.
+    y_pred_fname: string
+        Template of path where were write list of predictions on the test set
+    num_folds: int
+        Number of cross-validation folds
+    output_fname: filename
+        Path to file where to write rmse.
+
+    Side effects
+    ------------
+    Write rmse to output_fname
+    """
+    # For n inds :
+    # RMSE = sqrt (  (1/n)  sum from m=1 to n : (ypred_m - ytrue_m)^2  )
+
+    # read y_true :
+    with open(phenotype_fname, 'r') as f_true:
+        y_true = [float(y) for y in f_true.read().split()]
+        print "y_true = ", y_true
+
+    # read y_pred :
+    # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
+    # we open each file (one per fold) and append predicted phenotypes
+    y_pred = list()
+    for fold in xrange(num_folds) :
+        with open(y_pred_fname%fold, 'r') as f_pred:
+            content = f_pred.read().split()
+            y_pred.extend(float(y) for y in content)
+
+    # compute rmse using metrics :
+    rmse = sklearn.metrics.mean_squared_error(y_true, y_pred)
+
+    # output :
+    with open(output_fname, 'a') as f_out:
+        f_out.write("%d\n" %rmse)
+
+
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     """ Compute PPV (Positive Predicted Values) = Accuracy = Precision
     and sensitivity (true positive rate) for all tasks.
