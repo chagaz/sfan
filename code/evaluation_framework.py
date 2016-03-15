@@ -396,11 +396,13 @@ class Framework(object):
         Number of cross-validation folds
     self.num_subsamples: int
         Number of subsamples (to evaluate stability)
-    self.xp_indices: dictionary
-        fold_idx:{
+    self.xp_indices: list of dictionaries
+        fold_idx
+        {
             'trIndices': list of train indices,
             'teIndices': list of test indices,
-            'ssIndices': list of list of subsample indices}
+            'ssIndices': list of list of subsample indices
+        }
 
     """
     def __init__(self, num_samples, num_folds, num_subsamples):
@@ -417,7 +419,7 @@ class Framework(object):
         self.num_samples = num_samples
         self.num_folds = num_folds
         self.num_subsamples = num_subsamples
-        self.xp_indices = {key: {'trIndices': None, 'teIndices':None, 'ssIndices':list()} for key in xrange(num_folds)}
+        self.xp_indices = [{'trIndices': list(), 'teIndices':list(), 'ssIndices':list()} for fold in xrange(num_folds)]
         
     def compute_indices(self, seed=None):
         """ Compute the cross-validation folds and subsample indices.
@@ -430,11 +432,13 @@ class Framework(object):
 
         Modified attributes
         -------------------
-        xp_indices: dictionary
-            fold_idx:{
+        xp_indices: list of dictionaries
+            fold_idx
+            {
                 'trIndices': list of train indices,
                 'teIndices': list of test indices,
-                'ssIndices': list of list of subsample indices}
+                'ssIndices': list of list of subsample indices
+            }
         """
 
         # use sklearn.cross_validation
