@@ -332,7 +332,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, num_folds, output_fname):
+def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, output_fname):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
@@ -341,8 +341,14 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, num_folds, output
         Path to phenotype data.
     y_pred_fname: string
         Template of path where were write list of predictions on the test set
-    num_folds: int
-        Number of cross-validation folds
+    xp_indices: list of dictionaries
+        fold_idx
+        {
+            'trIndices': list of train indices,
+            'teIndices': list of test indices,
+            'ssIndices': list of list of subsample indices
+        }
+
     output_fname: filename
         Path to file where to write rmse.
 
@@ -361,14 +367,21 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, num_folds, output
     # read y_pred :
     # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
     # we open each file (one per fold) and append predicted phenotypes
+    # then when sort them using y_pred_indices so the order will be 0,1,...,n
+
+    y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
+
     y_pred = list()
-    for fold in xrange(num_folds) :
+
+    for fold in xrange(len(xp_indices)) :
         with open(y_pred_fname%fold, 'r') as f_pred:
             content = f_pred.read().split()
             y_pred.extend(float(y) for y in content)
+     
+    y_pred_sorted = [y_pred[i] for i in y_pred_indices]
 
     # compute rmse using metrics :
-    rmse = sklearn.metrics.mean_squared_error(y_true, y_pred)
+    rmse = sklearn.metrics.mean_squared_error(y_true, y_pred_sorted)
 
     # output :
     with open(output_fname, 'a') as f_out:
@@ -494,7 +507,7 @@ class Framework(object):
             self.xp_indices[i]['teIndices'] = test_index.tolist()
 
             # For each train set, generate self.num_subsamples subsample sets of indices
-            ss = cv.KFold(self.num_samples, n_folds=self.num_folds)
+            ss = cv.KFold(n=self.num_samples, n_folds=self.num_folds, shuffle=True, random_state=seed)
             for train_index, test_index in ss:
                 self.xp_indices[i]['ssIndices'].append(train_index.tolist())
         
