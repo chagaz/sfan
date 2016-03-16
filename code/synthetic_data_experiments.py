@@ -655,8 +655,13 @@ def main():
 
                             
     #--------------------------------------------------------------
-    # TODO: For each algorithm compute average/mean for RMSE, PPVs,
-    # sensitivities, consistency index.
+    # For each algorithm compute average/mean :
+    # for RMSE, PPVs, sensitivities, consistency index.
+
+    means = {}
+    for fkey, fval in analysis_files.iteritems() :
+        means[fkey] = ef.compute_mean(fval)
+
 
     # TODO: Print out and save (with LaTeX table format) in
     # plain text file

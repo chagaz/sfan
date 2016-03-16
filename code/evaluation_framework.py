@@ -491,6 +491,24 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     
     return ppv_list, tpr_list
 
+def compute_mean(f_name):
+    """Compute de mean / average of numbers holded in a file and separated by space and carriage return only.
+
+    Arguments
+    ---------
+    fname : filename
+        Path to the file holding space and carriage returns separted numbers
+    
+    Return
+    -------
+    mean : float
+        the mean of the numbers founded in the file
+    """
+    with open(f_name, 'r') as f:
+        content = [float(val) for val in f.read().split()]
+    return sum(content)/ float(len(content))
+
+    
     
 class Framework(object):
     """ Setting up evaluation framework.
