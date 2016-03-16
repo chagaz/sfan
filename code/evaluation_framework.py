@@ -83,6 +83,56 @@ def consistency_index_k(sel_list, num_features):
     return cidx
 
 
+def consistency_index_task(selection_fname, num_folds, num_tasks, num_features):
+    """ Compute consistency indices between the features selected for each fold at each task
+
+    selection_fname, num_folds, num_tasks, num_features
+    Arguments
+    ---------
+    selection_fname : filename
+        Template of path where were write list of selected features
+    num_folds: int
+        Total number of fold
+    num_tasks: int
+        Total number of task
+    num_features: int
+        Total number of features
+
+    Return
+    -------
+    ci_list
+        List of consistency indices between the features selected for each fold, task per task.
+    """
+    # as there is 10 folds, there are 10 files.
+    # they don't take a lot of memory
+    # so it is ok to open them all,
+    # then for each task_idx, increment the line
+    # append lines content in sel_list
+    # compute ci,
+    # output.
+
+    fold_f_list = []
+    for fold_idx in xrange (num_folds) :
+        f_sel = open(selection_fname %fold_idx, 'r')
+        fold_f_list.append(f_sel)
+
+    ci_list = []
+    debug_sel_list = []
+    for task_idx in xrange (num_tasks):
+        sel_list = []
+        for f_sel in fold_f_list :
+            content = f_sel.readline().split()
+            sel_list.append(content)
+        debug_sel_list.append(sel_list)
+        ci =  consistency_index_k(sel_list, num_features)
+        ci_list.append(ci)
+
+    for f in fold_f_list :
+        f.close()
+
+    return ci_list
+
+
 def run_sfan(num_tasks, network_fname, weights_fnames, params):
     """ Run single task sfan (on each task).
 
@@ -303,7 +353,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
         # For each feature (in line), 
         # there is the genotype of each sample (in column)
         X = table[selected_features, :]
-    
+
     Xtr = [X[:,tr] for tr in tr_indices]
     Xte = [X[:,te] for te in te_indices]
 
