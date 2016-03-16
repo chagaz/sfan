@@ -19,6 +19,7 @@ import subprocess
 import sys
 import tables as tb
 import tempfile
+import shutil
 
 
 def main():
@@ -209,28 +210,58 @@ def main():
             if not os.path.isdir(args.data_dir):
                 raise
 
-    # Create results repository if it does not exist
-    if not os.path.isdir(args.resu_dir):
-        logging.info("Creating %s\n" % args.resu_dir)
-        try: 
-            os.makedirs(args.resu_dir)
+    # (Delete and re)create results repository (if it exists)
+    if os.path.isdir(args.resu_dir): 
+        logging.info("Deleting %s\n" % args.resu_dir)
+        try:
+            shutil.rmtree(args.resu_dir)
         except OSError:
-            if not os.path.isdir(args.resu_dir):
-                raise
+            raise #???XXX
+    # More pythonic : ??? 
+    #import errno
+    #try:
+    #    os.remove(args.resu_dir)
+    #except OSError as e :
+    #    if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
+    #       raise
 
-    # Create files to hold PPV and sensitivity values
+    logging.info("Creating %s\n" % args.resu_dir)
+    try: 
+        os.makedirs(args.resu_dir)
+    except OSError:
+        if not os.path.isdir(args.resu_dir):
+            raise
+
+    # Create analysis files :
+    # - to hold PPV 
     ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, args.simu_id)
-    tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, args.simu_id)
-
     ppv_np_fname = '%s/%s.msfan_np.ppv' % (args.resu_dir, args.simu_id)
-    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, args.simu_id)
-
     ppv_fname = '%s/%s.msfan.ppv' % (args.resu_dir, args.simu_id)
+    # - to hold sensitivity values
+    tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, args.simu_id)    
+    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, args.simu_id)
     tpr_fname = '%s/%s.msfan.sensitivity' % (args.resu_dir, args.simu_id)
+    # - to hold consistency value
+    ci_st_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
+    ci_np_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
+    ci_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
 
-    # TODO: Create files to hold RMSE and consistency values
+    analysis_files = {
+        'ppv_st':ppv_st_fname,
+        'ppv_sfan_np':ppv_np_fname,
+        'ppv_sfan':ppv_fname,
+        'tpr_st':tpr_st_fname,
+        'tpr_sfan_np':tpr_np_fname,
+        'tpr_sfan':tpr_fname,
+        'ci_st':ci_st_fname ,
+        'ci_sfan_np':ci_np_fname ,
+        'ci_sfan':ci_fname
+    }
+
+    # TODO: Create files to hold RMSE
 
     for repeat_idx in range(args.num_repeats):
+
         print "==================================================== REPETITION :"+`repeat_idx`
         # Instantiate data generator
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
@@ -428,19 +459,16 @@ def main():
             fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_st)
-                f.close()
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTISAN"
             # Multitask (no precision)
             fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params_np)
-                f.close()
             print"==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`+"SS :"+`ss_idx`+"OPT PARAM ALGO MULTIAVEC"
             # Multitask (precision)
             fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params)
-                f.close()
 
             #------------------------------------------------------------------
             # For each algorithm, run algorithms again to select features,
@@ -477,21 +505,18 @@ def main():
                     f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
                                             # selected_features_list is a list of int 
                                             # that have to be cast as string so we can join them
-                f.close()
             # Multitask (no precision)
             fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
                     (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 for selected_features_list in selected_np:
                     f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-                f.close()
             # Multitask (precision)
             fname = '%s/%s.msfan.fold_%d.selected_features' % \
                     (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 for selected_features_list in selected:
                     f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-                f.close()
             #------------------------------------------------------------------
             
 
@@ -505,11 +530,9 @@ def main():
                                                             args.num_features)
             with open(ppv_st_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-                f.close()
 
             with open(tpr_st_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-                f.close()
 
 
             # Multitask (no precision)
@@ -518,11 +541,9 @@ def main():
                                                             args.num_features)
             with open(ppv_np_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-                f.close()
 
             with open(tpr_np_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-                f.close()
 
             # Multitask (precision)
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
@@ -530,14 +551,11 @@ def main():
                                                             args.num_features)
             with open(ppv_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-                f.close()
 
             with open(tpr_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-                f.close()
             #-----------------------------------------------------------
-            #??? Does f.close() is necessary when usien with open statement ??? 
-
+            
             #------------------------------------------------------------------
             # For each algorithm, for each task,
             # predict on the test set using a ridge-
@@ -613,34 +631,32 @@ def main():
         # Single task
         selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
         ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        output_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
-        with open(output_fname, 'w') as f:
+        with open(ci_st_fname, 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
         # Multitask (no precision)
         selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
         ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        output_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
-        with open(output_fname, 'w') as f:
+        with open(ci_np_fname, 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
         # Multitask (precision)
         selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
         ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        output_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
-        with open(output_fname, 'w') as f:
+        with open(ci_fname, 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
 
         #-----------------------------------------------------------------------
+
+        # Add line breaks in PPV, and sensitivity and consistency files 
+        for f in analysis_files.values() : 
+            with open (f, 'a') as f : 
+                f.write('\n')
+
     # END for repeat_idx in range(args.num_repeats)
-
-
-    # TODO: Add line breaks in PPV and sensitivity files.
-
 
                             
     #--------------------------------------------------------------
     # TODO: For each algorithm compute average/mean for RMSE, PPVs,
     # sensitivities, consistency index.
-
 
     # TODO: Print out and save (with LaTeX table format) in
     # plain text file
@@ -658,5 +674,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("EXIT")
+    print("THE END")
         
