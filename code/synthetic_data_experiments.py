@@ -465,7 +465,10 @@ def main():
                                         opt_params)
 
             # For each algorithm, save selected features to file
-            
+            #DEBUG XXX???
+            selected_st = [[0],[0,1],[0,1,2]]
+            selected_np = [[1],[1,2],[1,2,3]]
+            selected = [[1,2,3],[1,2,3,4],[1,2,3,4,5]]
             # Single task
             fname = '%s/%s.sfan.fold_%d.selected_features' % \
                     (resu_dir, args.simu_id, fold_idx)
@@ -601,20 +604,31 @@ def main():
 
 
         #-----------------------------------------------------------------------
-        # TODO: For each algorithm, and for each task, compute consistency index
+        # For each algorithm, and for each task, compute consistency index
         # between the features selected for each fold.
-        # Use ef.consistency_index_k
-        # (define an external function, a bit as above for RMSE)
+        # Use an external function using ef.consistency_index_k()
         # use the selected features saved to files and the true causal features
-        # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, simu_id)
+        # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
 
         # Single task
-
-
+        selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        output_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
+        with open(output_fname, 'w') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
         # Multitask (no precision)
-
-
+        selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        output_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
+        with open(output_fname, 'w') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
         # Multitask (precision)
+        selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        output_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
+        with open(output_fname, 'w') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
+
         #-----------------------------------------------------------------------
     # END for repeat_idx in range(args.num_repeats)
 
