@@ -1,3 +1,5 @@
+#include <stdlib.h>  // malloc()
+
 #ifndef mallocator_h
 #define mallocator_h
 
