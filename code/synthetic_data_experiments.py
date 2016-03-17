@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """synthetic_data_experiments.py -- Run validation experiments on synthetic data
 
 In this version all experiments are run sequentially.
 """
+
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -248,14 +250,14 @@ def main():
 
     analysis_files = {
         'ppv_st':ppv_st_fname,
-        'ppv_sfan_np':ppv_np_fname,
-        'ppv_sfan':ppv_fname,
+        'ppv_msfan_np':ppv_np_fname,
+        'ppv_msfan':ppv_fname,
         'tpr_st':tpr_st_fname,
-        'tpr_sfan_np':tpr_np_fname,
-        'tpr_sfan':tpr_fname,
+        'tpr_msfan_np':tpr_np_fname,
+        'tpr_msfan':tpr_fname,
         'ci_st':ci_st_fname ,
-        'ci_sfan_np':ci_np_fname ,
-        'ci_sfan':ci_fname
+        'ci_msfan_np':ci_np_fname ,
+        'ci_msfan':ci_fname
     }
 
     # TODO: Create files to hold RMSE
@@ -653,19 +655,75 @@ def main():
 
     # END for repeat_idx in range(args.num_repeats)
 
-                            
     #--------------------------------------------------------------
-    # For each algorithm compute average/mean :
-    # for RMSE, PPVs, sensitivities, consistency index.
+    # For each algorithm compute average/mean +- standard deviation per task
+    res = {}
 
-    means = {}
-    for fkey, fval in analysis_files.iteritems() :
-        means[fkey] = ef.compute_mean(fval)
+    # for : 
+    
+    # RMSE : 
+    #TODO 
+
+    # PPVs : 
+    res["ppv"] = ef.extract_res_from_files(
+        [   analysis_files['ppv_st'],
+            analysis_files['ppv_msfan_np'],
+            analysis_files['ppv_msfan']
+        ],
+        args.num_tasks
+    )
+    # sensitivities : 
+    res["tpr"]= ef.extract_res_from_files(
+        [   analysis_files['tpr_st'],
+            analysis_files['tpr_msfan_np'],
+            analysis_files['tpr_msfan']
+        ],
+        args.num_tasks
+    )
+    # consistency index : 
+    res["ci"]= ef.extract_res_from_files(
+        [   analysis_files['ci_st'],
+            analysis_files['ci_msfan_np'],
+            analysis_files['ci_msfan']
+        ],
+        args.num_tasks
+    )
+
+    res["rmse"] = res['ci']#DEBUG XXX???
+    print "#######################"
+    
 
 
-    # TODO: Print out and save (with LaTeX table format) in
-    # plain text file
-    fname = '%s/%s.results' % (args.resu_dir, args.simu_id)
+    # Print out measures tables
+    # and save them (with LaTeX table format) in plain text file
+    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
+
+    header_print = (
+            "-----------------------------------------------------------------------\n"
+            "{:^80}\n"
+            "       +--------------------------------------------------------------+\n"
+            "       |                              algo                            |\n"
+            "  task |         sfan       |          np        |          msfan     |\n"
+            "=======+====================+====================+====================+\n"
+    )
+    header_save = "task & sfan &np &msfan \\\\\\hline\n"
+    algos = ['st', 'np', 'msfan']
+    for measure in res : 
+        to_print = ''
+        to_save = ''
+        for task_idx, val in enumerate(res[measure]): 
+            to_print += '{:^7d}|'.format(task_idx) 
+            to_save += '{:^7d}&'.format(task_idx) 
+            for algo in algos : 
+                to_print += '{mean:9.3f} ±{std:9.3f}|'.format(**val[algo]) 
+                to_save += '{mean:9.3f} ±{std:9.3f}&'.format(**val[algo]) 
+            to_save = to_save[:-1] #don't want the last '&'
+            to_save += "\\\\\n" # two step and not to_save[-1] = "\\\\\n" because python strings are immuable
+            to_print+="\n"
+        print header_print.format(measure)
+        print to_print
+        with open(fname%measure, 'w') as f : 
+            f.write(header_save+to_save)
     #--------------------------------------------------------------
 
     
