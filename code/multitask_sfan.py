@@ -291,7 +291,6 @@ class Sfan(object):
             
             emax = cmax - mu * pmin
 
-            #eta_values = [emax / (2**(idx+1)) for idx in range(num_values)]
             eta_values = [emax / (10*(2**idx)) for idx in range(num_values)]
             
             for eta in eta_values:
@@ -322,21 +321,21 @@ class Sfan(object):
                             break
 
                 llmax = np.log10(amax / Wmin)
-                llmin = np.log10(amin / Wmax)
-                # llmax = np.log10(amax / Wmin)
-                # llmin = np.log10(10*amin / Wmax)
-
-                # print "\t\t", 10**(amin/Wmax), 10**(amed/Wmax), 10**(amax/Wmin)
-
-                # lbd_values = [10**(llmin + float(idx)/float(num_values-1) * \
-                #                    (llmax-llmin)) for idx in range(num_values)]
-
-                
+                llmin = np.log10(amin / Wmax)              
                 llmed = np.log10(amed / Wmax)
                 lbd_values = [10**(llmed - float(idx)/float((num_values+1)/2) * \
                                        (llmed-llmin)) for idx in range((num_values+1)/2, 0, -1)]
                 lbd_values.extend([10**(llmed + float(idx)/float(num_values/2) * \
                                        (llmax-llmed)) for idx in range(num_values/2)])
+
+                # lmax = amax / Wmin
+                # lmin = amin / Wmax
+                # lmed = amed / Wmax
+                # lbd_values = [(lmed - float(idx)/float((num_values+1)/2) * \
+                #                        (lmed-lmin)) for idx in range((num_values+1)/2, 0, -1)]
+                # lbd_values.extend([(lmed + float(idx)/float(num_values/2) * \
+                #                        (lmax-lmed)) for idx in range(num_values/2)])
+
                 lbd_values = ['%.2e' % lbd for lbd in lbd_values]
                 print "\t\t", lbd_values
                 params_dict['%.2e' % mu]['%.2e' % eta] = lbd_values
