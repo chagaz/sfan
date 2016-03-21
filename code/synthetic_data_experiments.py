@@ -234,6 +234,7 @@ def main():
         if not os.path.isdir(args.resu_dir):
             raise
 
+
     # Create analysis files :
     # - to hold PPV 
     ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, args.simu_id)
@@ -247,7 +248,11 @@ def main():
     ci_st_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
     ci_np_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
     ci_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
-
+    # - to hold rmse value
+    rmse_st_fname = '%s/%s.sfan.rmse' % (args.resu_dir, args.simu_id)
+    rmse_np_fname = '%s/%s.msfan_np.rmse' % (args.resu_dir, args.simu_id)
+    rmse_fname = '%s/%s.msfan.rmse' % (args.resu_dir, args.simu_id)
+    
     analysis_files = {
         'ppv_st':ppv_st_fname,
         'ppv_msfan_np':ppv_np_fname,
@@ -257,11 +262,14 @@ def main():
         'tpr_msfan':tpr_fname,
         'ci_st':ci_st_fname ,
         'ci_msfan_np':ci_np_fname ,
-        'ci_msfan':ci_fname
+        'ci_msfan':ci_fname, 
+        'rmse_st':rmse_st_fname ,
+        'rmse_msfan_np':rmse_np_fname ,
+        'rmse_msfan':rmse_fname
     }
 
-    # TODO: Create files to hold RMSE
-
+    
+    exit(1)
     for repeat_idx in range(args.num_repeats):
 
         print "==================================================== REPETITION :"+`repeat_idx`
@@ -619,8 +627,6 @@ def main():
                                             evalf.xp_indices, output_fname)             
 
         #----------------------------------------------------------------------
-
-
 
 
         #-----------------------------------------------------------------------
