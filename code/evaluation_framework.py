@@ -510,7 +510,8 @@ def extract_res_from_files(f_names, num_tasks):
         giving inline means and standard deviation of the numbers founded in the file
     """
     
-    res = [ dict() for i in xrange(num_tasks) ]
+    means = [ dict() for i in xrange(num_tasks) ]
+    std = [ dict() for i in xrange(num_tasks) ]
 
     f_list = []
     for f in f_names : 
@@ -520,13 +521,12 @@ def extract_res_from_files(f_names, num_tasks):
     for task_idx in xrange (num_tasks):
         for i, f in enumerate(f_list) :
             content = [float(val) for val in f.readline().split()]
-            mean =  np.mean(content, dtype=np.float64)
-            std = np.std(content, dtype=np.float64)
-            res[task_idx][algos[i]] = { 'mean': mean , 'std' :std }
+            means[task_idx][algos[i]] =  np.mean(content, dtype=np.float64)
+            std[task_idx][algos[i]] = np.std(content, dtype=np.float64)
     for f in f_list : 
         f.close() 
 
-    return res
+    return means, std
     
     
 class Framework(object):
