@@ -695,7 +695,7 @@ def main():
 
         #-----------------------------------------------------------------------
 
-        # Add line breaks in PPV, and sensitivity, and consistency, and RMSE files (TODO : RMSE !! )
+        # Add line breaks in PPV, and sensitivity, and consistency, and RMSE files
         for f in analysis_files.values() : 
             with open (f, 'a') as f : 
                 f.write('\n')
