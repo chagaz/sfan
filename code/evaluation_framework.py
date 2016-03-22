@@ -442,7 +442,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, outpu
 
     # output :
     with open(output_fname, 'a') as f_out:
-        f_out.write("%d\n" %rmse) #TODO : rm \n and \n only at the end of the repeat.
+        f_out.write("%d " %rmse)
 
 
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):

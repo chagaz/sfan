@@ -639,8 +639,9 @@ def main():
         #   - an external function 
         #   - the predictions saved in files (fold per fold)
         #   - the true values given by phenotype_fnames[task_idx] and te_indices
-        # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, simu_id)
-        # File structure : 
+        # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
+        # => rmse_st_fname ; rmse_np_fname ; rmse_fname
+        # Files structure : 
         # each line = a repeat
         # on each line there are several RMSE values, one per task
 
@@ -648,22 +649,19 @@ def main():
         for task_idx in range(args.num_tasks):
 
             # Single task
-            output_fname = '%s/%s.sfan.rmse' % (resu_dir, args.simu_id)
             predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
             ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, output_fname)
+                                            evalf.xp_indices, rmse_st_fname)
 
             # Multitask (no precision)
-            output_fname = '%s/%s.msfan_np.rmse' % (resu_dir, args.simu_id)
             predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
             ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, output_fname)
+                                            evalf.xp_indices, rmse_np_fname)
 
             # Multitask (precision)
-            output_fname = '%s/%s.msfan.rmse' % (resu_dir, args.simu_id)
             predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
             ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, output_fname)             
+                                            evalf.xp_indices, rmse_fname)             
 
         #----------------------------------------------------------------------
 
