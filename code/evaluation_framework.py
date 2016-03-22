@@ -600,21 +600,18 @@ class Framework(object):
                 'ssIndices': list of list of subsample indices
             }
         """
-
         # use sklearn.cross_validation
         
-        # Generate cross-validation indices
         kf = cv.KFold(self.num_samples, n_folds=self.num_folds)# ??? Add shuffle ??? XXX
         for i, (train_index, test_index) in enumerate(kf):
+            # Generate cross-validation indices
             self.xp_indices[i]['trIndices'] = train_index.tolist()
             self.xp_indices[i]['teIndices'] = test_index.tolist()
-
             # For each train set, generate self.num_subsamples subsample sets of indices
-            #                               ------------------ -> change n_fold = numfolds to num_subsamples ??? XXXX TODO
-            ss = cv.KFold(n=self.num_samples, n_folds=self.num_folds, shuffle=True, random_state=seed)
+            ss = cv.KFold(n=self.num_samples, n_folds=self.num_subsamples, shuffle=True, random_state=seed)
             for train_index, test_index in ss:
                 self.xp_indices[i]['ssIndices'].append(train_index.tolist())
-        
+
         
     def save_indices(self, data_dir, simu_id):
         """ Save the cross-validation folds and subsample indices to files.
