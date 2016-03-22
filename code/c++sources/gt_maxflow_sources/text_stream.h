@@ -4,6 +4,8 @@
 //#include "advstreaming.h"
 #include "virtual_stream.h"
 
+#include <stdio.h> // sprintf()
+
 namespace streaming{
 	//_______________________vstream______________________
 	class text_stream : public vstream{
