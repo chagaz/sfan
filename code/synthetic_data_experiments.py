@@ -104,16 +104,16 @@ def main():
     Under <resu_dir>:
         For each algo in ('sfan', 'msfan_np', 'msfan'):
             <simu_id>.<algo>.rmse:
-                List of final RMSEs (one per repeat),
-                one value per line.
+                Space-separated lists of RMSEs (one per task)
+                each line corresponds to one repeat. 
             <simu_id>.<algo>.consistency:
-                List of final Consistency Indices (one per repeat),
-                one value per line.
+                Space-separated lists of consistency index (one per task)
+                each line corresponds to one repeat. 
             <simu_id>.<algo>.ppv
-                Space-separated lists of PPVs (one value per task and per fold),
+                Space-separated lists of PPVs per task, per fold,
                 each line corresponds to one repeat. 
             <simu_id>.<algo>.sensitivity
-                Space-separated lists of sensitivities (one value per task and per fold),
+                Space-separated lists of sensitivities per task, per fold,
                 each line corresponds to one repeat. 
             <simu_id>.results
                 Average/standard deviation values for: consistency index, RMSE,
@@ -129,6 +129,8 @@ def main():
     $ python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
     """
+
+    #-------------------------------------------------------------------------
     # Get arguments values
     help_str = "Validation experiments on synthetic data"
     parser = argparse.ArgumentParser(description=help_str,add_help=True)
@@ -149,7 +151,9 @@ def main():
     parser.add_argument("-v", "--verbose", help="Turn on detailed info log",
                         action='store_true')
     args = parser.parse_args()
+    #-------------------------------------------------------------------------
 
+    #-------------------------------------------------------------------------
     # Check arguments integrity
     try:
         assert(args.num_tasks >= 1)
@@ -202,6 +206,10 @@ def main():
         logging.info("Verbose output.")
     else:
         logging.basicConfig(format="%[(levelname)s] %(message)s")
+    #-------------------------------------------------------------------------
+
+    #-------------------------------------------------------------------------
+    # Insure working repositories exist : 
 
     # Create simulated data repository if it does not exist
     if not os.path.isdir(args.data_dir):
@@ -233,22 +241,23 @@ def main():
     except OSError:
         if not os.path.isdir(args.resu_dir):
             raise
+    #-------------------------------------------------------------------------
 
-
-    # Create analysis files :
-    # - to hold PPV 
+    #-------------------------------------------------------------------------
+    # Create analysis file names :
+    # - to hold PPV values
     ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, args.simu_id)
     ppv_np_fname = '%s/%s.msfan_np.ppv' % (args.resu_dir, args.simu_id)
     ppv_fname = '%s/%s.msfan.ppv' % (args.resu_dir, args.simu_id)
-    # - to hold sensitivity values
+    # - to hold sensitivity = TPR values
     tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, args.simu_id)    
     tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, args.simu_id)
     tpr_fname = '%s/%s.msfan.sensitivity' % (args.resu_dir, args.simu_id)
-    # - to hold consistency value
+    # - to hold consistency values
     ci_st_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
     ci_np_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
     ci_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
-    # - to hold rmse value
+    # - to hold RMSE values
     rmse_st_fname = '%s/%s.sfan.rmse' % (args.resu_dir, args.simu_id)
     rmse_np_fname = '%s/%s.msfan_np.rmse' % (args.resu_dir, args.simu_id)
     rmse_fname = '%s/%s.msfan.rmse' % (args.resu_dir, args.simu_id)
@@ -267,12 +276,17 @@ def main():
         'rmse_msfan_np':rmse_np_fname ,
         'rmse_msfan':rmse_fname
     }
-
+    #-------------------------------------------------------------------------
     
-    exit(1)
+
+    #-------------------------------------------------------------------------
     for repeat_idx in range(args.num_repeats):
 
         print "==================================================== REPETITION :"+`repeat_idx`
+
+        #-------------------------------------------------------------------------
+        # Data generation : 
+
         # Instantiate data generator
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
 
@@ -298,9 +312,9 @@ def main():
         scores_fnames = ['%s/%s.scores_%d.txt' % \
                          (data_dir, args.simu_id, task_idx) \
                          for task_idx in range(args.num_tasks)]
+        #-------------------------------------------------------------------------
 
-        
-
+        #-------------------------------------------------------------------------
         # Instantiate evaluation framework
         evalf = ef.Framework(args.num_samples, args.num_folds,
                              args.num_subsamples)
@@ -321,6 +335,10 @@ def main():
             except OSError:
                 if not os.path.isdir(resu_dir):
                     raise
+
+
+        #-------------------------------------------------------------------------
+        # Looking for optimal parameters : 
 
         #-----------------------------------
         # Define the grid of hyperparameters
@@ -367,16 +385,20 @@ def main():
             os.remove(fname)
         #-----------------------------------
 
+        #-----------------------------------
+        # For each folt, test feature selection with combinaisons of hyperparameters from the grid
         for fold_idx in range(args.num_folds):
             print "==================================================== REPETITION :"+`repeat_idx`+"FOLD :"+`fold_idx`
             # Inititalize dictionary to store selected features
-            # sf is a list of lists of selected features
-            # (one per subsample iteration)
             # sf_dict is a nested dictionary, indexed by
             #   - value of the parameters
             #   - value of task_idx
-            # i.e. you get a specific sf from sf_dict by querying
+            #   - subsample idx
+            # sf is a list of lists of selected features
+            # (one per subsample iteration)
+            # you get a specific sf from sf_dict by querying
             # sf_dict[params][task_idx]
+
             sf_st_dict = {}       # single task
             sf_np_dict = {}       # not using precision matrix
             sf_dict = {}          # using precision matrix
@@ -421,7 +443,7 @@ def main():
                     # Select features with single-task sfan
                     sel_ = ef.run_sfan(args.num_tasks, network_fname,
                                        tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace() 
+                    if not sel_ : import pdb; pdb.set_trace() #DEBUG
                     print "SEL_ sf = \n", sel_
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
@@ -434,29 +456,36 @@ def main():
                     # Select features with multi-task (no precision) sfan
                     sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace()
+                    if not sel_ : import pdb; pdb.set_trace()#DEBUG
                     print "SEL_ no corr = \n", sel_
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         print"==================================================== ___sf_np_dict"
                         sf_np_dict[params][task_idx].append(sel_list)
+
+
                     # Select features with multi-task sfan
                     sel_ = ef.run_msfan(args.num_tasks, network_fname,
                                         tmp_weights_f_list, precision_fname,
                                         params)  
                     print "SEL_ multi_corr = \n", sel_
-                    if not sel_ : import pdb; pdb.set_trace()                                       
+                    if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         print"==================================================== ___ sf_dict"
-
+                        sel_list = [ss_idx, 1, 2, 3]# XXX DEBUG
                         sf_dict[params][task_idx].append(sel_list)
-                        
+                
+
                 # Delete the temporary files stored in tmp_weights_f_list
                 for fname in tmp_weights_f_list:
                     os.remove(fname)
             # END for ss_idx in range(args.num_subsamples)
-                            
+            
+            #DEBUG : 
+            sf_st_dict = sf_dict
+            sf_np_dict = sf_dict
+            #-----------------------------------              
             # Get optimal parameter values for each algo.
             # ??? some lists are empty, is it normal ??? 
             opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
@@ -479,6 +508,8 @@ def main():
             fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
             with open(fname, 'w') as f:
                 f.write(opt_params)
+            #------------------------------------------------------------------
+
 
             #------------------------------------------------------------------
             # For each algorithm, run algorithms again to select features,
@@ -534,16 +565,22 @@ def main():
             # For each algorithm, and for each task, compute PPV
             # and sensitivity, and save to ppv_fname, tpr_fname
             
+            # Files structure : 
+            # 1 line per repeat
+            # on each line : valTask1, valTask2, ... valTaskn for each fold
+            
+            # For the current repeat and the current fold, 
+            # ppv_list ant tpr_list and list of ppv ant tpr respectively
+            # for each task
+
             # Single task
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
                                                             selected_st,
                                                             args.num_features)
             with open(ppv_st_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-
             with open(tpr_st_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-
 
             # Multitask (no precision)
             ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
@@ -551,7 +588,6 @@ def main():
                                                             args.num_features)
             with open(ppv_np_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-
             with open(tpr_np_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
 
@@ -561,7 +597,6 @@ def main():
                                                             args.num_features)
             with open(ppv_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-
             with open(tpr_fname, 'a') as f:
                 f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
             #-----------------------------------------------------------
@@ -605,7 +640,11 @@ def main():
         #   - the predictions saved in files (fold per fold)
         #   - the true values given by phenotype_fnames[task_idx] and te_indices
         # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, simu_id)
+        # File structure : 
+        # each line = a repeat
+        # on each line there are several RMSE values, one per task
 
+        #TODO : make the function return a list of rmse per task, like ci computation ? 
         for task_idx in range(args.num_tasks):
 
             # Single task
@@ -635,7 +674,11 @@ def main():
         # Use an external function using ef.consistency_index_k()
         # use the selected features saved to files and the true causal features
         # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
+        # File structure : 
+        # each line = a repeat
+        # on each line there are several ci values, one per task
 
+        
         # Single task
         selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
         ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
@@ -654,15 +697,18 @@ def main():
 
         #-----------------------------------------------------------------------
 
-        # Add line breaks in PPV, and sensitivity and consistency files 
+        # Add line breaks in PPV, and sensitivity, and consistency, and RMSE files (TODO : RMSE !! )
         for f in analysis_files.values() : 
             with open (f, 'a') as f : 
                 f.write('\n')
 
     # END for repeat_idx in range(args.num_repeats)
 
-    #--------------------------------------------------------------
-    # For each algorithm compute average/mean +- standard deviation per task
+    #-------------------------------------------------------------------------
+    # Handle measures results : 
+
+    #------------------
+    # For each measure compute average/mean +- standard deviation per task for each algo
     means = {}
     std = {}
     # for : 
@@ -699,7 +745,10 @@ def main():
     std["rmse"] = std["ci"]
     print "#######################"
     
+    #------------------
 
+
+    #------------------
     # Print out measures tables
     # and save them (with LaTeX table format) in plain text file
 
@@ -731,10 +780,10 @@ def main():
         print to_print
         with open(fname%measure, 'w') as f : 
             f.write(header_save+to_save)
-    #--------------------------------------------------------------
+    #------------------
 
     
-    #-------------
+    #------------------
     # Plots
 
     
@@ -793,7 +842,7 @@ def main():
             )
     plot.bar_plot('ci', f_name)
 
-    #-------------
+    #------------------
 
 
 

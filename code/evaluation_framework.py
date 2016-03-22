@@ -103,27 +103,32 @@ def consistency_index_task(selection_fname, num_folds, num_tasks, num_features):
     ci_list
         List of consistency indices between the features selected for each fold, task per task.
     """
-    # as there is 10 folds, there are 10 files.
-    # they don't take a lot of memory
-    # so it is ok to open them all,
-    # then for each task_idx, increment the line
-    # append lines content in sel_list
-    # compute ci,
-    # output.
+    # In the curret repeat repo, there is a file of selected feature for each fold
+    # in which each line is a task 
+    # on each line, there is the space separated list of selected feature.
+    # we want consistency indices between the features selected for each fold, task per task
+    # so for each line in these files, we compute the ci between the features selected for each fold
 
+
+    # As there are ~10 folds, there are 10 files.
+    # they don't take a lot of memory
+    # so it is ok to open them all :
     fold_f_list = []
     for fold_idx in xrange (num_folds) :
         f_sel = open(selection_fname %fold_idx, 'r')
         fold_f_list.append(f_sel)
 
+    
     ci_list = []
-    debug_sel_list = []
+    # For each task : 
     for task_idx in xrange (num_tasks):
         sel_list = []
         for f_sel in fold_f_list :
+            # increment aline in each file
             content = f_sel.readline().split()
+            # append lines content in sel_list
             sel_list.append(content)
-        debug_sel_list.append(sel_list)
+        # compute the ci between the features selected for each fold at this current task
         ci =  consistency_index_k(sel_list, num_features)
         ci_list.append(ci)
 
@@ -178,7 +183,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
 
     if not sel_list :
         print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace()
+        import pdb ; pdb.set_trace() #DEBUG
 
     return sel_list
                  
@@ -266,7 +271,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
 
     if not sel_list :
         print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace()
+        import pdb ; pdb.set_trace() #DEBUG
 
     return sel_list
                  
@@ -287,7 +292,8 @@ def get_optimal_parameters_from_dict(selected_dict, num_features):
     Returns
     -------
     opt_params: string
-        Optimal parameters, leading to highest consistency index.
+        Optimal parameters, leading to highest consistency index ???between features selected for each subsample???.
+        XXX??? Why it is not params leading to highest ci mean per task ? ???
     """
     opt_params = ''
     opt_cindex = 0
@@ -335,9 +341,10 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     # => it's a regression so il can only be used with continuous phenotype
     # TODO : Think of how to handle discret phenotypes. 
 
-    # Read the data : 
+    #----------------------------------------
+    # Read data : 
 
-    if not selected_features : 
+    if not selected_features : #DEBUG
         # Safeguard for when SFAN returns empty list
         # Avoid not allowed empty selections
         #import pdb; pdb.set_trace() 
@@ -346,7 +353,6 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
     # read genotypes : 
-    #-----------------
     with tb.open_file(genotype_fname, 'r') as h5f:
         table = h5f.root.Xtr
         # table.shape : 
@@ -358,20 +364,21 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     Xte = [X[:,te] for te in te_indices]
 
     # read phenotypes : 
-    #-------------------
     with open(phenotype_fname, 'r') as f:
         # continuous phenotype for each sample (in line)
         y = f.read().split()
         y = [float(item) for item in y]
 
     ytr = [ y[tr] for tr in tr_indices]
-
+    #----------------------------------------
 
     # Instantiate a ridge regression
     model = lm.RidgeCV()
 
     # Train the ridge regression on the training set
     model.fit(Xtr, ytr)
+
+    #----------------------------------------
 
     # Make predictions on the test set
     preds = model.predict(Xte)
@@ -407,7 +414,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, outpu
     Write rmse to output_fname
     """
     # For n inds :
-    # RMSE = sqrt (  (1/n)  sum from m=1 to n : (ypred_m - ytrue_m)^2  )
+    # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
     # read y_true :
     with open(phenotype_fname, 'r') as f_true:
@@ -435,7 +442,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, outpu
 
     # output :
     with open(output_fname, 'a') as f_out:
-        f_out.write("%d\n" %rmse)
+        f_out.write("%d\n" %rmse) #TODO : rm \n and \n only at the end of the repeat.
 
 
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
@@ -461,37 +468,46 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
 
     ppv_list = []
     tpr_list = []
-
-    # For each task, at the beginning, we consider that the features are neither causal nor predicted as such.
-    # Then we change the state/status of the causal ones (these are y_true True),
-    # and of those that have been predicted as such (these are y_pred True).
-    # and we compute ppv and tpr based on these 2 sets.
+    
     with open(causal_fname, 'r') as f:
+
+        # For each task, 
         for line_idx, line in enumerate(f):
 
+            # at the beginning, we consider that the features are 
+            # neither causal...
             y_true = [False]*num_features
+            # ... nor predicted as such.
             y_pred = [False]*num_features
 
             print 'line idx = ', line_idx
+            # Then we change the status of the causal ones 
+            # (these are y_true True),
             y_true_indx_list = map(int, line.split())
-            y_pred_indx_list = selected_list[line_idx]
-
             for y_true_indx in y_true_indx_list :
                 y_true[y_true_indx] = True
+            # and of those that have been predicted as such 
+            # (these are y_pred True).
+            y_pred_indx_list = selected_list[line_idx]            
             for y_pred_indx in y_pred_indx_list :
                 y_pred[y_pred_indx] = True
 
+            # and we compute ppv and tpr based on these 2 sets : 
+
             ppv_list.append( sklearn.metrics.accuracy_score(y_true, y_pred) )
 
-            count_tpr = 0
+            count_tpr = 0 # Number of features of which real and predicted status is the same. 
             for i, j in zip(y_pred, y_true):
                 if (i == j):
                     count_tpr += 1
             tpr_list.append( count_tpr / num_features)
+
+    print "line_idx : ", line_idx
     
     return ppv_list, tpr_list
 
 def extract_res_from_files(f_names, num_tasks):
+    # TODO : redo the function, taking acount of the files shape
     """Compute inline mean / average of numbers holded in a file and separated by space.
 
     Arguments
@@ -588,15 +604,17 @@ class Framework(object):
         # use sklearn.cross_validation
         
         # Generate cross-validation indices
-        kf = cv.KFold(self.num_samples, n_folds=self.num_folds)
+        kf = cv.KFold(self.num_samples, n_folds=self.num_folds)# ??? Add shuffle ??? XXX
         for i, (train_index, test_index) in enumerate(kf):
             self.xp_indices[i]['trIndices'] = train_index.tolist()
             self.xp_indices[i]['teIndices'] = test_index.tolist()
 
             # For each train set, generate self.num_subsamples subsample sets of indices
+            #                               ------------------ -> change n_fold = numfolds to num_subsamples ??? XXXX TODO
             ss = cv.KFold(n=self.num_samples, n_folds=self.num_folds, shuffle=True, random_state=seed)
             for train_index, test_index in ss:
                 self.xp_indices[i]['ssIndices'].append(train_index.tolist())
+        
         
     def save_indices(self, data_dir, simu_id):
         """ Save the cross-validation folds and subsample indices to files.
