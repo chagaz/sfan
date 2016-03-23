@@ -276,6 +276,8 @@ def main():
         'rmse_msfan_np':rmse_np_fname ,
         'rmse_msfan':rmse_fname
     }
+    print analysis_files
+
     #-------------------------------------------------------------------------
     
 
@@ -709,18 +711,36 @@ def main():
     # For each measure compute average/mean +- standard deviation per task for each algo
     means = {}
     std = {}
-    # for : 
-    
-    # RMSE : 
-    #TODO 
 
+    # for : 
+
+    # RMSE : 
+    means["rmse"], std["rmse"] = ef.extract_res_from_files(
+        [   analysis_files['rmse_st'],
+            analysis_files['rmse_msfan_np'],
+            analysis_files['rmse_msfan']
+        ],
+        args.num_tasks,
+        args.num_repeats
+    ) 
+    # consistency index : 
+    means["ci"], std["ci"]= ef.extract_res_from_files(
+        [   analysis_files['ci_st'],
+            analysis_files['ci_msfan_np'],
+            analysis_files['ci_msfan']
+        ],
+        args.num_tasks,
+        args.num_repeats
+    )
     # PPVs : 
     means["ppv"], std["ppv"] = ef.extract_res_from_files(
         [   analysis_files['ppv_st'],
             analysis_files['ppv_msfan_np'],
             analysis_files['ppv_msfan']
         ],
-        args.num_tasks
+        args.num_tasks,
+        args.num_repeats,
+        args.num_folds # needed to handle particular file organisation fer foldt then per task
     )
     # sensitivities : 
     means["tpr"],std["tpr"] = ef.extract_res_from_files(
@@ -728,20 +748,14 @@ def main():
             analysis_files['tpr_msfan_np'],
             analysis_files['tpr_msfan']
         ],
-        args.num_tasks
-    )
-    # consistency index : 
-    means["ci"], std["ci"]= ef.extract_res_from_files(
-        [   analysis_files['ci_st'],
-            analysis_files['ci_msfan_np'],
-            analysis_files['ci_msfan']
-        ],
-        args.num_tasks
+        args.num_tasks,
+        args.num_repeats,
+        args.num_folds # needed to handle particular file organisation fer foldt then per task
     )
 
-    means["rmse"] = means['ci']#DEBUG XXX???
-    std["rmse"] = std["ci"]
     print "#######################"
+
+    import pdb; pdb.set_trace() 
     
     #------------------
 
@@ -765,12 +779,12 @@ def main():
     for measure in means : 
         to_print = ''
         to_save = ''
-        for task_idx in xrange (len(means[measure]) ): 
+        for task_idx in xrange (args.num_tasks): 
             to_print += '{:^7d}|'.format(task_idx) 
             to_save += '{:^7d}&'.format(task_idx) 
             for algo in algos : 
-                to_print += '{:9.3f} ±{:9.3f}|'.format(means[measure][task_idx][algo], std[measure][task_idx][algo]) 
-                to_save += '{:9.3f} ±{:9.3f}&'.format(means[measure][task_idx][algo], std[measure][task_idx][algo]) 
+                to_print += '{:9.3f} ±{:9.3f}|'.format(means[measure][algo][task_idx], std[measure][algo][task_idx]) 
+                to_save += '{:9.3f} ±{:9.3f}&'.format(means[measure][algo][task_idx], std[measure][algo][task_idx]) 
             to_save = to_save[:-1] #don't want the last '&'
             to_save += "\\\\\n" # two step and not to_save[-1] = "\\\\\n" because python strings are immuable
             to_print+="\n"
@@ -787,56 +801,55 @@ def main():
     
 
     # RMSE : 
-    #restructure data as list of value, task per task for each algos : 
-    means_to_plot = [ means['rmse'][i][algo] for i in xrange (len (means ['rmse']) ) ]
-    std_to_plot = [ std['rmse'][i][algo] for i in xrange (len (std['rmse']) ) ]
+    means_to_plot = means['rmse']
+    std_to_plot = std['rmse']
     f_name = "%s/%s.rmse_plot.values" %(args.resu_dir, args.simu_id)
     with open(f_name, 'w') as f: 
         for algo in algos : 
             f.write(
-                ' '.join (str(item) for item in means_to_plot)+
+                ' '.join (str(item) for item in means_to_plot[algo])+
                 '|'+
-                ' '.join (str(item) for item in std_to_plot)+'\n'
+                ' '.join (str(item) for item in std_to_plot[algo])+'\n'
             )
     plot.bar_plot('rmse', f_name) 
 
 
     # PPVs :
-    means_to_plot = [ means['ppv'][i][algo] for i in xrange (len (means ['ppv']) ) ]
-    std_to_plot = [ std['ppv'][i][algo] for i in xrange (len (std['ppv']) ) ]
+    means_to_plot = means['ppv']
+    std_to_plot = std['ppv']
     f_name = "%s/%s.ppv_plot.values" %(args.resu_dir, args.simu_id)
     with open(f_name, 'w') as f: 
         for algo in algos :
             f.write(
-                ' '.join ( str(item) for item in means_to_plot) +
+                ' '.join ( str(item) for item in means_to_plot[algo]) +
                 '|' + 
-                ' '.join (str(item) for item in std_to_plot)+'\n'
+                ' '.join (str(item) for item in std_to_plot[algo])+'\n'
             )
     plot.bar_plot('ppv', f_name) 
 
     # sensitivities :
-    means_to_plot = [ means['tpr'][i][algo] for i in xrange (len (means ['tpr']) ) ]
-    std_to_plot = [ std['tpr'][i][algo] for i in xrange (len (std['tpr']) ) ]
+    means_to_plot = means['tpr']
+    std_to_plot = std['tpr']
     f_name = "%s/%s.tpr_plot.values" %(args.resu_dir, args.simu_id)
     with open(f_name, 'w') as f: 
         for algo in algos :
             f.write(
-                ' '.join (str(item) for item in means_to_plot) + 
+                ' '.join (str(item) for item in means_to_plot[algo]) + 
                 '|' + 
-                ' '.join (str(item) for item in std_to_plot)+'\n'
+                ' '.join (str(item) for item in std_to_plot[algo])+'\n'
             )
     plot.bar_plot('tpr', f_name) 
 
     # consistency index :
-    means_to_plot = [ means['ci'][i][algo] for i in xrange (len (means ['ci']) ) ]
-    std_to_plot = [ std['ci'][i][algo] for i in xrange (len (std['ci']) ) ]
+    means_to_plot = means['ci']
+    std_to_plot = std['ci']
     f_name = "%s/%s.ci_plot.values" %(args.resu_dir, args.simu_id)
     with open(f_name, 'w') as f: 
         for algo in algos :
             f.write(
-                ' '.join (str(item) for item in means_to_plot)+ 
+                ' '.join (str(item) for item in means_to_plot[algo])+ 
                 '|' + 
-                ' '.join (str(item) for item in std_to_plot)+'\n'
+                ' '.join (str(item) for item in std_to_plot[algo])+'\n'
             )
     plot.bar_plot('ci', f_name)
 

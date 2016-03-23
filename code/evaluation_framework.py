@@ -506,44 +506,72 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     
     return ppv_list, tpr_list
 
-def extract_res_from_files(f_names, num_tasks):
-    # TODO : redo the function, taking acount of the files shape
-    """Compute inline mean / average of numbers holded in a file and separated by space.
+def extract_res_from_files(f_names, num_tasks, num_repeat, num_folds = None):
+    """Compute mean and std per task from files holding values of measures.
 
     Arguments
     ---------
-    fname : filenames
-        Path to files holding space separted measures
-        line per line = task per task
+    f_names : filenames
+        Path to files in the order st, np, msfan
+        holding values whith space separated lists of values (on per task),
+        one line per repeat
     num_tasks: int
         Number of tasks. 
+    num_repeat : int 
+        Number of repeat
+    num_folds : int / None
+        Number of folds.
+        Needed for ppv and tpr files 
+        because values per repeat are per fold then per task. 
 
     Return
     -------
-    res : list of nested dict
-        for each task a dict for which keys is algo ('st', 'np', 'msfan')
-        in which a dict contains 'mean' and 'std' keys
-        giving inline means and standard deviation of the numbers founded in the file
+    means, std : dict of list
+        for each algo ('st', 'msfan_np', 'msfan'), a list of means / std task per task
     """
     
-    means = [ dict() for i in xrange(num_tasks) ]
-    std = [ dict() for i in xrange(num_tasks) ]
+    means = {'st' : [float()*num_tasks] , 'np' : [float()*num_tasks], 'msfan' : [float()*num_tasks] }
+    std = {'st' : [float()*num_tasks] , 'np' : [float()*num_tasks], 'msfan' : [float()*num_tasks] }
 
-    f_list = []
-    for f in f_names : 
-        f_list.append( open (f, 'r') ) 
-    
     algos = ['st', 'np', 'msfan']
-    for task_idx in xrange (num_tasks):
-        for i, f in enumerate(f_list) :
-            content = [float(val) for val in f.readline().split()]
-            means[task_idx][algos[i]] =  np.mean(content, dtype=np.float64)
-            std[task_idx][algos[i]] = np.std(content, dtype=np.float64)
-    for f in f_list : 
-        f.close() 
+
+    if num_folds : 
+    # for ppv and tpr file for which values per repeat = per line 
+    # are per fold, then per task, 
+    # we have to compute means per task taking account of value per repeat and per fold. 
+        for algo_idx, algo in enumerate(algos) : 
+                val_ci  = [[float() for i in xrange(num_tasks)] for j in xrange(num_repeat)]
+                # val[num_repeat = num line][num_tasks]
+                with open (f_names[algo_idx], 'r') as f : 
+                    for j, line in enumerate(f) : 
+                        content = [float (item) for item in line.split()]
+                        # content contains every float of the line 
+                        # we get values for a task using a slice : 
+                        content_task = []
+                        for task_idx in xrange(num_tasks) : 
+                            content_task.append( np.mean(content[task_idx::num_tasks]) )
+
+                        val_ci[j] = content_task
+                means[algo] = np.mean(val_ci, axis=0).tolist() # give the means for each col in the file = per task
+                std[algo]= np.std (val_ci, axis = 0).tolist()
+
+    else : 
+    # for rmse and cosistency files : 
+    # each lines = a repeat, each col : a task. 
+    # -> means and std in col
+        for algo_idx, algo in enumerate(algos) : 
+            val_ci  = [[float() for i in xrange(num_tasks)] for j in xrange(num_repeat)]
+            # val[num_repeat = num line][num_tasks = num column]
+            with open (f_names[algo_idx], 'r') as f : 
+                for j, line in enumerate(f) : 
+                    content_task = [float (item) for item in line.split()]
+                    val_ci[j] = content_task
+            means[algo] = np.mean(val_ci, axis=0) # give the means for each col in the file = per task
+            std[algo]= np.std (val_ci, axis = 0)
 
     return means, std
-    
+
+
     
 class Framework(object):
     """ Setting up evaluation framework.

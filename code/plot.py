@@ -32,7 +32,7 @@ def bar_plot(measure, f_name ):
     plt.ylabel(measure)
     plt.xticks(index + bar_width/2 + bar_width, labels_groups)
     
-    plt.title('%s by task and gender' % measure)
+    plt.title('%s by task and algo' % measure)
 
     for i, algo in enumerate(algos) : 
         # compute bars for each algos 
