@@ -64,22 +64,15 @@ def consistency_index_k(sel_list, num_features):
     Kuncheva, L.I. (2007). A Stability Index for Feature Selection.
     AIAC, pp. 390--395.
     """
-    print "*********************** sel_list  = \n", sel_list
     cidx = 0.
-
     for k1, sel1 in enumerate(sel_list[:-1]):
         # sel_list[:-1] to not take into account the last list.
         # avoid a problem with sel_list[k1+1:] when k1 is the last element,
         # that give an empty list overwise
         # the work is done at the second to last element anyway
-        print "=========="
-        print "k1 = ",k1, "sel_list[k1+1:]", sel_list[k1+1:]
         for sel2 in sel_list[k1+1:]:
-            print sel1, sel2
             cidx += consistency_index(set(sel1), set(sel2), num_features)
-
     cidx = 2. / (len(sel_list) * (len(sel_list) - 1)) * cidx
-
     return cidx
 
 
@@ -224,9 +217,7 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
 
     if not sel_list :
         print "returned sel_list empty !! param = ", params
-        ###???XXXDEBUGimport pdb ; pdb.set_trace()
-        sel_list = [[1,2,3,4], [5,6,7], [8,9]]
-
+        import pdb ; pdb.set_trace() ###???XXXDEBUG
 
     return sel_list
                  
@@ -260,7 +251,6 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
     argum.extend(weights_fnames)
     argum.extend(['--precision_matrix', precision_fname])
     argum.extend(params.split())
-    print " ".join(argum)
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)
 
@@ -277,6 +267,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
                  
 
 def get_optimal_parameters_from_dict(selected_dict, num_features):
+    #TODO : return params leading to the best mean of ci for all tasks. 
     """ Find optimal parameters from dictionary of selected features
 
     Arguments
@@ -347,10 +338,8 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     if not selected_features : #DEBUG
         # Safeguard for when SFAN returns empty list
         # Avoid not allowed empty selections
-        #import pdb; pdb.set_trace() 
+        import pdb; pdb.set_trace() 
         ### XXX ??? 
-        selected_features = [1,2,3]
-
 
     # read genotypes : 
     with tb.open_file(genotype_fname, 'r') as h5f:
@@ -419,7 +408,6 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, outpu
     # read y_true :
     with open(phenotype_fname, 'r') as f_true:
         y_true = [float(y) for y in f_true.read().split()]
-        print "y_true = ", y_true
 
     # read y_pred :
     # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
@@ -480,7 +468,6 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
             # ... nor predicted as such.
             y_pred = [False]*num_features
 
-            print 'line idx = ', line_idx
             # Then we change the status of the causal ones 
             # (these are y_true True),
             y_true_indx_list = map(int, line.split())
@@ -501,8 +488,6 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
                 if (i == j):
                     count_tpr += 1
             tpr_list.append( count_tpr / num_features)
-
-    print "line_idx : ", line_idx
     
     return ppv_list, tpr_list
 

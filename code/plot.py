@@ -36,9 +36,6 @@ def bar_plot(measure, f_name ):
 
     for i, algo in enumerate(algos) : 
         # compute bars for each algos 
-        print i, algo 
-        print means_to_plot[algo]
-        print std_to_plot[algo]
         plt.bar (index + (i%len(algos))*bar_width, 
                 means_to_plot[algo], 
                 bar_width,
