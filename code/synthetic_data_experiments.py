@@ -24,6 +24,92 @@ import tempfile
 import shutil
 
 
+def get_arguments_values(): 
+    """
+    TODO
+    """
+    help_str = "Validation experiments on synthetic data"
+    parser = argparse.ArgumentParser(description=help_str,add_help=True)
+    parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
+    parser.add_argument("-m", "--num_features", help="Number of features",
+                        type=int)
+    parser.add_argument("-n", "--num_samples", help="Number of samples",
+                        type=int)
+    parser.add_argument("-r", "--num_repeats", help="Number of repeats",
+                        type=int)
+    parser.add_argument("-f", "--num_folds", help="Number of CV folds",
+                        type=int)
+    parser.add_argument("-s", "--num_subsamples", help="Number of subsamples",
+                        type=int)
+    parser.add_argument("data_dir", help="Simulated data directory")
+    parser.add_argument("resu_dir", help="Results directory")
+    parser.add_argument("simu_id", help="Simulation name")
+    parser.add_argument("-v", "--verbose", help="Turn on detailed info log",
+                        action='store_true')
+    return parser.parse_args()
+
+def check_arguments_integrity(args): 
+    try:
+        assert(args.num_tasks >= 1)
+    except AssertionError:
+        logging.error("There must be at least one task specified.\n")
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+    
+    try:
+        assert(args.num_features >= generate_data.NUM_CAUSAL_TOTAL)
+    except AssertionError:
+        logging.error("The number of features must be larger than" + \
+                      " NUM_CAUSAL_TOTAL (%d).\n" % \
+                      generate_data.NUM_CAUSAL_TOTAL)
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+
+    try:
+        assert(args.num_samples > 0)
+    except AssertionError:
+        logging.error("The number of samples must be strictly positive\n")
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+
+    try:
+        assert(args.num_repeats > 0)
+    except AssertionError:
+        logging.error("The number of repeats must be strictly positive\n")
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+
+    try:
+        assert(args.num_folds > 0)
+    except AssertionError:
+        logging.error("The number of cross-validation folds must be strictly positive\n")
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+
+    try:
+        assert(args.num_subsamples > 0)
+    except AssertionError:
+        logging.error("The number of subsamples must be strictly positive\n")
+        logging.error("Use --help for help.\n")
+        sys.exit(-1)
+
+    # Verbose
+    if args.verbose:
+        logging.basicConfig(format="[%(levelname)s] %(message)s",
+                            level=logging.DEBUG)
+        logging.info("Verbose output.")
+    else:
+        logging.basicConfig(format="%[(levelname)s] %(message)s")
+
+def get_integrous_arguments_values(): 
+    """
+    TODO
+    """
+    args = get_arguments_values()
+    check_arguments_integrity(args)
+    return args
+
+
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -130,83 +216,9 @@ def main():
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
     """
 
-    #-------------------------------------------------------------------------
-    # Get arguments values
-    help_str = "Validation experiments on synthetic data"
-    parser = argparse.ArgumentParser(description=help_str,add_help=True)
-    parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
-    parser.add_argument("-m", "--num_features", help="Number of features",
-                        type=int)
-    parser.add_argument("-n", "--num_samples", help="Number of samples",
-                        type=int)
-    parser.add_argument("-r", "--num_repeats", help="Number of repeats",
-                        type=int)
-    parser.add_argument("-f", "--num_folds", help="Number of CV folds",
-                        type=int)
-    parser.add_argument("-s", "--num_subsamples", help="Number of subsamples",
-                        type=int)
-    parser.add_argument("data_dir", help="Simulated data directory")
-    parser.add_argument("resu_dir", help="Results directory")
-    parser.add_argument("simu_id", help="Simulation name")
-    parser.add_argument("-v", "--verbose", help="Turn on detailed info log",
-                        action='store_true')
-    args = parser.parse_args()
-    #-------------------------------------------------------------------------
+    # Arguments handling : 
+    args = get_integrous_arguments_values()
 
-    #-------------------------------------------------------------------------
-    # Check arguments integrity
-    try:
-        assert(args.num_tasks >= 1)
-    except AssertionError:
-        logging.error("There must be at least one task specified.\n")
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-    
-    try:
-        assert(args.num_features >= generate_data.NUM_CAUSAL_TOTAL)
-    except AssertionError:
-        logging.error("The number of features must be larger than" + \
-                      " NUM_CAUSAL_TOTAL (%d).\n" % \
-                      generate_data.NUM_CAUSAL_TOTAL)
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-
-    try:
-        assert(args.num_samples > 0)
-    except AssertionError:
-        logging.error("The number of samples must be strictly positive\n")
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-
-    try:
-        assert(args.num_repeats > 0)
-    except AssertionError:
-        logging.error("The number of repeats must be strictly positive\n")
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-
-    try:
-        assert(args.num_folds > 0)
-    except AssertionError:
-        logging.error("The number of cross-validation folds must be strictly positive\n")
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-
-    try:
-        assert(args.num_subsamples > 0)
-    except AssertionError:
-        logging.error("The number of subsamples must be strictly positive\n")
-        logging.error("Use --help for help.\n")
-        sys.exit(-1)
-
-    # Verbose
-    if args.verbose:
-        logging.basicConfig(format="[%(levelname)s] %(message)s",
-                            level=logging.DEBUG)
-        logging.info("Verbose output.")
-    else:
-        logging.basicConfig(format="%[(levelname)s] %(message)s")
-    #-------------------------------------------------------------------------
 
     #-------------------------------------------------------------------------
     # Insure working repositories exist : 
