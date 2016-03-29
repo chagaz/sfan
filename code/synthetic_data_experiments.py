@@ -109,7 +109,14 @@ def get_integrous_arguments_values():
     check_arguments_integrity(args)
     return args
 
-
+def create_dir_if_not_exists(dir_name): 
+    if not os.path.isdir(dir_name):
+        logging.info("Creating %s\n" % dir_name)
+        try: 
+            os.makedirs(dir_name)
+        except OSError:
+            if not os.path.isdir(dir_name):
+                raise
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -219,18 +226,11 @@ def main():
     # Arguments handling : 
     args = get_integrous_arguments_values()
 
-
     #-------------------------------------------------------------------------
     # Insure working repositories exist : 
 
     # Create simulated data repository if it does not exist
-    if not os.path.isdir(args.data_dir):
-        logging.info("Creating %s\n" % args.data_dir)
-        try: 
-            os.makedirs(args.data_dir)
-        except OSError:
-            if not os.path.isdir(args.data_dir):
-                raise
+    create_dir_if_not_exists(args.data_dir)
 
     # (Delete and re)create results repository (if it exists)
     if os.path.isdir(args.resu_dir): 
@@ -246,15 +246,9 @@ def main():
     #except OSError as e :
     #    if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
     #       raise
-
-    logging.info("Creating %s\n" % args.resu_dir)
-    try: 
-        os.makedirs(args.resu_dir)
-    except OSError:
-        if not os.path.isdir(args.resu_dir):
-            raise
+    create_dir_if_not_exists(args.resu_dir)
     #-------------------------------------------------------------------------
-
+    
     #-------------------------------------------------------------------------
     # Create analysis file names :
     # - to hold PPV values
@@ -298,15 +292,7 @@ def main():
         print "=============== REPETITION :"+`repeat_idx`
         # Create <resu_dir>/repeat_<repeat_id> if it does not exist
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
-        if not os.path.isdir(resu_dir):
-            logging.info("Creating %s\n" % resu_dir)
-            try:
-                os.makedirs(resu_dir)
-            except OSError:
-                if not os.path.isdir(resu_dir):
-                    raise
-        
-
+        create_dir_if_not_exists(resu_dir)
 
         #-------------------------------------------------------------------------
         print "======== Data generation"
