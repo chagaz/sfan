@@ -298,14 +298,14 @@ def main():
     #-------------------------------------------------------------------------
     for repeat_idx in range(args.num_repeats):
 
-        print "=============== REPETITION :"+`repeat_idx`
+        logging.info ("=============== REPETITION : %d" %repeat_idx)
 
         # Create <resu_dir>/repeat_<repeat_id> if it does not exist
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
         create_dir_if_not_exists(resu_dir)
 
         #-------------------------------------------------------------------------
-        print "======== Data generation"
+        logging.info( "======== Data generation")
         # Data generation : 
 
         # Instantiate data generator
@@ -337,7 +337,7 @@ def main():
 
 
         #-------------------------------------------------------------------------
-        print "======== Ef setup"
+        logging.info("======== Ef setup")
 
         # Instantiate evaluation framework
         evalf = ef.Framework(args.num_samples, args.num_folds,
@@ -356,7 +356,7 @@ def main():
         # Looking for optimal parameters : 
 
         #-----------------------------------
-        print "======== Defining grid of hyperparameters"
+        logging.info ("======== Defining grid of hyperparameters")
         # Define the grid of hyperparameters
         # see paper/tech_note
         # Randomly sample 50% of the data
@@ -408,9 +408,9 @@ def main():
         # use these opt param to select feature using the all training set. = predict causal status of features <- quantify these perf
         # use a ridge regression trained with selected features only to predict quantitativ phenotypes on test set <- quantify these perf
         for fold_idx in range(args.num_folds):
-            print "============= FOLD :", fold_idx
+            logging.info ("============= FOLD : %d"%fold_idx)
 
-            print "======== Feature selection :"
+            logging.info ("======== Feature selection :")
             # Inititalize dictionary to store selected features
             # sf_dict is a nested dictionary, indexed by
             #   - value of the parameters
@@ -436,7 +436,7 @@ def main():
                     sf_dict[params][task_idx] = []
 
             for ss_idx in range(args.num_subsamples):
-                print "========                        ", "SS :", `ss_idx`
+                logging.info ("========                        ", "SS : %d"%ss_idx)
                 # Get samples
                 sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
 
@@ -461,9 +461,9 @@ def main():
                         tmp_weights_f_list.append(tmp_fname)
 
                 for params in lbd_eta_values:
-                    print"========                        lbd_eta_values : ", params
+                    logging.info("========                        lbd_eta_values : "+ `params`)
                     # Select features with single-task sfan
-                    print"                                   run_sfan"
+                    logging.info("                                   run_sfan")
                     sel_ = ef.run_sfan(args.num_tasks, network_fname,
                                        tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace() #DEBUG
@@ -472,11 +472,11 @@ def main():
                         sf_st_dict[params][task_idx].append(sel_list)
 
                 for params in lbd_eta_mu_values:
-                    print"========                        lbd_eta_mu_values", params
+                    logging.info("========                        lbd_eta_mu_values"+ `params`)
 
                     # DEBUG : XXX
                     # # Select features with multi-task (no precision) sfan
-                    # print"                                   run_msfan_nocorr"
+                    # logging.info("                                   run_msfan_nocorr")
                     # sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                     #                            tmp_weights_f_list, params)
                     # if not sel_ : import pdb; pdb.set_trace()#DEBUG
@@ -486,7 +486,7 @@ def main():
 
 
                     # Select features with multi-task sfan
-                    print"                                   run_msfan"
+                    logging.info("                                   run_msfan")
                     sel_ = ef.run_msfan(args.num_tasks, network_fname,
                                         tmp_weights_f_list, precision_fname,
                                         params)
@@ -507,7 +507,7 @@ def main():
             #-----------------------------------   
             # Get optimal parameter values for each algo.
             # ??? some lists are empty, is it normal ??? 
-            print "======== Get opt params"
+            logging.info( "======== Get opt params")
             opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
             opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
             opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
@@ -529,19 +529,19 @@ def main():
 
 
             #------------------------------------------------------------------
-            print "======== Features selection using all training set and opt param"
+            logging.info( "======== Features selection using all training set and opt param")
             #------
             # For each algorithm, run algorithms again to select features,
             # (got a list of list : list of selected features for each task)
             # using the whole training set (i.e. scores_fnames)
             # and optimal parameters.
-            print"          run st"
+            logging.info("          run st")
             selected_st = ef.run_sfan(args.num_tasks, network_fname,
                                        scores_fnames, opt_params_st)
-            print"          run np"
+            logging.info("          run np")
             selected_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                scores_fnames, opt_params_np)
-            print"          run msfan"
+            logging.info("          run msfan")
             selected = ef.run_msfan(args.num_tasks, network_fname,
                                         scores_fnames, precision_fname,
                                         opt_params)
@@ -612,7 +612,7 @@ def main():
 
 
             #------------------------------------------------------------------
-            print "======== Prediction using opt param"
+            logging.info( "======== Prediction using opt param")
             # For each algorithm, for each task,
             # predict on the test set using a ridge-
             # regression trained with the selected features only.
@@ -645,7 +645,7 @@ def main():
 
                             
         #----------------------------------------------------------------------
-        print "======== Compute RMSE"
+        logging.info( "======== Compute RMSE")
         # For each algorithm, and for each task, compute RMSE
         # using :
         #   - an external function 
@@ -679,7 +679,7 @@ def main():
 
 
         #-----------------------------------------------------------------------
-        print "======== Compute CI "
+        logging.info( "======== Compute CI ")
         # For each algorithm, and for each task, compute consistency index
         # between the features selected for each fold.
         # Use an external function using ef.consistency_index_k()
@@ -763,9 +763,6 @@ def main():
         args.num_folds # needed to handle particular file organisation fer foldt then per task
     )
 
-    print "#######################"
-
-    import pdb; pdb.set_trace() 
     
     #------------------
 
