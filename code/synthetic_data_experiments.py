@@ -24,6 +24,7 @@ import tempfile
 import shutil
 
 
+
 def get_arguments_values(): 
     """
     TODO
@@ -157,6 +158,425 @@ def get_analysis_files_names(resu_dir, simu_id):
     return analysis_files
 
 
+def run_repeat(args):
+    """
+    TODO
+    """
+    logging.info ("=============== REPETITION : %d" %repeat_idx)
+
+    # Create <resu_dir>/repeat_<repeat_id> if it does not exist
+    resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
+    create_dir_if_not_exists(resu_dir)
+
+    #-------------------------------------------------------------------------
+    # Data generation : 
+    logging.info( "======== Data generation")
+    # Data generation : 
+
+    # Instantiate data generator
+    data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
+
+    data_gen = generate_data.SyntheticDataGenerator(args.num_tasks,
+                                                    args.num_features,
+                                                    args.num_samples,
+                                                    data_dir,
+                                                    args.simu_id)
+    # Generate modular data
+    data_gen.generate_modular()
+
+    # Name of data files
+    # "Hard-coded here", but maybe edit generate_modular
+    # to return the names of these files
+    genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
+    network_fname = '%s/%s.network.dimacs' % (data_dir, args.simu_id)
+    precision_fname = '%s/%s.task_similarities.txt' % (data_dir,
+                                                         args.simu_id)
+    causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
+    phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
+                        (data_dir, args.simu_id, task_idx) \
+                        for task_idx in range(args.num_tasks)]
+    scores_fnames = ['%s/%s.scores_%d.txt' % \
+                     (data_dir, args.simu_id, task_idx) \
+                     for task_idx in range(args.num_tasks)]
+    #-------------------------------------------------------------------------
+
+
+    #-------------------------------------------------------------------------
+    logging.info("======== Ef setup")
+
+    # Instantiate evaluation framework
+    evalf = ef.Framework(args.num_samples, args.num_folds,
+                         args.num_subsamples)
+
+    # Compute cross-validation folds and subsample indices
+    evalf.compute_indices()
+
+    # Save cross-validation folds and subsample indices to file
+    evalf.save_indices(data_dir, args.simu_id)
+
+
+
+
+    #-------------------------------------------------------------------------
+    # Looking for optimal parameters : 
+
+    #-----------------------------------
+    logging.info ("======== Defining grid of hyperparameters")
+    # Define the grid of hyperparameters
+    # see paper/tech_note
+    # Randomly sample 50% of the data
+    tmp_scores_f_list = []
+    with tb.open_file(genotype_fname, 'r') as h5f:
+        Xtr = h5f.root.Xtr[:, :]
+
+        # Define subsample of 50% of the data
+        sample_indices = range(args.num_samples)
+        np.random.shuffle(sample_indices)
+        sample_indices = sample_indices[:(args.num_samples/2)]
+        Xtr = Xtr[:, sample_indices]
+
+        # Compute scores for the subsample
+        for task_idx in range(args.num_tasks):
+            # Read phenotype
+            y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
+
+            # Compute feature-phenotype correlations
+            r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
+                  for feat_idx in range(args.num_features)]
+
+            # Create temporary file of name tmp_fname 
+            fd, tmp_fname = tempfile.mkstemp()
+
+            # Save to temporary file
+            np.savetxt(tmp_fname, r2, fmt='%.3e')
+
+            # Append temporary file to list
+            tmp_scores_f_list.append(tmp_fname)
+
+    # Compute grid (WARNING: STILL NOT WORKING WELL)
+    sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
+                                tmp_scores_f_list, 0, 0, 0,
+                                precision_matrix_f=precision_fname)
+    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
+    lbd_eta_values = [" ".join(plist.split()[:-2]) \
+                      for plist in lbd_eta_mu_values]
+
+    # Delete temporary files from tmp_scores_f_list
+    for fname in tmp_scores_f_list:
+        os.remove(fname)
+    #-----------------------------------
+
+    #-----------------------------------
+    # For each fold : 
+    # use subsamble to test feature selection with combinaisons of hyperparameters from the grid
+    # find opt param
+    # use these opt param to select feature using the all training set. = predict causal status of features <- quantify these perf
+    # use a ridge regression trained with selected features only to predict quantitativ phenotypes on test set <- quantify these perf
+    for fold_idx in range(args.num_folds):
+        logging.info ("============= FOLD : %d"%fold_idx)
+
+        logging.info ("======== Feature selection :")
+        # Inititalize dictionary to store selected features
+        # sf_dict is a nested dictionary, indexed by
+        #   - value of the parameters
+        #   - value of task_idx
+        #   - subsample idx
+        # sf is a list of lists of selected features
+        # (one per subsample iteration)
+        # you get a specific sf from sf_dict by querying
+        # sf_dict[params][task_idx]
+
+        sf_st_dict = {}       # single task
+        sf_np_dict = {}       # not using precision matrix
+        sf_dict = {}          # using precision matrix
+        for params in lbd_eta_values:
+            sf_st_dict[params] = {}
+            for task_idx in range(args.num_tasks):
+                sf_st_dict[params][task_idx] = []
+        for params in lbd_eta_mu_values:
+            sf_np_dict[params] = {}
+            sf_dict[params] = {}
+            for task_idx in range(args.num_tasks):
+                sf_np_dict[params][task_idx] = []
+                sf_dict[params][task_idx] = []
+
+        for ss_idx in range(args.num_subsamples):
+            logging.info ("========                        ", "SS : %d"%ss_idx)
+            # Get samples
+            sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
+
+            # Generate sample-specific network scores from phenotypes and genotypes
+            tmp_weights_f_list = [] # to hold temp files storing these scores
+            with tb.open_file(genotype_fname, 'r') as h5f:
+                Xtr = h5f.root.Xtr[:, sample_indices]
+                for task_idx in range(args.num_tasks):
+                    # Read phenotype
+                    y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
+
+                    # Compute feature-phenotype correlations
+                    r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
+                          for feat_idx in range(args.num_features)]
+
+                    # Save to temporary file tmp_weights_f_list[task_idx]
+                    # Create temporary file of name tmp_fname (use tempfile)
+                    fd, tmp_fname = tempfile.mkstemp()
+                    # Save to temporary file
+                    np.savetxt(tmp_fname, r2, fmt='%.3e')
+                    # Append temporary file to list
+                    tmp_weights_f_list.append(tmp_fname)
+
+            for params in lbd_eta_values:
+                logging.info("========                        lbd_eta_values : "+ `params`)
+                # Select features with single-task sfan
+                logging.info("                                   run_sfan")
+                sel_ = ef.run_sfan(args.num_tasks, network_fname,
+                                   tmp_weights_f_list, params)
+                if not sel_ : import pdb; pdb.set_trace() #DEBUG
+                # Store selected features in the dictionary
+                for task_idx, sel_list in enumerate(sel_):
+                    sf_st_dict[params][task_idx].append(sel_list)
+
+            for params in lbd_eta_mu_values:
+                logging.info("========                        lbd_eta_mu_values"+ `params`)
+
+                # DEBUG : XXX
+                # # Select features with multi-task (no precision) sfan
+                # logging.info("                                   run_msfan_nocorr")
+                # sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                #                            tmp_weights_f_list, params)
+                # if not sel_ : import pdb; pdb.set_trace()#DEBUG
+                # # Store selected features in the dictionary
+                # for task_idx, sel_list in enumerate(sel_):
+                #     sf_np_dict[params][task_idx].append(sel_list)
+
+
+                # Select features with multi-task sfan
+                logging.info("                                   run_msfan")
+                sel_ = ef.run_msfan(args.num_tasks, network_fname,
+                                    tmp_weights_f_list, precision_fname,
+                                    params)
+                if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
+                # Store selected features in the dictionary
+                for task_idx, sel_list in enumerate(sel_):
+                    sf_dict[params][task_idx].append(sel_list)
+            
+
+            # Delete the temporary files stored in tmp_weights_f_list
+            for fname in tmp_weights_f_list:
+                os.remove(fname)
+
+        # END for ss_idx in range(args.num_subsamples)
+        
+        # XXX DEBUG : 
+        sf_np_dict = sf_dict
+        #-----------------------------------   
+        # Get optimal parameter values for each algo.
+        # ??? some lists are empty, is it normal ??? 
+        logging.info( "======== Get opt params")
+        opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
+        opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
+        opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
+
+        # For each algorithm, save optimal parameters to file
+        # Single task
+        fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write(opt_params_st)
+        # Multitask (no precision)
+        fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write(opt_params_np)
+        # Multitask (precision)
+        fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write(opt_params)
+        #------------------------------------------------------------------
+
+
+        #------------------------------------------------------------------
+        logging.info( "======== Features selection using all training set and opt param")
+        #------
+        # For each algorithm, run algorithms again to select features,
+        # (got a list of list : list of selected features for each task)
+        # using the whole training set (i.e. scores_fnames)
+        # and optimal parameters.
+        logging.info("          run st")
+        selected_st = ef.run_sfan(args.num_tasks, network_fname,
+                                   scores_fnames, opt_params_st)
+        logging.info("          run np")
+        selected_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                                           scores_fnames, opt_params_np)
+        logging.info("          run msfan")
+        selected = ef.run_msfan(args.num_tasks, network_fname,
+                                    scores_fnames, precision_fname,
+                                    opt_params)
+        #------
+        # For each algorithm, save selected features to file
+        # Single task
+        fname = '%s/%s.sfan.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            for selected_features_list in selected_st:
+                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+                                        # selected_features_list is a list of int 
+                                        # that have to be cast as string so we can join them
+        # Multitask (no precision)
+        fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            for selected_features_list in selected_np:
+                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+        # Multitask (precision)
+        fname = '%s/%s.msfan.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            for selected_features_list in selected:
+                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
+        
+        #------
+        # For each algorithm, and for each task, compute PPV
+        # and sensitivity, and save to ppv_fname, tpr_fname
+        
+        # Files structure : 
+        # 1 line per repeat
+        # on each line : valTask1, valTask2, ... valTaskn for each fold
+        
+        # For the current repeat and the current fold, 
+        # ppv_list ant tpr_list and list of ppv ant tpr respectively
+        # for each task
+
+        # Single task
+        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+                                                        selected_st,
+                                                        args.num_features)
+        with open(ppv_st_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
+        with open(tpr_st_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
+
+        # Multitask (no precision)
+        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+                                                        selected_np,
+                                                        args.num_features)
+        with open(ppv_np_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
+        with open(tpr_np_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
+
+        # Multitask (precision)
+        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+                                                        selected,
+                                                        args.num_features)
+        with open(ppv_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
+        with open(tpr_fname, 'a') as f:
+            f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
+        #------------------------------------------------------------------
+
+
+
+
+        #------------------------------------------------------------------
+        logging.info( "======== Prediction using opt param")
+        # For each algorithm, for each task,
+        # predict on the test set using a ridge-
+        # regression trained with the selected features only.
+        trIndices = evalf.xp_indices[fold_idx]['trIndices']
+        teIndices = evalf.xp_indices[fold_idx]['teIndices']
+
+        for task_idx in range(args.num_tasks):
+            # Single task
+            fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
+                    (resu_dir, args.simu_id, fold_idx, task_idx)
+            ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
+                                  phenotype_fnames[task_idx],
+                                  trIndices, teIndices, fname)
+
+            # Multitask (no precision)
+            fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
+                    (resu_dir, args.simu_id, fold_idx, task_idx)
+            ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
+                                  phenotype_fnames[task_idx],
+                                  trIndices, teIndices, fname)
+
+            # Multitask (precision)
+            fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
+                    (resu_dir, args.simu_id, fold_idx, task_idx)
+            ef.run_ridge_selected(selected[task_idx], genotype_fname,
+                                  phenotype_fnames[task_idx],
+                                  trIndices, teIndices, fname)
+        #------------------------------------------------------------------
+    # END for fold_idx in range(args.num_folds)
+
+                        
+    #----------------------------------------------------------------------
+    logging.info( "======== Compute RMSE")
+    # For each algorithm, and for each task, compute RMSE
+    # using :
+    #   - an external function 
+    #   - the predictions saved in files (fold per fold)
+    #   - the true values given by phenotype_fnames[task_idx] and te_indices
+    # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
+    # => rmse_st_fname ; rmse_np_fname ; rmse_fname
+    # Files structure : 
+    # each line = a repeat
+    # on each line there are several RMSE values, one per task
+
+    #TODO : make the function return a list of rmse per task, like ci computation ? 
+    for task_idx in range(args.num_tasks):
+
+        # Single task
+        predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
+        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                        evalf.xp_indices, rmse_st_fname)
+
+        # Multitask (no precision)
+        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
+        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                        evalf.xp_indices, rmse_np_fname)
+
+        # Multitask (precision)
+        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
+        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
+                                        evalf.xp_indices, rmse_fname)             
+
+    #----------------------------------------------------------------------
+
+
+    #-----------------------------------------------------------------------
+    logging.info( "======== Compute CI ")
+    # For each algorithm, and for each task, compute consistency index
+    # between the features selected for each fold.
+    # Use an external function using ef.consistency_index_k()
+    # use the selected features saved to files and the true causal features
+    # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
+    # File structure : 
+    # each line = a repeat
+    # on each line there are several ci values, one per task
+
+    # Single task
+    selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
+    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+    with open(ci_st_fname, 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
+    # Multitask (no precision)
+    selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
+    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+    with open(ci_np_fname, 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
+    # Multitask (precision)
+    selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
+    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+    with open(ci_fname, 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
+
+    #-----------------------------------------------------------------------
+
+    # Add line breaks in PPV, and sensitivity, and consistency, and RMSE files
+    for f in analysis_files.values() : 
+        with open (f, 'a') as f : 
+            f.write('\n')
+
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -266,6 +686,8 @@ def main():
     # Arguments handling : 
     args = get_integrous_arguments_values()
 
+
+
     #-------------------------------------------------------------------------
     # Insure working repositories exist : 
 
@@ -289,430 +711,22 @@ def main():
     create_dir_if_not_exists(args.resu_dir)
     #-------------------------------------------------------------------------
 
+
+
     #-------------------------------------------------------------------------
     # Create analysis file names :
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
-
     #-------------------------------------------------------------------------
-    
+
+
+
     #-------------------------------------------------------------------------
     for repeat_idx in range(args.num_repeats):
-
-        logging.info ("=============== REPETITION : %d" %repeat_idx)
-
-        # Create <resu_dir>/repeat_<repeat_id> if it does not exist
-        resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
-        create_dir_if_not_exists(resu_dir)
-
-        #-------------------------------------------------------------------------
-        logging.info( "======== Data generation")
-        # Data generation : 
-
-        # Instantiate data generator
-        data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
-
-        data_gen = generate_data.SyntheticDataGenerator(args.num_tasks,
-                                                        args.num_features,
-                                                        args.num_samples,
-                                                        data_dir,
-                                                        args.simu_id)
-        # Generate modular data
-        data_gen.generate_modular()
-
-        # Name of data files
-        # "Hard-coded here", but maybe edit generate_modular
-        # to return the names of these files
-        genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
-        network_fname = '%s/%s.network.dimacs' % (data_dir, args.simu_id)
-        precision_fname = '%s/%s.task_similarities.txt' % (data_dir,
-                                                             args.simu_id)
-        causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
-        phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
-                            (data_dir, args.simu_id, task_idx) \
-                            for task_idx in range(args.num_tasks)]
-        scores_fnames = ['%s/%s.scores_%d.txt' % \
-                         (data_dir, args.simu_id, task_idx) \
-                         for task_idx in range(args.num_tasks)]
-        #-------------------------------------------------------------------------
-
-
-        #-------------------------------------------------------------------------
-        logging.info("======== Ef setup")
-
-        # Instantiate evaluation framework
-        evalf = ef.Framework(args.num_samples, args.num_folds,
-                             args.num_subsamples)
-
-        # Compute cross-validation folds and subsample indices
-        evalf.compute_indices()
-
-        # Save cross-validation folds and subsample indices to file
-        evalf.save_indices(data_dir, args.simu_id)
-
-
-
-
-        #-------------------------------------------------------------------------
-        # Looking for optimal parameters : 
-
-        #-----------------------------------
-        logging.info ("======== Defining grid of hyperparameters")
-        # Define the grid of hyperparameters
-        # see paper/tech_note
-        # Randomly sample 50% of the data
-        tmp_scores_f_list = []
-        with tb.open_file(genotype_fname, 'r') as h5f:
-            Xtr = h5f.root.Xtr[:, :]
-
-            # Define subsample of 50% of the data
-            sample_indices = range(args.num_samples)
-            np.random.shuffle(sample_indices)
-            sample_indices = sample_indices[:(args.num_samples/2)]
-            Xtr = Xtr[:, sample_indices]
-
-            # Compute scores for the subsample
-            for task_idx in range(args.num_tasks):
-                # Read phenotype
-                y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-
-                # Compute feature-phenotype correlations
-                r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                      for feat_idx in range(args.num_features)]
-
-                # Create temporary file of name tmp_fname 
-                fd, tmp_fname = tempfile.mkstemp()
-
-                # Save to temporary file
-                np.savetxt(tmp_fname, r2, fmt='%.3e')
-
-                # Append temporary file to list
-                tmp_scores_f_list.append(tmp_fname)
-
-        # Compute grid (WARNING: STILL NOT WORKING WELL)
-        sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
-                                    tmp_scores_f_list, 0, 0, 0,
-                                    precision_matrix_f=precision_fname)
-        lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
-        lbd_eta_values = [" ".join(plist.split()[:-2]) \
-                          for plist in lbd_eta_mu_values]
-
-        # Delete temporary files from tmp_scores_f_list
-        for fname in tmp_scores_f_list:
-            os.remove(fname)
-        #-----------------------------------
-
-        #-----------------------------------
-        # For each fold : 
-        # use subsamble to test feature selection with combinaisons of hyperparameters from the grid
-        # find opt param
-        # use these opt param to select feature using the all training set. = predict causal status of features <- quantify these perf
-        # use a ridge regression trained with selected features only to predict quantitativ phenotypes on test set <- quantify these perf
-        for fold_idx in range(args.num_folds):
-            logging.info ("============= FOLD : %d"%fold_idx)
-
-            logging.info ("======== Feature selection :")
-            # Inititalize dictionary to store selected features
-            # sf_dict is a nested dictionary, indexed by
-            #   - value of the parameters
-            #   - value of task_idx
-            #   - subsample idx
-            # sf is a list of lists of selected features
-            # (one per subsample iteration)
-            # you get a specific sf from sf_dict by querying
-            # sf_dict[params][task_idx]
-
-            sf_st_dict = {}       # single task
-            sf_np_dict = {}       # not using precision matrix
-            sf_dict = {}          # using precision matrix
-            for params in lbd_eta_values:
-                sf_st_dict[params] = {}
-                for task_idx in range(args.num_tasks):
-                    sf_st_dict[params][task_idx] = []
-            for params in lbd_eta_mu_values:
-                sf_np_dict[params] = {}
-                sf_dict[params] = {}
-                for task_idx in range(args.num_tasks):
-                    sf_np_dict[params][task_idx] = []
-                    sf_dict[params][task_idx] = []
-
-            for ss_idx in range(args.num_subsamples):
-                logging.info ("========                        ", "SS : %d"%ss_idx)
-                # Get samples
-                sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
-
-                # Generate sample-specific network scores from phenotypes and genotypes
-                tmp_weights_f_list = [] # to hold temp files storing these scores
-                with tb.open_file(genotype_fname, 'r') as h5f:
-                    Xtr = h5f.root.Xtr[:, sample_indices]
-                    for task_idx in range(args.num_tasks):
-                        # Read phenotype
-                        y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-
-                        # Compute feature-phenotype correlations
-                        r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                              for feat_idx in range(args.num_features)]
-
-                        # Save to temporary file tmp_weights_f_list[task_idx]
-                        # Create temporary file of name tmp_fname (use tempfile)
-                        fd, tmp_fname = tempfile.mkstemp()
-                        # Save to temporary file
-                        np.savetxt(tmp_fname, r2, fmt='%.3e')
-                        # Append temporary file to list
-                        tmp_weights_f_list.append(tmp_fname)
-
-                for params in lbd_eta_values:
-                    logging.info("========                        lbd_eta_values : "+ `params`)
-                    # Select features with single-task sfan
-                    logging.info("                                   run_sfan")
-                    sel_ = ef.run_sfan(args.num_tasks, network_fname,
-                                       tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace() #DEBUG
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_st_dict[params][task_idx].append(sel_list)
-
-                for params in lbd_eta_mu_values:
-                    logging.info("========                        lbd_eta_mu_values"+ `params`)
-
-                    # DEBUG : XXX
-                    # # Select features with multi-task (no precision) sfan
-                    # logging.info("                                   run_msfan_nocorr")
-                    # sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                    #                            tmp_weights_f_list, params)
-                    # if not sel_ : import pdb; pdb.set_trace()#DEBUG
-                    # # Store selected features in the dictionary
-                    # for task_idx, sel_list in enumerate(sel_):
-                    #     sf_np_dict[params][task_idx].append(sel_list)
-
-
-                    # Select features with multi-task sfan
-                    logging.info("                                   run_msfan")
-                    sel_ = ef.run_msfan(args.num_tasks, network_fname,
-                                        tmp_weights_f_list, precision_fname,
-                                        params)
-                    if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_dict[params][task_idx].append(sel_list)
-                
-
-                # Delete the temporary files stored in tmp_weights_f_list
-                for fname in tmp_weights_f_list:
-                    os.remove(fname)
-
-            # END for ss_idx in range(args.num_subsamples)
-            
-            # XXX DEBUG : 
-            sf_np_dict = sf_dict
-            #-----------------------------------   
-            # Get optimal parameter values for each algo.
-            # ??? some lists are empty, is it normal ??? 
-            logging.info( "======== Get opt params")
-            opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
-            opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
-            opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
-
-            # For each algorithm, save optimal parameters to file
-            # Single task
-            fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                f.write(opt_params_st)
-            # Multitask (no precision)
-            fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                f.write(opt_params_np)
-            # Multitask (precision)
-            fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                f.write(opt_params)
-            #------------------------------------------------------------------
-
-
-            #------------------------------------------------------------------
-            logging.info( "======== Features selection using all training set and opt param")
-            #------
-            # For each algorithm, run algorithms again to select features,
-            # (got a list of list : list of selected features for each task)
-            # using the whole training set (i.e. scores_fnames)
-            # and optimal parameters.
-            logging.info("          run st")
-            selected_st = ef.run_sfan(args.num_tasks, network_fname,
-                                       scores_fnames, opt_params_st)
-            logging.info("          run np")
-            selected_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                                               scores_fnames, opt_params_np)
-            logging.info("          run msfan")
-            selected = ef.run_msfan(args.num_tasks, network_fname,
-                                        scores_fnames, precision_fname,
-                                        opt_params)
-            #------
-            # For each algorithm, save selected features to file
-            # Single task
-            fname = '%s/%s.sfan.fold_%d.selected_features' % \
-                    (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                for selected_features_list in selected_st:
-                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-                                            # selected_features_list is a list of int 
-                                            # that have to be cast as string so we can join them
-            # Multitask (no precision)
-            fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
-                    (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                for selected_features_list in selected_np:
-                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-            # Multitask (precision)
-            fname = '%s/%s.msfan.fold_%d.selected_features' % \
-                    (resu_dir, args.simu_id, fold_idx)
-            with open(fname, 'w') as f:
-                for selected_features_list in selected:
-                    f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-            
-            #------
-            # For each algorithm, and for each task, compute PPV
-            # and sensitivity, and save to ppv_fname, tpr_fname
-            
-            # Files structure : 
-            # 1 line per repeat
-            # on each line : valTask1, valTask2, ... valTaskn for each fold
-            
-            # For the current repeat and the current fold, 
-            # ppv_list ant tpr_list and list of ppv ant tpr respectively
-            # for each task
-
-            # Single task
-            ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected_st,
-                                                            args.num_features)
-            with open(ppv_st_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-            with open(tpr_st_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-
-            # Multitask (no precision)
-            ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected_np,
-                                                            args.num_features)
-            with open(ppv_np_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-            with open(tpr_np_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-
-            # Multitask (precision)
-            ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                            selected,
-                                                            args.num_features)
-            with open(ppv_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-            with open(tpr_fname, 'a') as f:
-                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
-            #------------------------------------------------------------------
-
-
-
-
-            #------------------------------------------------------------------
-            logging.info( "======== Prediction using opt param")
-            # For each algorithm, for each task,
-            # predict on the test set using a ridge-
-            # regression trained with the selected features only.
-            trIndices = evalf.xp_indices[fold_idx]['trIndices']
-            teIndices = evalf.xp_indices[fold_idx]['teIndices']
-
-            for task_idx in range(args.num_tasks):
-                # Single task
-                fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
-                        (resu_dir, args.simu_id, fold_idx, task_idx)
-                ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
-                                      trIndices, teIndices, fname)
-
-                # Multitask (no precision)
-                fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
-                        (resu_dir, args.simu_id, fold_idx, task_idx)
-                ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
-                                      trIndices, teIndices, fname)
-
-                # Multitask (precision)
-                fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
-                        (resu_dir, args.simu_id, fold_idx, task_idx)
-                ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
-                                      trIndices, teIndices, fname)
-            #------------------------------------------------------------------
-        # END for fold_idx in range(args.num_folds)
-
-                            
-        #----------------------------------------------------------------------
-        logging.info( "======== Compute RMSE")
-        # For each algorithm, and for each task, compute RMSE
-        # using :
-        #   - an external function 
-        #   - the predictions saved in files (fold per fold)
-        #   - the true values given by phenotype_fnames[task_idx] and te_indices
-        # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
-        # => rmse_st_fname ; rmse_np_fname ; rmse_fname
-        # Files structure : 
-        # each line = a repeat
-        # on each line there are several RMSE values, one per task
-
-        #TODO : make the function return a list of rmse per task, like ci computation ? 
-        for task_idx in range(args.num_tasks):
-
-            # Single task
-            predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
-            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, rmse_st_fname)
-
-            # Multitask (no precision)
-            predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
-            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, rmse_np_fname)
-
-            # Multitask (precision)
-            predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
-            ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                            evalf.xp_indices, rmse_fname)             
-
-        #----------------------------------------------------------------------
-
-
-        #-----------------------------------------------------------------------
-        logging.info( "======== Compute CI ")
-        # For each algorithm, and for each task, compute consistency index
-        # between the features selected for each fold.
-        # Use an external function using ef.consistency_index_k()
-        # use the selected features saved to files and the true causal features
-        # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
-        # File structure : 
-        # each line = a repeat
-        # on each line there are several ci values, one per task
-
-        # Single task
-        selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
-        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        with open(ci_st_fname, 'a') as f:
-            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
-        # Multitask (no precision)
-        selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
-        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        with open(ci_np_fname, 'a') as f:
-            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
-        # Multitask (precision)
-        selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
-        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-        with open(ci_fname, 'a') as f:
-            f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
-
-        #-----------------------------------------------------------------------
-
-        # Add line breaks in PPV, and sensitivity, and consistency, and RMSE files
-        for f in analysis_files.values() : 
-            with open (f, 'a') as f : 
-                f.write('\n')
-
+        run_repeat(args)
     # END for repeat_idx in range(args.num_repeats)
+    #-------------------------------------------------------------------------
+
+
 
     #-------------------------------------------------------------------------
     # Handle measures results : 
