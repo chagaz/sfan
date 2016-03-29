@@ -466,14 +466,15 @@ def main():
                 for params in lbd_eta_mu_values:
                     print"========                        lbd_eta_mu_values", params
 
-                    # Select features with multi-task (no precision) sfan
-                    print"                                   run_msfan_nocorr"
-                    sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                                               tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace()#DEBUG
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_np_dict[params][task_idx].append(sel_list)
+                    # DEBUG : XXX
+                    # # Select features with multi-task (no precision) sfan
+                    # print"                                   run_msfan_nocorr"
+                    # sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                    #                            tmp_weights_f_list, params)
+                    # if not sel_ : import pdb; pdb.set_trace()#DEBUG
+                    # # Store selected features in the dictionary
+                    # for task_idx, sel_list in enumerate(sel_):
+                    #     sf_np_dict[params][task_idx].append(sel_list)
 
 
                     # Select features with multi-task sfan
@@ -493,7 +494,8 @@ def main():
 
             # END for ss_idx in range(args.num_subsamples)
             
-
+            # XXX DEBUG : 
+            sf_np_dict = sf_dict
             #-----------------------------------   
             # Get optimal parameter values for each algo.
             # ??? some lists are empty, is it normal ??? 
