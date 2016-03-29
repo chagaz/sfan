@@ -117,6 +117,46 @@ def create_dir_if_not_exists(dir_name):
         except OSError:
             if not os.path.isdir(dir_name):
                 raise
+
+def get_analysis_files_names(resu_dir, simu_id): 
+    """
+    TODO
+    """
+    # - to hold PPV values
+    ppv_st_fname = '%s/%s.sfan.ppv' % (resu_dir, simu_id)
+    ppv_np_fname = '%s/%s.msfan_np.ppv' % (resu_dir, simu_id)
+    ppv_fname = '%s/%s.msfan.ppv' % (resu_dir, simu_id)
+    # - to hold sensitivity = TPR values
+    tpr_st_fname = '%s/%s.sfan.sensitivity' % (resu_dir, simu_id)    
+    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (resu_dir, simu_id)
+    tpr_fname = '%s/%s.msfan.sensitivity' % (resu_dir, simu_id)
+    # - to hold consistency values
+    ci_st_fname = '%s/%s.sfan.consistency' % (resu_dir, simu_id)
+    ci_np_fname = '%s/%s.msfan_np.consistency' % (resu_dir, simu_id)
+    ci_fname = '%s/%s.msfan.consistency' % (resu_dir, simu_id)
+    # - to hold RMSE values
+    rmse_st_fname = '%s/%s.sfan.rmse' % (resu_dir, simu_id)
+    rmse_np_fname = '%s/%s.msfan_np.rmse' % (resu_dir, simu_id)
+    rmse_fname = '%s/%s.msfan.rmse' % (resu_dir, simu_id)
+    
+    analysis_files = {
+        'ppv_st':ppv_st_fname,
+        'ppv_msfan_np':ppv_np_fname,
+        'ppv_msfan':ppv_fname,
+        'tpr_st':tpr_st_fname,
+        'tpr_msfan_np':tpr_np_fname,
+        'tpr_msfan':tpr_fname,
+        'ci_st':ci_st_fname ,
+        'ci_msfan_np':ci_np_fname ,
+        'ci_msfan':ci_fname, 
+        'rmse_st':rmse_st_fname ,
+        'rmse_msfan_np':rmse_np_fname ,
+        'rmse_msfan':rmse_fname
+    }
+
+    return analysis_files
+
+
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -248,48 +288,18 @@ def main():
     #       raise
     create_dir_if_not_exists(args.resu_dir)
     #-------------------------------------------------------------------------
-    
+
     #-------------------------------------------------------------------------
     # Create analysis file names :
-    # - to hold PPV values
-    ppv_st_fname = '%s/%s.sfan.ppv' % (args.resu_dir, args.simu_id)
-    ppv_np_fname = '%s/%s.msfan_np.ppv' % (args.resu_dir, args.simu_id)
-    ppv_fname = '%s/%s.msfan.ppv' % (args.resu_dir, args.simu_id)
-    # - to hold sensitivity = TPR values
-    tpr_st_fname = '%s/%s.sfan.sensitivity' % (args.resu_dir, args.simu_id)    
-    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (args.resu_dir, args.simu_id)
-    tpr_fname = '%s/%s.msfan.sensitivity' % (args.resu_dir, args.simu_id)
-    # - to hold consistency values
-    ci_st_fname = '%s/%s.sfan.consistency' % (args.resu_dir, args.simu_id)
-    ci_np_fname = '%s/%s.msfan_np.consistency' % (args.resu_dir, args.simu_id)
-    ci_fname = '%s/%s.msfan.consistency' % (args.resu_dir, args.simu_id)
-    # - to hold RMSE values
-    rmse_st_fname = '%s/%s.sfan.rmse' % (args.resu_dir, args.simu_id)
-    rmse_np_fname = '%s/%s.msfan_np.rmse' % (args.resu_dir, args.simu_id)
-    rmse_fname = '%s/%s.msfan.rmse' % (args.resu_dir, args.simu_id)
-    
-    analysis_files = {
-        'ppv_st':ppv_st_fname,
-        'ppv_msfan_np':ppv_np_fname,
-        'ppv_msfan':ppv_fname,
-        'tpr_st':tpr_st_fname,
-        'tpr_msfan_np':tpr_np_fname,
-        'tpr_msfan':tpr_fname,
-        'ci_st':ci_st_fname ,
-        'ci_msfan_np':ci_np_fname ,
-        'ci_msfan':ci_fname, 
-        'rmse_st':rmse_st_fname ,
-        'rmse_msfan_np':rmse_np_fname ,
-        'rmse_msfan':rmse_fname
-    }
+    analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
     #-------------------------------------------------------------------------
     
-
     #-------------------------------------------------------------------------
     for repeat_idx in range(args.num_repeats):
 
         print "=============== REPETITION :"+`repeat_idx`
+
         # Create <resu_dir>/repeat_<repeat_id> if it does not exist
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
         create_dir_if_not_exists(resu_dir)
