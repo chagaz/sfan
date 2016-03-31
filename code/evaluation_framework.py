@@ -467,8 +467,10 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     -------
     ppv_list: list
         List of Positive Predicted Values (PPV), task per task.
+        PPV = precision = TP / (TP + FP)
     tpr_list: list
         List of sensitivities (TPR), task per task.
+        sensitivities = recall = TP / (TP + FN)
     """
 
     ppv_list = []
@@ -497,15 +499,9 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
                 y_pred[y_pred_indx] = True
 
             # and we compute ppv and tpr based on these 2 sets : 
-
             ppv_list.append( sklearn.metrics.accuracy_score(y_true, y_pred) )
+            tpr_list.append( sklearn.metrics.recall_score(y_true, y_pred) )
 
-            count_tpr = 0 # Number of features of which real and predicted status is the same. 
-            for i, j in zip(y_pred, y_true):
-                if (i == j):
-                    count_tpr += 1
-            tpr_list.append( count_tpr / float(num_features) ) 
-    
     return ppv_list, tpr_list
 
 def extract_res_from_files(f_names, num_tasks, num_repeat, num_folds = None):
