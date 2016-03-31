@@ -175,9 +175,9 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
 
     if not sel_list :
-        print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace() #DEBUG
-
+        print "returned sel_list empty !! algo = st ; param = ", params
+        #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
+        sel_list = [[] for i in xrange(num_tasks)]
     return sel_list
                  
 
@@ -213,11 +213,13 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
     p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
 
     # Process the output to get lists of selected features
+    
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
 
-    if not sel_list :
-        print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace() ###???XXXDEBUG
+    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
+        print "PB : returned sel_list empty !! algo = np ; param = ", params
+        sel_list = [[] for i in xrange(num_tasks)]
+        #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
     return sel_list
                  
@@ -259,10 +261,10 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
 
-    if not sel_list :
-        print "returned sel_list empty !! param = ", params
-        import pdb ; pdb.set_trace() #DEBUG
-
+    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
+        print "returned sel_list empty !! algo = msfan ; param = ", params
+        #import pdb ; pdb.set_trace() #DEBUG
+        sel_list = [[] for i in xrange(num_tasks)]
     return sel_list
                  
 
