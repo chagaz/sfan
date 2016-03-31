@@ -504,7 +504,7 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
             for i, j in zip(y_pred, y_true):
                 if (i == j):
                     count_tpr += 1
-            tpr_list.append( count_tpr / num_features)
+            tpr_list.append( count_tpr / float(num_features) ) 
     
     return ppv_list, tpr_list
 
