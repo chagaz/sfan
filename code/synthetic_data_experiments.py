@@ -158,7 +158,7 @@ def get_analysis_files_names(resu_dir, simu_id):
     return analysis_files
 
 
-def run_repeat(args):
+def run_repeat(repeat_idx, args, analysis_files):
     """
     TODO
     """
@@ -445,31 +445,32 @@ def run_repeat(args):
         # ppv_list ant tpr_list and list of ppv ant tpr respectively
         # for each task
 
+
         # Single task
         ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
                                                         selected_st,
                                                         args.num_features)
-        with open(ppv_st_fname, 'a') as f:
+        with open(analysis_files['ppv_st'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-        with open(tpr_st_fname, 'a') as f:
+        with open(analysis_files['tpr_st'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
 
         # Multitask (no precision)
         ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
                                                         selected_np,
                                                         args.num_features)
-        with open(ppv_np_fname, 'a') as f:
+        with open(analysis_files['ppv_msfan_np'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-        with open(tpr_np_fname, 'a') as f:
+        with open(analysis_files['tpr_msfan_np'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
 
         # Multitask (precision)
         ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
                                                         selected,
                                                         args.num_features)
-        with open(ppv_fname, 'a') as f:
+        with open(analysis_files['ppv_msfan'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list]))
-        with open(tpr_fname, 'a') as f:
+        with open(analysis_files['tpr_msfan'], 'a') as f:
             f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list]))
         #------------------------------------------------------------------
 
@@ -485,6 +486,7 @@ def run_repeat(args):
         teIndices = evalf.xp_indices[fold_idx]['teIndices']
 
         for task_idx in range(args.num_tasks):
+            
             # Single task
             fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
                     (resu_dir, args.simu_id, fold_idx, task_idx)
@@ -528,17 +530,17 @@ def run_repeat(args):
         # Single task
         predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
         ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, rmse_st_fname)
+                                        evalf.xp_indices, analysis_files['rmse_st'])
 
         # Multitask (no precision)
         predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
         ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, rmse_np_fname)
+                                        evalf.xp_indices, analysis_files['rmse_msfan_np'])
 
         # Multitask (precision)
         predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
         ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, rmse_fname)             
+                                        evalf.xp_indices, analysis_files['rmse_msfan'])             
 
     #----------------------------------------------------------------------
 
@@ -557,17 +559,17 @@ def run_repeat(args):
     # Single task
     selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
     ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(ci_st_fname, 'a') as f:
+    with open(analysis_files['ci_st'], 'a') as f:
         f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
     # Multitask (no precision)
     selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
     ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(ci_np_fname, 'a') as f:
+    with open(analysis_files['ci_msfan_np'], 'a') as f:
         f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
     # Multitask (precision)
     selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
     ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(ci_fname, 'a') as f:
+    with open(analysis_files['ci_msfan'], 'a') as f:
         f.write('%s ' % ' '.join(['%.2f ' % x for x in ci_list]))
 
     #-----------------------------------------------------------------------
@@ -721,8 +723,8 @@ def main():
 
 
     #-------------------------------------------------------------------------
-    for repeat_idx in range(args.num_repeats):
-        run_repeat(args)
+    for repeat_idx in xrange(args.num_repeats):
+        run_repeat(repeat_idx, args, analysis_files)
     # END for repeat_idx in range(args.num_repeats)
     #-------------------------------------------------------------------------
 
