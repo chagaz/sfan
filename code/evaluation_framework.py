@@ -340,39 +340,40 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     if not selected_features : #DEBUG
         # Safeguard for when SFAN returns empty list
         # Avoid not allowed empty selections
-        import pdb; pdb.set_trace() 
+        #import pdb; pdb.set_trace() 
         ### XXX ??? 
+        preds = np.array([np.nan ] * len(tr_indices) )
+    else :
+        # read genotypes : 
+        with tb.open_file(genotype_fname, 'r') as h5f:
+            table = h5f.root.Xtr
+            # table.shape : 
+            # For each feature (in line), 
+            # there is the genotype of each sample (in column)
+            X = table[selected_features, :]
 
-    # read genotypes : 
-    with tb.open_file(genotype_fname, 'r') as h5f:
-        table = h5f.root.Xtr
-        # table.shape : 
-        # For each feature (in line), 
-        # there is the genotype of each sample (in column)
-        X = table[selected_features, :]
+        Xtr = [X[:,tr] for tr in tr_indices]
+        Xte = [X[:,te] for te in te_indices]
 
-    Xtr = [X[:,tr] for tr in tr_indices]
-    Xte = [X[:,te] for te in te_indices]
+        # read phenotypes : 
+        with open(phenotype_fname, 'r') as f:
+            # continuous phenotype for each sample (in line)
+            y = f.read().split()
+            y = [float(item) for item in y]
 
-    # read phenotypes : 
-    with open(phenotype_fname, 'r') as f:
-        # continuous phenotype for each sample (in line)
-        y = f.read().split()
-        y = [float(item) for item in y]
+        ytr = [ y[tr] for tr in tr_indices]
+        #----------------------------------------
 
-    ytr = [ y[tr] for tr in tr_indices]
-    #----------------------------------------
+        # Instantiate a ridge regression
+        model = lm.RidgeCV()
 
-    # Instantiate a ridge regression
-    model = lm.RidgeCV()
+        # Train the ridge regression on the training set
+        model.fit(Xtr, ytr)
 
-    # Train the ridge regression on the training set
-    model.fit(Xtr, ytr)
+        #----------------------------------------
 
-    #----------------------------------------
-
-    # Make predictions on the test set
-    preds = model.predict(Xte)
+        # Make predictions on the test set
+        preds = model.predict(Xte)
 
     # Save predictions
     np.savetxt(output_fname, preds, fmt='%.3e')
