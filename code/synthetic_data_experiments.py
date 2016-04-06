@@ -643,6 +643,26 @@ def print_save_res_measures(means, std, fname):
         with open(fname%measure, 'w') as f : 
             f.write(header_save+to_save)
 
+
+
+def handle_measures_results(analysis_files, args): 
+    """TODO
+    """
+    # For each measure compute average/mean +- standard deviation per task for 
+    means, std = extract_res_means_and_std(analysis_files, args)
+    
+
+    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
+    print_save_res_measures(means, std, fname)
+
+    # Plots : 
+
+    for measure in means : 
+        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
+        print_plot_files(f_name, means[measure], std[measure])
+        plot.bar_plot(measure, f_name) 
+
+
 def extract_res_means_and_std(analysis_files, args):
     """
     TODO
@@ -848,20 +868,7 @@ def main():
 
     #-------------------------------------------------------------------------
     # Handle measures results : 
-
-    # For each measure compute average/mean +- standard deviation per task for each algo
-    means, std = extract_res_means_and_std(analysis_files, args)
-    
-
-    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
-    print_save_res_measures(means, std, fname)
-
-    # Plots : 
-
-    for measure in means : 
-        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
-        print_plot_files(f_name, means[measure], std[measure])
-        plot.bar_plot(measure, f_name) 
+    handle_measures_results(analysis_files, args)
     #------------------
 
 
