@@ -4,8 +4,9 @@
 In this version all experiments are run sequentially.
 """
 
-DEBUG_MODE = False
-DATA_GEN = True # have to gene dat or not ?
+DEBUG_MODE = True
+DATA_GEN = False # have to gene dat or not ?
+SEQ_MODE = False
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -24,7 +25,7 @@ import sys
 import tables as tb
 import tempfile
 import shutil
-
+import shlex
 
 
 def get_arguments_values(): 
@@ -928,6 +929,25 @@ def extract_res_means_and_std(analysis_files, args):
     )
     return means, std
 
+def handle_measures_results(analysis_files, args): 
+    """TODO
+    """
+    # For each measure compute average/mean +- standard deviation per task for each algo
+    means, std = extract_res_means_and_std(analysis_files, args)
+    
+
+    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
+    print_save_res_measures(means, std, fname)
+
+    # Plots : 
+
+    for measure in means : 
+        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
+        print_plot_files(f_name, means[measure], std[measure])
+        if SEQ_MODE : #XXX cluster  no display name and no $DISPLAY environment variable
+            plot.bar_plot(measure, f_name) 
+
+
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -1032,6 +1052,12 @@ def main():
     -------
     $ python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+
+
+    ### Sur le cluster : XXX
+
+    $ python synthetic_data_experiments.py -k 3 -m 50 -n 35 -r 5 -f 3 -s 2 \
+             /share/data40T/athenais/data/simu_synth_01 /share/data40T/athenais/results/simu_synth_01 simu_01 --verbose
     """
 
     # Arguments handling : 
@@ -1072,22 +1098,47 @@ def main():
 
 
     #-------------------------------------------------------------------------
-    for repeat_idx in xrange(args.num_repeats):
-        run_repeat(repeat_idx, args, analysis_files)
+    
+    if SEQ_MODE : 
+        for repeat_idx in xrange(args.num_repeats):
+            run_repeat(repeat_idx, args, analysis_files)
+    else : 
+        # run a job array of which each job is a repeat. 
+        # -N    : job array name is 'repeats' 
+        # -cwd  : execute the job in the current work directory 
+        #         make scritp knowing each other. 
+        # -j y  : join stout and stderr
+        # -o <path> : Place the joined output in another location other than the working directory XXX
+        # -V : pass all environement variables
+        # TODO : use -v VAR1="hello",VAR2="Sreedhar",VAR3="How are you?" to pass variables ? 
+        cmd = "qsub -cwd -V -t 1-%d -N repeats\
+               qsub_run-repeat.sh  %d %d %d %d %d %d %s %s %s" \
+               %( args.num_repeats,
+                  args.num_tasks, args.num_features, args.num_samples, args.num_repeats,args.num_folds, args.num_subsamples,
+                  args.data_dir, args.resu_dir, args.simu_id)
+        print cmd
+        p = subprocess.Popen(shlex.split(cmd))
+        # Even though shlex.split strips off the single quotes, it appears to be interpreted fine when using subprocess.
+
     # END for repeat_idx in range(args.num_repeats)
     #-------------------------------------------------------------------------
-
-
-
-    
-
-    #-------------------------------------------------------------------------
-    # Handle measures results : 
-    handle_measures_results(analysis_files, args)
-    #------------------
-
-
-
+   
+    if SEQ_MODE : 
+        #-------------------------------------------------------------------------
+        # Handle measures results : 
+        handle_measures_results(analysis_files, args)
+        #------------------
+    else : 
+        # run this job when repeats are finished. 
+        # -hold_jid repeats : hold job starting until the job named repeat is complete. 
+        # -m e -M vaginay.athenais@gmail.com : send me an email when the job is finished. 
+        # -V : pass all environement variables
+        # TODO : use -v VAR1="hello",VAR2="Sreedhar",VAR3="How are you?" to pass variables ? 
+        cmd = "qsub -cwd -V -hold_jid repeats ./qsub_handle-measures-results.sh\
+            %d %d %d %d %d %d %s %s %s" \
+            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+            args.data_dir, args.resu_dir, args.simu_id)
+        p = subprocess.Popen(shlex.split(cmd))
 
 
 if __name__ == "__main__":
