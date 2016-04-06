@@ -538,26 +538,26 @@ def run_repeat(repeat_idx, args, analysis_files):
     # each line = a repeat
     # on each line there are several RMSE values, one per task
 
-    #TODO : make the function return a list of rmse per task, like ci computation ? 
-    for task_idx in range(args.num_tasks):
-
-        # Single task
-        predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_st'])
-
-        # Multitask (no precision)
-        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_msfan_np'])
-
-        # Multitask (precision)
-        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_msfan'])             
-
+    # Single task
+    predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)
+    import pdb; pdb.set_trace()
+    with open(analysis_files['rmse_st'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (no precision)
+    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)
+    with open(analysis_files['rmse_msfan_np'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (precision)
+    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)             
+    with open(analysis_files['rmse_msfan'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
     #----------------------------------------------------------------------
-
 
     #-----------------------------------------------------------------------
     logging.info( "======== Compute CI ")

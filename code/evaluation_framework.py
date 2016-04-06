@@ -381,7 +381,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, output_fname):
+def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_tasks):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
@@ -397,57 +397,59 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, outpu
             'teIndices': list of test indices,
             'ssIndices': list of list of subsample indices
         }
+    num_tasks : int
+        Number of tasks.
+    
 
-    output_fname: filename
-        Path to file where to write rmse.
-
-    Side effects
-    ------------
-    Write rmse to output_fname
+    Return
+    -------
+    rmse_list:
+        List of rmse task per task.
     """
-    # For n inds :
-    # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
+    rmse_list = []
+    for task_idx in range(num_tasks):
+        # For n inds :
+        # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
-    # read all_y_true :
-    with open(phenotype_fname, 'r') as f_true:
-        all_y_true = [float(y) for y in f_true.read().split()]
+        # read all_y_true :
+        with open(phenotype_fname[task_idx], 'r') as f_true:
+            all_y_true = [float(y) for y in f_true.read().split()]
 
-    # read all_y_pred :
-    # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
-    # we open each file (one per fold) and append predicted phenotypes
-    # then when sort them using all_y_pred_indices so the order will be 0,1,...,n
+        # read all_y_pred :
+        # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
+        # we open each file (one per fold) and append predicted phenotypes
+        # then when sort them using all_y_pred_indices so the order will be 0,1,...,n
 
-    all_y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
+        all_y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
 
-    all_y_pred = list()
+        all_y_pred = list()
 
-    for fold in xrange(len(xp_indices)) :
-        with open(y_pred_fname%fold, 'r') as f_pred:
-            content = f_pred.read().split()
-            all_y_pred.extend(float(y) for y in content)
-     
-    all_y_pred_sorted = [all_y_pred[i] for i in all_y_pred_indices]
+        for fold_idx in xrange(len(xp_indices)) : #TODO : add arg : arg.num_fold ?? 
+            with open(y_pred_fname%(fold_idx, task_idx), 'r') as f_pred:
+                content = f_pred.read().split()
+                all_y_pred.extend(float(y) for y in content)
+         
+        all_y_pred_sorted = [all_y_pred[i] for i in all_y_pred_indices]
 
-    # compute rmse using metrics : 
-    # wanted to use : rmse = sklearn.metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
-    # be if all_y_pred_sorted have NaN, there is a problem
-    # -> compute RMSE without NaN ind
+        # compute rmse using metrics : 
+        # wanted to use : rmse = sklearn.metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
+        # be if all_y_pred_sorted have NaN, there is a problem
+        # -> compute RMSE without NaN ind
 
-    #TODO : is it possible to have NA only for some ind ? 
-    #if not : use if np.isnan(all_y_pred_sorted).any() 
-    #and don't compute RMSE for this task without using not_NaN_idx
-    not_NaN_idx = np.where(~ np.isnan(all_y_pred_sorted) )[0]
-    if not not_NaN_idx.size : # if not_NaN_idx empty -> if there is only NaNs in all_y_preds
-        rmse = np.NaN
-    else : 
-        not_NaN_y_true =  [all_y_true[i] for i in not_NaN_idx]
-        not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
-        rmse = sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) 
+        #TODO : is it possible to have NA only for some ind ? 
+        #if not : use if np.isnan(all_y_pred_sorted).any() 
+        #and don't compute RMSE for this task without using not_NaN_idx
+        not_NaN_idx = np.where(~ np.isnan(all_y_pred_sorted) )[0]
+        if not not_NaN_idx.size : # if not_NaN_idx empty -> if there is only NaNs in all_y_preds
+            rmse = np.NaN
+        else : 
+            not_NaN_y_true =  [all_y_true[i] for i in not_NaN_idx]
+            not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
+            rmse = sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) 
+        rmse_list.append(rmse)
 
-
-    # output :
-    with open(output_fname, 'a') as f_out:
-        f_out.write("%f " %rmse)
+    # return :
+    return rmse_list
 
 
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
