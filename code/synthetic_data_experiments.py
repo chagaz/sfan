@@ -158,6 +158,53 @@ def get_analysis_files_names(resu_dir, simu_id):
 
     return analysis_files
 
+def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, precision_fname, args):
+    """TODO
+    """
+    # Define the grid of hyperparameters
+    # see paper/tech_note
+    # Randomly sample 50% of the data
+    tmp_scores_f_list = []
+    with tb.open_file(genotype_fname, 'r') as h5f:
+        Xtr = h5f.root.Xtr[:, :]
+
+        # Define subsample of 50% of the data
+        sample_indices = range(args.num_samples)
+        np.random.shuffle(sample_indices)
+        sample_indices = sample_indices[:(args.num_samples/2)]
+        Xtr = Xtr[:, sample_indices]
+
+        # Compute scores for the subsample
+        for task_idx in range(args.num_tasks):
+            # Read phenotype
+            y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
+
+            # Compute feature-phenotype correlations
+            r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
+                  for feat_idx in range(args.num_features)]
+
+            # Create temporary file of name tmp_fname 
+            fd, tmp_fname = tempfile.mkstemp()
+
+            # Save to temporary file
+            np.savetxt(tmp_fname, r2, fmt='%.3e')
+
+            # Append temporary file to list
+            tmp_scores_f_list.append(tmp_fname)
+
+    # Compute grid (WARNING: STILL NOT WORKING WELL)
+    sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
+                                tmp_scores_f_list, 0, 0, 0,
+                                precision_matrix_f=precision_fname)
+    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
+    lbd_eta_values = [" ".join(plist.split()[:-2]) \
+                      for plist in lbd_eta_mu_values]
+    # Delete temporary files from tmp_scores_f_list
+    for fname in tmp_scores_f_list:
+        os.remove(fname)
+
+    return lbd_eta_mu_values, lbd_eta_values
+
 
 def run_repeat(repeat_idx, args, analysis_files):
     """
@@ -216,55 +263,17 @@ def run_repeat(repeat_idx, args, analysis_files):
     evalf.save_indices(data_dir, args.simu_id)
 
 
-
-
     #-------------------------------------------------------------------------
     # Looking for optimal parameters : 
 
     #-----------------------------------
     logging.info ("======== Defining grid of hyperparameters")
-    # Define the grid of hyperparameters
-    # see paper/tech_note
-    # Randomly sample 50% of the data
-    tmp_scores_f_list = []
-    with tb.open_file(genotype_fname, 'r') as h5f:
-        Xtr = h5f.root.Xtr[:, :]
-
-        # Define subsample of 50% of the data
-        sample_indices = range(args.num_samples)
-        np.random.shuffle(sample_indices)
-        sample_indices = sample_indices[:(args.num_samples/2)]
-        Xtr = Xtr[:, sample_indices]
-
-        # Compute scores for the subsample
-        for task_idx in range(args.num_tasks):
-            # Read phenotype
-            y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-
-            # Compute feature-phenotype correlations
-            r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                  for feat_idx in range(args.num_features)]
-
-            # Create temporary file of name tmp_fname 
-            fd, tmp_fname = tempfile.mkstemp()
-
-            # Save to temporary file
-            np.savetxt(tmp_fname, r2, fmt='%.3e')
-
-            # Append temporary file to list
-            tmp_scores_f_list.append(tmp_fname)
-
-    # Compute grid (WARNING: STILL NOT WORKING WELL)
-    sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
-                                tmp_scores_f_list, 0, 0, 0,
-                                precision_matrix_f=precision_fname)
-    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
-    lbd_eta_values = [" ".join(plist.split()[:-2]) \
-                      for plist in lbd_eta_mu_values]
-
-    # Delete temporary files from tmp_scores_f_list
-    for fname in tmp_scores_f_list:
-        os.remove(fname)
+    lbd_eta_mu_values , lbd_eta_values = determine_hyperparamaters( genotype_fname, 
+                                                                    phenotype_fnames,
+                                                                    network_fname,
+                                                                    precision_fname,
+                                                                    args)
+    
     #-----------------------------------
 
     #-----------------------------------
