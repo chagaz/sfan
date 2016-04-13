@@ -646,17 +646,31 @@ class Framework(object):
 
         Parameters
         ----------
-
+        TODO
         Generated files
         ---------------
         For each fold_idx:
-            <data_dir>/<simu_id>.<fold_idx>.trIndices:
+            <data_dir>/<simu_id>.fold<fold_idx>.trIndices:
                 Space-separated list of training indices.
-            <data_dir>/<simu_id>.<fold_idx>.teIndices:
+            <data_dir>/<simu_id>.fold<fold_idx>.teIndices:
                 Space-separated list of test indices.
             For each subsample_idx:
-                <data_dir>/<simu_id>.<fold_idx>.<ss_idx>.ssIndices
+                <data_dir>/<simu_id>.fold<fold_idx>.ss<ss_idx>.ssIndices
                     Space-separated lists of subsample indices,
                     one line per list / subsample.
         """
-        # use np.savetxt 
+        # use np.savetxt ??? why ? 
+        trIndices_fname = data_dir+'/'+simu_id+'.fold%d.trIndices'
+        teIndices_fname = data_dir+'/'+simu_id+'.fold%d.teIndices'
+        ssIndices_fname = data_dir+'/'+simu_id+'.fold%d.ss%d.ssIndices'
+        for fold_idx in xrange(self.num_folds) : 
+            with open(trIndices_fname %(fold_idx), 'w') as trIndices_f : 
+                trIndices_f.write(  " ".join(str(i) for i in self.xp_indices[fold_idx]["trIndices"] ) )
+            #np.savetxt(trIndices_fname %(fold_idx), self.xp_indices[fold_idx]["trIndices"], delimiter=' ', fmt='%d')
+            with open(teIndices_fname %(fold_idx),'w') as teIndices_f : 
+                teIndices_f.write(  " ".join(str(i) for i in self.xp_indices[fold_idx]["teIndices"] ) )
+            #np.savetxt(teIndices_fname %(fold_idx), self.xp_indices[fold_idx]["teIndices"], delimiter=' ', fmt='%d')
+            for ss_idx in xrange(self.num_subsamples) :
+                with open(ssIndices_fname  %(fold_idx,ss_idx), 'w') as ssIndices_f:
+                    ssIndices_f.write(  " ".join(str(i) for i in self.xp_indices[fold_idx]["ssIndices"][ss_idx] ) )
+                #np.savetxt(ssIndices_fname  %(fold_idx,ss_idx), self.xp_indices[fold_idx]["ssIndices"][ss_idx], delimiter=' ', fmt='%d')
