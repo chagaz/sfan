@@ -19,20 +19,32 @@ Single task examples, equivalent to SConES [1]:
 >>> p.communicate()[0][:-1]
 '# lambda 0.001\\n# eta 0.02\\n3 4 7 9 12 16 19 20 22 23 24 27 29 41 43 '
 
-Multi-task with precision matrix meant to be equivalent to MultiSConES [2]
+Multi-task with covariance matrix meant to be equivalent to MultiSConES [2]
 (Example created with the R code in [2]):
 >>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
                            '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
                            '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
                                              '../data/simu_ms/simu_ms.scores_1.txt', \
-                           '--precision_matrix', '../data/simu_ms/simu_ms.task_similarities.txt', \
-                           '-l', '0.2', '-e', '0.05', '-m', '0.1', \
+                           '--covariance_matrix', '../data/simu_ms/simu_ms.task_similarities.txt', \
+                           '-l', '0.2', '-e', '0.225', '-m', '0.1', \
                            '--output', '/tmp/test'], \
                            stdout=subprocess.PIPE)
 >>> p.communicate()[0][:-1]
-'# lambda 0.2\\n# eta 0.05\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+'# lambda 0.2\\n# eta 0.225\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
 
-Same result without giving the precision matrix nor adjusting eta:
+Same result with precision matrix
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
+                           '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
+                                             '../data/simu_ms/simu_ms.scores_1.txt', \
+                           '--precision_matrix', '../data/simu_ms/simu_ms.task_precision.txt', \
+                           '-l', '0.2', '-e', '0.225', '-m', '0.1', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.2\\n# eta 0.225\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
+
+Same result without providing the covariance/precision matrix:
 >>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
                            '--networks', '../data/simu_ms/simu_ms.network.dimacs', \
                            '--node_weights', '../data/simu_ms/simu_ms.scores_0.txt', \
@@ -43,19 +55,31 @@ Same result without giving the precision matrix nor adjusting eta:
 >>> p.communicate()[0][:-1]
 '# lambda 0.2\\n# eta 0.25\\n# mu 0.1\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 \\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 '
  
-Multitask with precision matrix:
+Multitask with covariance matrix:
 >>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
                            '--networks', '../data/simu_01/simu_01.network.dimacs', \
                            '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
                                              '../data/simu_01/simu_01.scores_1.txt', \
-                           '--precision_matrix', '../data/simu_01/simu_01.task_similarities.txt', \
+                           '--covariance_matrix', '../data/simu_01/simu_01.task_similarities.txt', \
                            '-l', '0.001', '-e', '0.02', '-m', '0.01', \
                            '--output', '/tmp/test'], \
                            stdout=subprocess.PIPE)
 >>> p.communicate()[0][:-1]
-'# lambda 0.001\\n# eta 0.02\\n# mu 0.01\\n4 13 17 18 19 20 22 24 26 28 30 \\n3 4 7 9 19 22 23 27 29 43 '
+'# lambda 0.001\\n# eta 0.02\\n# mu 0.01\\n4 6 13 17 18 19 20 22 24 26 28 30 49 \\n3 4 7 9 19 22 23 27 29 41 43 '
 
-Same problem, without precision matrix:
+Same problem, with precision matrix:
+>>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
+                           '--networks', '../data/simu_01/simu_01.network.dimacs', \
+                           '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
+                                             '../data/simu_01/simu_01.scores_1.txt', \
+                           '--precision_matrix', '../data/simu_01/simu_01.task_precision.txt', \
+                           '-l', '0.001', '-e', '0.02', '-m', '0.01', \
+                           '--output', '/tmp/test'], \
+                           stdout=subprocess.PIPE)
+>>> p.communicate()[0][:-1]
+'# lambda 0.001\\n# eta 0.02\\n# mu 0.01\\n4 6 13 17 18 19 20 22 24 26 28 30 49 \\n3 4 7 9 19 22 23 27 29 41 43 '
+
+Same problem, without covariance matrix:
 >>> p = subprocess.Popen(['python', 'multitask_sfan.py', '--num_tasks', '2', \
                            '--networks', '../data/simu_01/simu_01.network.dimacs', \
                            '--node_weights', '../data/simu_01/simu_01.scores_0.txt', \
@@ -97,7 +121,7 @@ import time
 import gt_maxflow
 
 
-EPSILON = 0.00001 # For the case where no precision matrix between tasks is provided
+#EPSILON = 0.1 # For the case where no covariance/precision matrix between tasks is provided
 
 
 def get_network(network_arg, task_idx):
@@ -120,6 +144,54 @@ def get_network(network_arg, task_idx):
     else:
         return network_arg[task_idx]
 
+
+
+def sort_hyperparameters(hyperparams):
+    """ Sort a list of hyperparameters.
+
+    Sort according to lambda, then eta, then mu,
+    
+    Parameters
+    ----------
+    hyperparameters: list
+        List of hyperparameters in the format
+        "-l <lambda> -e <eta> -m <mu>"
+
+    Returns
+    -------
+    hyperparameters_sorted: list
+        List of hyperparameters in the format
+        "-l <lambda> -e <eta> -m <mu>"
+    """
+    
+    hyperparams_d = {}
+    for h in hyperparams:
+        l = float(h.split()[1])
+        e = float(h.split()[3])
+        m = float(h.split()[5])
+        if not hyperparams_d.has_key(l):
+            hyperparams_d[l] = {e:{m:h}}
+        else:
+            hl = hyperparams_d[l]
+            if not hl.has_key(e):
+                hyperparams_d[l][e] = {m:h}
+            else:
+                he = hyperparams_d[l][e]
+                hyperparams_d[l][e][m] = h
+    hyperparams_sorted = []
+    l_sorted = hyperparams_d.keys()
+    l_sorted.sort()
+    for l in l_sorted:
+        hl = hyperparams_d[l]
+        e_sorted = hl.keys()
+        e_sorted.sort()
+        for e in e_sorted:
+            he = hl[e]
+            m_sorted = he.keys()
+            m_sorted.sort()
+            for m in m_sorted:
+                hyperparams_sorted.append(he[m])
+    return hyperparams_sorted
 
 
 class Sfan(object):
@@ -155,6 +227,8 @@ class Sfan(object):
         Regularization paramter for task relatednes.
     output: {filename, None}, optional
         File where to store computation run times.
+    covariance_matrix: {(num_tasks, num_tasks) array, None}, optional
+        $\Omega$ matrix of covariance between tasks.
     precision_matrix: {(num_tasks, num_tasks) array, None}, optional
         $\Omega^{-1}$ matrix of precision between tasks.
     phi: {(num_tasks, ) array, None}, optional
@@ -164,7 +238,7 @@ class Sfan(object):
         File where to store computation run times.        
     """
     def __init__(self, num_tasks, networks_f, node_weights_f, lbd, eta, mu=None,
-                 precision_matrix_f=None, output_f=None):
+                 covariance_matrix_f=None, precision_matrix_f=None, output_f=None):
         """
         Parameters
         ----------
@@ -182,9 +256,11 @@ class Sfan(object):
         eta: float
             Regularization paramter for sparsity.
         mu: {float, None}, optional
-            Regularization paramter for task relatednes.
+            Regularization parameter for task relatednes.
+        covariance_matrix_f: {filename, None}, optional
+            Path to covariance matrix.
         precision_matrix_f: {filename, None}, optional
-            Path of precision matrix.
+            Path to precision matrix.
         output_f: {filename, None}, optional
             File where to store computation run times.        
         """
@@ -230,35 +306,163 @@ class Sfan(object):
                                 (self.num_tasks * (self.num_tasks - 1) * \
                                  self.num_nodes_each_network)
         
-        # Read precision matrix (if more than one task)
+        # Read covariance/precision matrix (if more than one task)
         if (self.num_tasks > 1):
-            if precision_matrix_f:
+            if covariance_matrix_f:
+                # Load the covariance matrix.
+                with open(covariance_matrix_f, 'r') as f:
+                    self.covariance_matrix = np.loadtxt(f)
+                    f.close()
+                # Check whether a precision matrix was given,
+                # and whether they're compatible:
+                if precision_matrix_f:
+                    # Load the precision matrix.
+                    with open(precision_matrix_f, 'r') as f:
+                        self.precision_matrix = np.loadtxt(f)
+                        f.close()
+                    omega_omegainv = np.dot(self.covariance_matrix, self.precision_matrix)
+                    if len(np.where(np.abs(omega_omegainv - np.eye(self.num_tasks)) > 1e-5)[0]):
+                        logging.error("The precision and covariance matrices are incompatible.\n" + \
+                                      "Their product should be the identity matrix.\n")
+                        sys.exit(-1)
+                else:
+                    # Compute the precision matrix
+                    try:
+                        self.precision_matrix = np.linalg.inv(self.covariance_matrix)
+                    except LinAlgError:
+                        logging.error("The covariance matrix should be invertible.\n")
+                        sys.exit(-1)
+            elif precision_matrix_f:
                 # Use the precision matrix provided
                 with open(precision_matrix_f, 'r') as f:
                     self.precision_matrix = np.loadtxt(f)
                     f.close()
-            else:
-                # Build the canonical precision matrix
-                self.precision_matrix = np.ones((self.num_tasks, self.num_tasks)) + \
-                                        np.diag(np.ones(self.num_tasks) * EPSILON)
-
+            elif self.mu > 0:
+                # Choose epsilon so that eta - mu * epsilon > 0
+                epsilon = 0.1 * self.eta / self.mu
+                
                 # Adjust the value of eta to match the MultiSConES formulation
-                self.eta -= self.num_tasks * self.mu
-                if (self.eta < 0):
-                    logging.error("Eta must be larger than num_tasks x mu for it to be " + \
-                                  "possible to formulate an equivalent MultiSConES problem.\n")
-                    sys.exit(-1)
+                # eta_msfan = eta_multiscones - mu * EPSILON
+                self.eta -= self.mu * epsilon
+                # if self.eta < 0:
+                #     logging.error("This problem cannot be cast as an instance of MultiSConES: " + \
+                #     "the adjusted value of eta is non-positive.\n")
+                #     sys.exit(-1)
 
-            # Sum rows of the precision matrix
-            self.phi = self.precision_matrix.sum(axis=1, dtype='float')
+                # Build the canonical precision matrix
+                self.precision_matrix = np.eye(self.num_tasks) * (self.num_tasks + epsilon) - \
+                                        np.ones((self.num_tasks, self.num_tasks))
 
 
-    def compute_hyperparameters_range(self, num_values=5):
-        """ Compute a reasonable range of hyperparameters for the problem.
+            if self.mu > 0:
+                # If the precision matrix has non-negative off-diagonal entries,
+                # truncate those to 0.
+                precision_matrix_diag = np.diag(self.precision_matrix[np.diag_indices(self.num_tasks)])
+                self.precision_matrix[np.where((self.precision_matrix - precision_matrix_diag) > 0)] = 0
+
+                # Sum rows of the precision matrix
+                self.phi = self.precision_matrix.sum(axis=1, dtype='float')
+
+
+    def compute_hyperparameters_range_multiscones(self, num_values=5):
+        """ Compute a reasonable range of hyperparameters for a MultiSConES problem.
 
         See paper/tech_note for details.
 
-        WARNING: STILL NOT WORKING VERY WELL.
+        Arguments
+        ---------
+        num_values: int
+            Number of values for each parameter.
+
+        Returns
+        -------
+        hyperparams: list of strings
+            Values of hyperparameters, in the format:
+            "-l <lambda -e <eta> -m <mu>".
+        """
+        params_dict = {} # eta_val:{[lbd_val, mu_val]}
+        cmax = 0.
+        cmin = np.inf
+        for current_task in range(self.num_tasks):
+            with open(self.node_weights_f[current_task], 'r') as f:
+                cvec = np.loadtxt(f)
+                cmax = max(cmax, np.max(cvec))
+                cmin = min(cmin, np.min(cvec))
+                f.close()
+
+        emax = cmax/2
+        emin = cmin*2
+        eta_values = [(emin + float(idx) / float(num_values) * (emax - emin)) \
+                      for idx in range(num_values, 0, -1)]
+
+        for eta in eta_values:
+            #print "eta ", eta
+            amax = 0
+            amin = np.inf
+            for current_task in range(self.num_tasks):
+                with open(self.node_weights_f[current_task], 'r') as f:
+                    cvec = np.loadtxt(f)
+                    avec = np.abs(cvec - eta)
+                    amax = max(amax, np.max(avec))
+                    amin = min(amin, np.min(avec))
+                    if amin < 1e-10:
+                        logging.error("!amin too small!", amin, eta)
+                        sys.exit(-1)
+                    amed = np.median(avec)
+                    f.close()
+
+            Wmax = 0
+            Wmin = np.inf
+            for current_task in range(self.num_tasks):
+                with open(self.networks_f[current_task], 'r') as f:
+                    for line in f:
+                        if line[0] == 'a':
+                            w_val = float(line.split()[3])
+                            Wmax = max(Wmax, w_val)
+                            if w_val > 0:
+                                Wmin = min(Wmin, w_val)
+                    f.close()
+                    if len(self.networks_f) == 1:
+                        break
+
+            llmax = np.log10(amax / Wmin)
+            llmin = np.log10(amin / Wmax)              
+            llmed = np.log10(amed / Wmax)
+            lbd_values = [10**(llmed - float(idx)/float((num_values+1)/2) * \
+                                   (llmed-llmin)) for idx in range((num_values+1)/2, 0, -1)]
+            lbd_values.extend([10**(llmed + float(idx)/float(num_values/2) * \
+                                   (llmax-llmed)) for idx in range(num_values/2)])
+
+            lbd_values = ['%.2e' % lbd for lbd in lbd_values]
+            #print "\t lbd ", lbd_values
+
+
+            lmmax = np.log10(amax)
+            lmmin = np.log10(amin)
+            lmmed = np.log10(amed)
+            mu_values = [10**(lmmed - float(idx)/float((num_values+1)/2) * \
+                                   (lmmed-lmmin)) for idx in range((num_values+1)/2, 0, -1)]
+            mu_values.extend([10**(lmmed + float(idx)/float(num_values/2) * \
+                                   (lmmax-lmmed)) for idx in range(num_values/2)])
+
+            mu_values = ['%.2e' % mu for mu in mu_values]
+            #print "\t mu  ", mu_values
+
+            params_dict['%.2e' % eta] = [lbd_values, mu_values]
+
+
+        hyperparams = []
+        for eta, [lbd_values, mu_values] in params_dict.iteritems():
+            for lbd, mu in zip(lbd_values, mu_values):
+                hyperparams.append('-l %s -e %s -m %s' % (lbd, eta, mu))
+        
+        return sort_hyperparameters(hyperparams)
+                
+
+    def compute_hyperparameters_range(self, num_values=5):
+        """ Compute a reasonable range of hyperparameters for a SFAN problem.
+
+        See paper/tech_note for details.
 
         Arguments
         ---------
@@ -273,28 +477,38 @@ class Sfan(object):
         """
         params_dict = {} # mu_val:{eta_val:[lbd_val]}
         cmax = 0.
+        cmin = np.inf
         for current_task in range(self.num_tasks):
             with open(self.node_weights_f[current_task], 'r') as f:
                 cvec = np.loadtxt(f)
                 cmax = max(cmax, np.max(cvec))
+                cmin = min(cmin, np.min(cvec))
                 f.close()
 
         pmin = np.min(self.phi)
+        pmax = np.max(self.phi)
 
-        mmax = cmax / pmin
+        mmax = cmax / np.abs(pmin)
 
-        mu_values = [mmax / (10*(2**idx)) for idx in range(num_values)]
+        mu_values = [mmax / (2*(2**idx)) for idx in range(num_values)]
 
         for mu in mu_values:
-            print "mu  ", mu
+            logging.info("mu  %s" % mu)
             params_dict['%.2e' % mu] = {}
             
             emax = cmax - mu * pmin
+            emin = cmin - mu * pmax
 
-            eta_values = [emax / (10*(2**idx)) for idx in range(num_values)]
-            
+            if emin < 0:
+                eta_values = [emax / (2*(2**idx)) for idx in range(num_values)]
+            else: 
+                lemax = np.log10(emax/2)
+                lemin = np.log10(emin*2)
+                eta_values = [10**(lemin + float(idx) / float(num_values) * (lemax - lemin)) \
+                              for idx in range(num_values, 0, -1)]
+                
             for eta in eta_values:
-                print "\teta  ", eta 
+                logging.info("\teta  %s" % eta)
                 amax = 0
                 amin = np.inf
                 for current_task in range(self.num_tasks):
@@ -303,6 +517,9 @@ class Sfan(object):
                         avec = np.abs(cvec - mu * self.phi[current_task] - eta)
                         amax = max(amax, np.max(avec))
                         amin = min(amin, np.min(avec))
+                        if amin < 1e-10:
+                            logging.error("!amin too small!\n", amin, mu, eta)
+                            sys.exit(-1)
                         amed = np.median(avec)
                         f.close()
 
@@ -328,32 +545,16 @@ class Sfan(object):
                 lbd_values.extend([10**(llmed + float(idx)/float(num_values/2) * \
                                        (llmax-llmed)) for idx in range(num_values/2)])
 
-                # lmax = amax / Wmin
-                # lmin = amin / Wmax
-                # lmed = amed / Wmax
-                # lbd_values = [(lmed - float(idx)/float((num_values+1)/2) * \
-                #                        (lmed-lmin)) for idx in range((num_values+1)/2, 0, -1)]
-                # lbd_values.extend([(lmed + float(idx)/float(num_values/2) * \
-                #                        (lmax-lmed)) for idx in range(num_values/2)])
-
                 lbd_values = ['%.2e' % lbd for lbd in lbd_values]
-                print "\t\t", lbd_values
+                logging.info("\t\t %s" % " ".join(lbd_values))
                 params_dict['%.2e' % mu]['%.2e' % eta] = lbd_values
-
-                # TODO : to repare
-                # llmax = - inf  car  np.log10(0.0) = -inf  car amax = 0
-                # llmin = inf
-                # (llmax-llmin) = - inf
-                # so all lbd_values are nan
 
         hyperparams = ['-l %s -e %s -m %s' % (lbd, eta, mu) \
                        for mu, eta_dict in params_dict.iteritems() \
                        for eta, lbd_values in eta_dict.iteritems() \
                        for lbd in lbd_values]
 
-        return hyperparams
-                
-
+        return sort_hyperparameters(hyperparams)
             
             
     def create_dimacs(self):
@@ -416,16 +617,19 @@ class Sfan(object):
                                                    task_idx + target_node
 
                                 if real_target_node != current_node:
-                                    omega_k = self.precision_matrix[current_task]
+                                    if self.mu:
+                                        omega_k = - self.precision_matrix[current_task]
+                                    else:
+                                        omega_k = np.zeros((self.num_tasks, ))
                                     
                                     self.dimacs_graph += ("a %d %d %f\n" % \
                                                      (current_node, real_target_node,
                                                       self.mu * omega_k[task_idx]))
 
                         # Connect nodes to the source and sink nodes
-                        if self.num_tasks > 1:
+                        if self.num_tasks > 1 and self.mu > 0:
                             a = (float(f_nw.readline())) - \
-                                self.mu *  self.phi[current_task] - self.eta
+                                self.mu * self.phi[current_task] - self.eta
                         else:
                             a = (float(f_nw.readline())) - self.eta
 
@@ -475,8 +679,10 @@ def main() :
         List of paths of network node weights (i.e. feature relevance scores),
         space-separated.
         One list per task.
+    args.covariance_matrix: {filename, None}, optional
+        Path to the covariance matrix.
     args.precision_matrix: {filename, None}, optional
-        Path of precision matrix.
+        Path to the precision matrix.
     args.lbd: float
         Regularization parameter (lambda) for connectivity.
     args.eta: float
@@ -499,7 +705,7 @@ def main() :
              --networks ../data/simu_01/simu_01.network.dimacs \
              --node_weights ../data/simu_01/simu_01.scores_0.txt \
                             ../data/simu_01/simu_01.scores_1.txt \
-             --precision_matrix ../data/simu_01/simu_01.task_similarities.txt \
+             --covariance_matrix ../data/simu_01/simu_01.task_similarities.txt \
              -l 0.001 -e 0.02 -m 0.01
     Returns:
         # lambda 0.001
@@ -515,7 +721,8 @@ def main() :
     parser.add_argument("-w", "--networks", help="Paths of networks", nargs='+')
     parser.add_argument("-r", "--node_weights", help="Paths of node weights", nargs='+')
     parser.add_argument("-t", "--test", help="Run tests", action='store_true')
-    parser.add_argument("-c", "--precision_matrix", help="Path of precision matrix")
+    parser.add_argument("-c", "--covariance_matrix", help="Path to the covariance matrix")
+    parser.add_argument("-p", "--precision_matrix", help="Path to the precision matrix")
     parser.add_argument("-l", "--lbd", help="lambda parameter", type=float)
     parser.add_argument("-e", "--eta", help="eta parameter", type=float)
     parser.add_argument("-m", "--mu", help="mu parameter", type=float)
@@ -593,7 +800,8 @@ def main() :
     # Instantiate a sfan solver
     sfan_solver = Sfan(args.num_tasks, args.networks, args.node_weights,
                        args.lbd, args.eta,
-                       mu=args.mu, precision_matrix_f=args.precision_matrix,
+                       mu=args.mu, covariance_matrix_f=args.covariance_matrix,
+                       precision_matrix_f=args.precision_matrix,
                        output_f=args.output)
 
     # Time stamp: end of preprocessing

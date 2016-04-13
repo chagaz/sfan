@@ -153,7 +153,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     """
     # Ideally, I'd do the following:
     # sfan_solver = Sfan(num_tasks, network_fname, weights_fname,
-    #                    lbd, eta, 0, precision_fname)
+    #                    lbd, eta, 0, covariance_fname)
     # tt = sfan_solver.create_dimacs()
     # sfan_solver.run_maxflow()
 
@@ -182,7 +182,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
                  
 
 def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
-    """ Run multitask sfan (no precision matrix).
+    """ Run multitask sfan (no precision/covariance matrix).
 
     Arguments
     ---------
@@ -224,7 +224,7 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
     return sel_list
                  
 
-def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params):
+def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params):
     """ Run multitask sfan.
 
     Arguments
@@ -235,8 +235,8 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
         Path to the network file.
     weights_fnames: list of filenames
         List of paths to the network nodes files (one per task).
-    precision_fname: filename
-        Path to the matrix of precision (similarity) of tasks.
+    covariance_fname: filename
+        Path to the matrix of covariance (similarity) of tasks.
     params: string
         Hyperparameters, in the '-l <lambda> -e <eta> -m <mu>' format.
 
@@ -251,7 +251,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, precision_fname, params)
              '--networks', network_fname,
              '--node_weights']
     argum.extend(weights_fnames)
-    argum.extend(['--precision_matrix', precision_fname])
+    argum.extend(['--covariance_matrix', covariance_fname])
     argum.extend(params.split())
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)

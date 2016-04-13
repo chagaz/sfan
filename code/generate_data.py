@@ -103,16 +103,16 @@ class SyntheticDataGenerator(object):
         logging.info("README file created under %s\n" % readme_f)
 
         # Generate a matrix of similarities between tasks
-        omega_inv = np.random.uniform(size = (self.num_tasks, self.num_tasks))
-        omega_inv = omega_inv.transpose().dot(omega_inv)
+        omega = np.random.uniform(size = (self.num_tasks, self.num_tasks))
+        omega = omega_inv.transpose().dot(omega_inv)
         d = np.diag(omega_inv)
         d.shape = (self.num_tasks, 1)
-        omega_inv = omega_inv / np.sqrt(d.dot(d.transpose()))
+        omega = omega_inv / np.sqrt(d.dot(d.transpose()))
 
-        # Save omega_inv to file
+        # Save omega to file
         fname = "%s/%s.task_similarities.txt" % (self.root_dir, self.simu_id)
-        np.savetxt(fname, omega_inv, fmt='%.3f')
-        logging.info("Precision matrix saved under %s\n" % fname)
+        np.savetxt(fname, omega, fmt='%.3f')
+        logging.info("Covariance matrix saved under %s\n" % fname)
 
         # Generate beta vectors that are correlated according to omega
         # Trick: cov(Ax) = Acov(x)A'
@@ -241,7 +241,7 @@ def main():
     <root_dir>/<simu_id>.readme:
         README file describing the simulation paramters
     <root_dir>/<simu_id>.task_similarities.txt:
-        Matrix of precision between tasks
+        Matrix of covariance between tasks
     <root_dir>/<simu_id>.causal_features:
         Lists of causal features.
         One list per task. Indices start at 0.
