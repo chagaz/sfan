@@ -23,6 +23,8 @@ The first of these multitask approaches was described in Sugiyama et al. (2014).
 
 These approaches have been developed with biomarker discovery in mind. In this case, the features are SNPs or other biomarkers (genes, epigenetic markers...) and we make use of biological networks. 
 
+Technical details are available under `paper/tech_notes.pdf` (to be compiled from `paper/tech_notes.tex`) 
+
 # Contributors
 This work was initiated at the Centre for Computational Biology (CBIO) of MINES ParisTech and Institut Curie by Chloé-Agathe Azencott. Jean-Daniel Granet and Killian Poulaud worked on previous, private versions of this code. 
 Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.fr for all inquiries.
@@ -64,16 +66,17 @@ Example:
 ```
  python multitask_sfan.py --num_tasks 2 --networks ../data/simu_01/simu_01.network.dimacs \
        --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
-       --precision_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
+       --covariance_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
 ```
+The user can either provide a covariance or a precision matrix between tasks. The covariance matrix encodes a notion of similarity between the tasks. The precision matrix is its inverse, and its off-diagonal entries can be interpreted as the normalized opposite of the partial correlation between the corresponding tasks. The methods only makes it possible to account for positive or non-existant partial correlations, meaning that positive off-diagonal entries of the precision matrix, if any, will be thresholded to 0.
 
-If no precision matrix (encoding the similarity between tasks) is given, a matrix of all ones (plus epsilon on the diagonal) is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
+If no covariance nor precision matrix is given, a precision matrix with (<number of tasks>-1+epsilon) on the diagonal and -1 off the diagonal is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
 
 ## Data generation
 `code/generate_data.py` generates synthetic data for experiments:
 * a modular network (modules are fully connected) over the features;
 * a genotype (SNP) matrix X of random integers between 0 and 2;
-* a similarity (precision) matrix Omega^{-1} between tasks;
+* a covariance matrix Omega of similarities between tasks;
 * causal features (SNPs), with corresponding weights, generated so as to respect the covariance structure given by
 Omega (inverse of the precision matrix);
 * the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
@@ -117,7 +120,7 @@ Example: `data/simu_multitask_01.network.dimacs`. Note that edge weights can be 
 
 We use this format because it is the one that `gt_maxflow` (Shekhovtsov & Hlavac, 2011) understands. 
 
-## Correlation between tasks
+## Covariance (similarity) between tasks
 number_of_tasks x number_of_tasks symmetric matrix (space-separated columns).
 
 Example: `data/simu_multitask_01.task_similarities.txt`. 
