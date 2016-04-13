@@ -158,6 +158,53 @@ def get_analysis_files_names(resu_dir, simu_id):
 
     return analysis_files
 
+def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, precision_fname, args):
+    """TODO
+    """
+    # Define the grid of hyperparameters
+    # see paper/tech_note
+    # Randomly sample 50% of the data
+    tmp_scores_f_list = []
+    with tb.open_file(genotype_fname, 'r') as h5f:
+        Xtr = h5f.root.Xtr[:, :]
+
+        # Define subsample of 50% of the data
+        sample_indices = range(args.num_samples)
+        np.random.shuffle(sample_indices)
+        sample_indices = sample_indices[:(args.num_samples/2)]
+        Xtr = Xtr[:, sample_indices]
+
+        # Compute scores for the subsample
+        for task_idx in range(args.num_tasks):
+            # Read phenotype
+            y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
+
+            # Compute feature-phenotype correlations
+            r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
+                  for feat_idx in range(args.num_features)]
+
+            # Create temporary file of name tmp_fname 
+            fd, tmp_fname = tempfile.mkstemp()
+
+            # Save to temporary file
+            np.savetxt(tmp_fname, r2, fmt='%.3e')
+
+            # Append temporary file to list
+            tmp_scores_f_list.append(tmp_fname)
+
+    # Compute grid (WARNING: STILL NOT WORKING WELL)
+    sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
+                                tmp_scores_f_list, 0, 0, 0,
+                                precision_matrix_f=precision_fname)
+    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
+    lbd_eta_values = [" ".join(plist.split()[:-2]) \
+                      for plist in lbd_eta_mu_values]
+    # Delete temporary files from tmp_scores_f_list
+    for fname in tmp_scores_f_list:
+        os.remove(fname)
+
+    return lbd_eta_mu_values, lbd_eta_values
+
 
 def run_repeat(repeat_idx, args, analysis_files):
     """
@@ -216,55 +263,17 @@ def run_repeat(repeat_idx, args, analysis_files):
     evalf.save_indices(data_dir, args.simu_id)
 
 
-
-
     #-------------------------------------------------------------------------
     # Looking for optimal parameters : 
 
     #-----------------------------------
     logging.info ("======== Defining grid of hyperparameters")
-    # Define the grid of hyperparameters
-    # see paper/tech_note
-    # Randomly sample 50% of the data
-    tmp_scores_f_list = []
-    with tb.open_file(genotype_fname, 'r') as h5f:
-        Xtr = h5f.root.Xtr[:, :]
-
-        # Define subsample of 50% of the data
-        sample_indices = range(args.num_samples)
-        np.random.shuffle(sample_indices)
-        sample_indices = sample_indices[:(args.num_samples/2)]
-        Xtr = Xtr[:, sample_indices]
-
-        # Compute scores for the subsample
-        for task_idx in range(args.num_tasks):
-            # Read phenotype
-            y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-
-            # Compute feature-phenotype correlations
-            r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                  for feat_idx in range(args.num_features)]
-
-            # Create temporary file of name tmp_fname 
-            fd, tmp_fname = tempfile.mkstemp()
-
-            # Save to temporary file
-            np.savetxt(tmp_fname, r2, fmt='%.3e')
-
-            # Append temporary file to list
-            tmp_scores_f_list.append(tmp_fname)
-
-    # Compute grid (WARNING: STILL NOT WORKING WELL)
-    sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
-                                tmp_scores_f_list, 0, 0, 0,
-                                precision_matrix_f=precision_fname)
-    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
-    lbd_eta_values = [" ".join(plist.split()[:-2]) \
-                      for plist in lbd_eta_mu_values]
-
-    # Delete temporary files from tmp_scores_f_list
-    for fname in tmp_scores_f_list:
-        os.remove(fname)
+    lbd_eta_mu_values , lbd_eta_values = determine_hyperparamaters( genotype_fname, 
+                                                                    phenotype_fnames,
+                                                                    network_fname,
+                                                                    precision_fname,
+                                                                    args)
+    
     #-----------------------------------
 
     #-----------------------------------
@@ -538,26 +547,26 @@ def run_repeat(repeat_idx, args, analysis_files):
     # each line = a repeat
     # on each line there are several RMSE values, one per task
 
-    #TODO : make the function return a list of rmse per task, like ci computation ? 
-    for task_idx in range(args.num_tasks):
-
-        # Single task
-        predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_st'])
-
-        # Multitask (no precision)
-        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_msfan_np'])
-
-        # Multitask (precision)
-        predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_'+`task_idx`+'.predicted' 
-        ef.compute_ridge_selected_RMSE( phenotype_fnames[task_idx], predicted_fname, 
-                                        evalf.xp_indices, analysis_files['rmse_msfan'])             
-
+    # Single task
+    predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)
+    import pdb; pdb.set_trace()
+    with open(analysis_files['rmse_st'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (no precision)
+    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)
+    with open(analysis_files['rmse_msfan_np'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (precision)
+    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
+                                    evalf.xp_indices, args.num_tasks)             
+    with open(analysis_files['rmse_msfan'], 'a') as f:
+        f.write('%s ' % ' '.join(['%.2f ' % x for x in rmse_list]))
     #----------------------------------------------------------------------
-
 
     #-----------------------------------------------------------------------
     logging.info( "======== Compute CI ")
@@ -642,6 +651,26 @@ def print_save_res_measures(means, std, fname):
 
         with open(fname%measure, 'w') as f : 
             f.write(header_save+to_save)
+
+
+
+def handle_measures_results(analysis_files, args): 
+    """TODO
+    """
+    # For each measure compute average/mean +- standard deviation per task for 
+    means, std = extract_res_means_and_std(analysis_files, args)
+    
+
+    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
+    print_save_res_measures(means, std, fname)
+
+    # Plots : 
+
+    for measure in means : 
+        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
+        print_plot_files(f_name, means[measure], std[measure])
+        plot.bar_plot(measure, f_name) 
+
 
 def extract_res_means_and_std(analysis_files, args):
     """
@@ -848,20 +877,7 @@ def main():
 
     #-------------------------------------------------------------------------
     # Handle measures results : 
-
-    # For each measure compute average/mean +- standard deviation per task for each algo
-    means, std = extract_res_means_and_std(analysis_files, args)
-    
-
-    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
-    print_save_res_measures(means, std, fname)
-
-    # Plots : 
-
-    for measure in means : 
-        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
-        print_plot_files(f_name, means[measure], std[measure])
-        plot.bar_plot(measure, f_name) 
+    handle_measures_results(analysis_files, args)
     #------------------
 
 
