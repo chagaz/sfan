@@ -748,11 +748,24 @@ def run_repeat(repeat_idx, args, analysis_files):
         p = subprocess.Popen(shlex.split(cmd)) 
     # END for fold_idx in range(args.num_folds)
 
+    print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices)
+
+
+
+def print_analysis_files(args, resu_dir, data_dir, xp_indices):
+    """TODO
+    """
+
+    analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
+
+    phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
+                        (data_dir, args.simu_id, task_idx) \
+                        for task_idx in range(args.num_tasks)]
 
 
     # Concatenate ppv and tpr files :
     bash_cmd = "head -c -1 -q"
-    #bash_cmd = "cat %s/repeat%d/%s.<algo>.fold*.ppv | tr -d '\n'" % (resu_dir, repeat_idx, args.simu_id)
+    #bash_cmd = "cat %s/repeat%d/%s.<algo>.fold*.ppv | tr -d '\n'" % (args.resu_dir, repeat_idx, args.simu_id)
     # problem : 
     # Expanding the * glob is part of the shell, 
     # but by default subprocess does not send your commands via a shell, 
@@ -764,6 +777,7 @@ def run_repeat(repeat_idx, args, analysis_files):
 
     #----------------------------------------------------------------------
     # print to file ppv : 
+    logging.info( "======== Print ppv file")
     # for each repeat, each fold print ppv in its own file 
     # we want to concatenate these files in one line we print in analysis_files['pvv<algo>']
        
@@ -786,6 +800,7 @@ def run_repeat(repeat_idx, args, analysis_files):
 
     #----------------------------------------------------------------------
     # print to file tpr : 
+    logging.info( "======== Print tpr file")
     # for each repeat, each fold print pr in its own file 
     # we want to concatenate these files in one line we print in analysis_files['tpr<algo>']
     template_f_names = resu_dir+"/"+args.simu_id+".%s.fold_*.tpr"
@@ -822,19 +837,19 @@ def run_repeat(repeat_idx, args, analysis_files):
     # Single task
     predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
     rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    evalf.xp_indices, args.num_tasks)
+                                    xp_indices, args.num_tasks)
     with open(analysis_files['rmse_st'], 'a') as f:
         f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
     # Multitask (no precision)
     predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
     rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    evalf.xp_indices, args.num_tasks)
+                                    xp_indices, args.num_tasks)
     with open(analysis_files['rmse_msfan_np'], 'a') as f:
         f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
     # Multitask (precision)
     predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
     rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    evalf.xp_indices, args.num_tasks)             
+                                    xp_indices, args.num_tasks)             
     with open(analysis_files['rmse_msfan'], 'a') as f:
         f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
     #----------------------------------------------------------------------
@@ -867,7 +882,7 @@ def run_repeat(repeat_idx, args, analysis_files):
         f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
 
     #-----------------------------------------------------------------------
-
+    logging.info( "analysis_files outputed")
 
 
 
