@@ -26,6 +26,7 @@ import tables as tb
 import tempfile
 import shutil
 import shlex
+import glob
 
 
 def get_arguments_values(): 
@@ -542,6 +543,9 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
     #------
     # For each algorithm, and for each task, compute PPV
     # and sensitivity, and save to ppv_fname, tpr_fname
+    #                                          v-- = fold_id
+    # print in files : %s/repeat%d/%s.sfan.fold*.ppv" % (resu_dir, repeat_idx, simu_id)
+    # with '%.2f' precision
     
     # Files structure : 
     # 1 line per repeat
@@ -552,28 +556,42 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
     # for each task
 
 
+
+    ppv_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".ppv"
+    tpr_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".tpr"
+
     # Single task
-    ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+    ppv_list_st, tpr_list_st = ef.compute_ppv_sensitivity(causal_fname,
                                                     selected_st,
                                                     args.num_features)
-    ppv_list_to_print['st'].extend(ppv_list)
-    tpr_list_to_print['st'].extend(tpr_list)
+    with open (ppv_template_f_name %"sfan", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
+    with open (tpr_template_f_name %"sfan", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
 
     # Multitask (no precision)
-    ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+    ppv_list_np, tpr_list_np = ef.compute_ppv_sensitivity(causal_fname,
                                                     selected_np,
                                                     args.num_features)
-    ppv_list_to_print['np'].extend(ppv_list)
-    tpr_list_to_print['np'].extend(tpr_list)
+    with open (ppv_template_f_name %"msfan_np", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
+    with open (tpr_template_f_name %"msfan_np", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
+
     # Multitask (precision)
-    ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
+    ppv_list_msfan, tpr_list_msfan = ef.compute_ppv_sensitivity(causal_fname,
                                                     selected,
                                                     args.num_features)
-    ppv_list_to_print['msfan'].extend(ppv_list)
-    tpr_list_to_print['msfan'].extend(tpr_list)
+    with open (ppv_template_f_name %"msfan", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
+    with open (tpr_template_f_name %"msfan", 'w') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
+
+
+    
+
+
     #------------------------------------------------------------------
-
-
 
 
     #------------------------------------------------------------------
@@ -610,6 +628,7 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
                               phenotype_fnames[task_idx],
                               trIndices, teIndices, fname)
     #------------------------------------------------------------------
+
 def run_repeat(repeat_idx, args, analysis_files):
     """ Run the repeat n° <repeat_idx>.
 
@@ -697,9 +716,6 @@ def run_repeat(repeat_idx, args, analysis_files):
     #-----------------------------------
 
     #-----------------------------------
-    tpr_list_to_print = {'st':[], 'np':[], 'msfan':[]}
-    ppv_list_to_print = {'st':[], 'np':[], 'msfan':[]}
-
     # For each fold : 
     # use subsamble to test feature selection with combinaisons of hyperparameters from the grid
     # find opt param
@@ -707,328 +723,71 @@ def run_repeat(repeat_idx, args, analysis_files):
     # use a ridge regression trained with selected features only to predict quantitativ phenotypes on test set <- quantify these perf
     for fold_idx in xrange(args.num_folds):
         logging.info ("============= FOLD : %d"%fold_idx)
-
-        if not DEBUG_MODE : 
-            logging.info ("======== Feature selection :")
-            #XXX DEBUG ???
-
-            # Inititalize dictionary to store selected features
-            # sf_dict is a nested dictionary, indexed by
-            #   - value of the parameters
-            #   - value of task_idx
-            #   - subsample idx
-            # sf is a list of lists of selected features
-            # (one per subsample iteration)
-            # you get a specific sf from sf_dict by querying
-            # sf_dict[params][task_idx]
-            sf_st_dict = {}       # single task
-            sf_np_dict = {}       # not using precision matrix
-            sf_dict = {}          # using precision matrix
-            for params in lbd_eta_values:
-                sf_st_dict[params] = {}
-                for task_idx in range(args.num_tasks):
-                    sf_st_dict[params][task_idx] = []
-            for params in lbd_eta_mu_values_np:
-                sf_np_dict[params] = {}
-                for task_idx in range(args.num_tasks):
-                    sf_np_dict[params][task_idx] = []
-            for params in lbd_eta_mu_values:
-                sf_dict[params] = {}
-                for task_idx in range(args.num_tasks):
-                    sf_dict[params][task_idx] = []
-
-            #process_time files template : 
-            process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.process_time'
-            #max RSS files template : 
-            max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.max_RSS'
-
-            for ss_idx in range(args.num_subsamples):
-                logging.info ("========                        SS : %d" % ss_idx)
-                # Get samples
-                sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
-            
-                # Generate sample-specific network scores from phenotypes and genotypes
-                tmp_weights_f_list = [] # to hold temp files storing these scores
-                with tb.open_file(genotype_fname, 'r') as h5f:
-                    Xtr = h5f.root.Xtr[:, sample_indices]
-                    for task_idx in range(args.num_tasks):
-                        # Read phenotype
-                        y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-            
-                        # Compute feature-phenotype correlations
-                        r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                              for feat_idx in range(args.num_features)]
-            
-                        # Save to temporary file tmp_weights_f_list[task_idx]
-                        # Create temporary file of name tmp_fname (use tempfile)
-                        fd, tmp_fname = tempfile.mkstemp()
-                        # Save to temporary file
-                        np.savetxt(tmp_fname, r2, fmt='%.3e')
-                        # Append temporary file to list
-                        tmp_weights_f_list.append(tmp_fname)
-            
-                for params in lbd_eta_values:
-                    logging.info("========                        lbd_eta_values : "+ `params`)
-                    # Select features with single-task sfan
-                    logging.info("                                   run_sfan")
-                    sel_, timing, max_RSS = ef.run_sfan(args.num_tasks, network_fname,
-                                       tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace() #DEBUG
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_st_dict[params][task_idx].append(sel_list)
-                    #Store process time
-                    process_time = timing.split()[-1]
-                    fname= process_time_file_template % 'sfan'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % process_time)
-                    #Store max RSS : 
-                    fname= max_RSS_file_template % 'sfan'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % max_RSS)
-                
-                for params in lbd_eta_mu_values_np:
-                    logging.info("========                        lbd_eta_mu_values_np"+ `params`)
-                    # Select features with multi-task (no precision) sfan
-                    logging.info("                                   run_msfan_nocorr")
-                    sel_ , timing, max_RSS = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                                               tmp_weights_f_list, params)
-                    if not sel_ : import pdb; pdb.set_trace()#DEBUG
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_np_dict[params][task_idx].append(sel_list)
-                    #Store process time
-                    process_time = timing.split()[-1]
-                    fname= process_time_file_template % 'msfan_np'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % process_time)
-                    #Store max RSS : 
-                    fname= max_RSS_file_template %  'msfan_np'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % max_RSS)
-
-                for params in lbd_eta_mu_values:
-                    logging.info("========                        lbd_eta_mu_values"+ `params`)
-                    # Select features with multi-task sfan
-                    logging.info("                                   run_msfan")
-                    sel_, timing, max_RSS = ef.run_msfan(args.num_tasks, network_fname,
-                                        tmp_weights_f_list, precision_fname,
-                                        params)
-                    if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
-                    # Store selected features in the dictionary
-                    for task_idx, sel_list in enumerate(sel_):
-                        sf_dict[params][task_idx].append(sel_list)
-                    #Store process time
-                    process_time = timing.split()[-1]
-                    fname= process_time_file_template % 'msfan'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % process_time)
-                    #Store max RSS : 
-                    fname= max_RSS_file_template % 'msfan'
-                    with open(fname, 'a') as f:
-                        f.write("%s\n" % max_RSS)
-
-
-              
-                # Delete the temporary files stored in tmp_weights_f_list
-                for fname in tmp_weights_f_list:
-                    os.remove(fname)
-            
-            # END for ss_idx in range(args.num_subsamples)
-            
-            # XXX DEBUG : 
-            sf_np_dict = sf_dict
-            #-----------------------------------   
-            # Get optimal parameter values for each algo.
-            # ??? some lists are empty, is it normal ??? 
-            logging.info( "======== Get opt params")
-            opt_params_st = ef.get_optimal_parameters_from_dict(sf_st_dict, args.num_features)
-            print 'opt param st ', opt_params_st
-            opt_params_np = ef.get_optimal_parameters_from_dict(sf_np_dict, args.num_features)
-            print 'opt param np ', opt_params_np
-            opt_params = ef.get_optimal_parameters_from_dict(sf_dict, args.num_features)
-            print 'opt params ', opt_params
-
-        else : 
-            # XXX DEBUG : ??? : 
-            opt_params_st = "-l 5.97e-03 -e 1.60e-02"
-            opt_params_np = "-l 2.94e-03 -e 7.65e-03 -m 1.42e-02"
-            opt_params =    "-l 2.94e-03 -e 7.65e-03 -m 1.42e-02"
-
-        # For each algorithm, save optimal parameters to file
-        # Single task
-        fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
-            f.write(opt_params_st)
-        # Multitask (no precision)
-        fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
-            f.write(opt_params_np)
-        # Multitask (precision)
-        fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
-            f.write(opt_params)
-        #------------------------------------------------------------------
-
-
-        #------------------------------------------------------------------
-        logging.info( "======== Features selection using all training set and opt param")
-        #------
-        # For each algorithm, run algorithms again to select features,
-        # (got a list of list : list of selected features for each task)
-        # using the whole training set (i.e. scores_fnames)
-        # and optimal parameters.
-        logging.info("          run st")
-        selected_st, timing_st, maxRSS_st = ef.run_sfan(args.num_tasks, network_fname,
-                                   scores_fnames, opt_params_st)
-        logging.info("          run np")
-        selected_np, timing_np, maxRSS_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
-                                           scores_fnames, opt_params_np)
-        logging.info("          run msfan")
-        selected, timing,maxRSS = ef.run_msfan(args.num_tasks, network_fname,
-                                    scores_fnames, precision_fname,
-                                    opt_params)
-        #------
-        # For each algorithm, save timing to file
-        # Single task 
-        with open(analysis_files['timing_st'], 'a') as f:
-            f.write("%s\n" % timing_st)
-        # Multitask (no precision)
-        with open(analysis_files['timing_msfan_np'], 'a') as f:
-            f.write("%s\n" % timing_np)
-        # Multitask (precision)
-        with open(analysis_files['timing_msfan'], 'a') as f:
-            f.write("%s\n" % timing)
-
-
-        #------
-        # For each algorithm, save maxRSS to file
-        # Single task 
-        with open(analysis_files['maxRSS_st'], 'a') as f:
-            f.write("%s\n" % maxRSS_st)
-        # Multitask (no precision)
-        with open(analysis_files['maxRSS_msfan_np'], 'a') as f:
-            f.write("%s\n" % maxRSS_np)
-        # Multitask (precision)
-        with open(analysis_files['maxRSS_msfan'], 'a') as f:
-            f.write("%s\n" % maxRSS)
-
-
-        #------
-        # For each algorithm, save selected features to file
-        # Single task
-        fname = '%s/%s.sfan.fold_%d.selected_features' % \
-                (resu_dir, args.simu_id, fold_idx)
-        
-        with open(fname, 'w') as f:
-            for selected_features_list in selected_st:
-                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-                                        # selected_features_list is a list of int 
-                                        # that have to be cast as string so we can join them
-        # Multitask (no precision)
-        fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
-                (resu_dir, args.simu_id, fold_idx)
-        
-        with open(fname, 'w') as f:
-            for selected_features_list in selected_np:
-                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-        # Multitask (precision)
-        fname = '%s/%s.msfan.fold_%d.selected_features' % \
-                (resu_dir, args.simu_id, fold_idx)
-        
-        with open(fname, 'w') as f:
-            for selected_features_list in selected:
-                f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
-        
-        #------
-        # For each algorithm, and for each task, compute PPV
-        # and sensitivity, and save to ppv_fname, tpr_fname
-        
-        # Files structure : 
-        # 1 line per repeat
-        # on each line : valTask1, valTask2, ... valTaskn for each fold
-        
-        # For the current repeat and the current fold, 
-        # ppv_list ant tpr_list and list of ppv ant tpr respectively
-        # for each task
-
-
-        # Single task
-        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                        selected_st,
-                                                        args.num_features)
-        ppv_list_to_print['st'].extend(ppv_list)
-        tpr_list_to_print['st'].extend(tpr_list)
-
-        # Multitask (no precision)
-        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                        selected_np,
-                                                        args.num_features)
-        ppv_list_to_print['np'].extend(ppv_list)
-        tpr_list_to_print['np'].extend(tpr_list)
-        # Multitask (precision)
-        ppv_list, tpr_list = ef.compute_ppv_sensitivity(causal_fname,
-                                                        selected,
-                                                        args.num_features)
-        ppv_list_to_print['msfan'].extend(ppv_list)
-        tpr_list_to_print['msfan'].extend(tpr_list)
-        #------------------------------------------------------------------
-
-
-
-
-        #------------------------------------------------------------------
-        logging.info( "======== Prediction using opt param")
-        # For each algorithm, for each task,
-        # predict on the test set using a ridge-
-        # regression trained with the selected features only.
-        trIndices = evalf.xp_indices[fold_idx]['trIndices']
-        teIndices = evalf.xp_indices[fold_idx]['teIndices']
-
-        for task_idx in range(args.num_tasks):
-            logging.info ('task n. %d' %task_idx)
-            # Single task
-            logging.info("st")
-            fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
-                    (resu_dir, args.simu_id, fold_idx, task_idx)
-            ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                                  phenotype_fnames[task_idx],
-                                  trIndices, teIndices, fname)
-
-            # Multitask (no precision)
-            logging.info("np")
-            fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
-                    (resu_dir, args.simu_id, fold_idx, task_idx)
-            ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                                  phenotype_fnames[task_idx],
-                                  trIndices, teIndices, fname)
-
-            # Multitask (precision)
-            logging.info("msfan")
-            fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
-                    (resu_dir, args.simu_id, fold_idx, task_idx)
-            ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                                  phenotype_fnames[task_idx],
-                                  trIndices, teIndices, fname)
-        #------------------------------------------------------------------
+        run_fold(
+            fold_idx,
+            args, 
+            lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
+            evalf.xp_indices[fold_idx], 
+            genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames,
+            resu_dir)
     # END for fold_idx in range(args.num_folds)
 
 
-    # print to file ppv : 
-    with open(analysis_files['ppv_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_to_print['st']]))
-    with open(analysis_files['ppv_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_to_print['np']]))
-    with open(analysis_files['ppv_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_to_print['msfan']]))
 
+    # Concatenate ppv and tpr files :
+    bash_cmd = "head -c -1 -q"
+    #bash_cmd = "cat %s/repeat%d/%s.<algo>.fold*.ppv | tr -d '\n'" % (resu_dir, repeat_idx, args.simu_id)
+    # problem : 
+    # Expanding the * glob is part of the shell, 
+    # but by default subprocess does not send your commands via a shell, 
+    # so the command is executed (ls, head, or whatever), then a literal * is used as an argument.
+    # -> supply shell=True to execute the command through a shell interpreter
+    #    (security priblem)
+    # -> use the glob module
+    #    (quicker (no process startup overhead), more reliable and cross platform)
+
+    #----------------------------------------------------------------------
+    # print to file ppv : 
+    # for each repeat, each fold print ppv in its own file 
+    # we want to concatenate these files in one line we print in analysis_files['pvv<algo>']
+       
+    template_f_names = resu_dir+"/"+args.simu_id+".%s.fold_*.ppv"
+
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'sfan'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    with open(analysis_files['ppv_st'], 'a') as f:
+        f.write("%s\n" %output)
+    
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan_np'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    with open(analysis_files['ppv_msfan_np'], 'a') as f:
+        f.write("%s\n" %output)
+
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
+    with open(analysis_files['ppv_msfan'], 'a') as f:
+        f.write("%s\n" %output)
+
+    #----------------------------------------------------------------------
     # print to file tpr : 
+    # for each repeat, each fold print pr in its own file 
+    # we want to concatenate these files in one line we print in analysis_files['tpr<algo>']
+    template_f_names = resu_dir+"/"+args.simu_id+".%s.fold_*.tpr"
+    
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'sfan'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
     with open(analysis_files['tpr_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_to_print['st']]))
+        f.write("%s\n" %output)
+
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan_np'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
     with open(analysis_files['tpr_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_to_print['np']]))
+        f.write("%s\n" %output)
+
+    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan'), stdout=subprocess.PIPE)
+    output = process.communicate()[0]
     with open(analysis_files['tpr_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_to_print['msfan']]))
+        f.write("%s\n" %output)
 
                         
     #----------------------------------------------------------------------
