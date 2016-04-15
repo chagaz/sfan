@@ -194,8 +194,11 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
 
     # Compute grid (WARNING: STILL NOT WORKING WELL)
     sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
-                                tmp_scores_f_list, 0, 0, 0,
+                                tmp_scores_f_list, 1, 1, 1,
                                 precision_matrix_f=precision_fname)
+    # not 0, 0, 0 but 1, 1, 1 (or anything else > 0)
+    # because if mu = 0, the matrix is not use 
+    # -> no matrix, no phi, etc. 
     lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
     lbd_eta_values = [" ".join(plist.split()[:-2]) \
                       for plist in lbd_eta_mu_values]
