@@ -70,8 +70,8 @@ class SyntheticDataGenerator(object):
         <root_dir>/<simu_id>.readme:
             README file describing the simulation paramters.
         <root_dir>/<simu_id>.task_similarities.txt:
-            args.num_tasks x args.num_tasks matrix \Omega^{-1}
-            of similarities between tasks.
+            args.num_tasks x args.num_tasks matrix \Omega
+            of task covariance.
         <root_dir>/<simu_id>.causal_features:
             args.num_tasks lists of NUM_CAUSAL_EACH causal features,
             chosen from the first NUM_CAUSAL_TOTAL features.
@@ -104,10 +104,10 @@ class SyntheticDataGenerator(object):
 
         # Generate a matrix of similarities between tasks
         omega = np.random.uniform(size = (self.num_tasks, self.num_tasks))
-        omega = omega_inv.transpose().dot(omega_inv)
-        d = np.diag(omega_inv)
+        omega = omega.transpose().dot(omega)
+        d = np.diag(omega)
         d.shape = (self.num_tasks, 1)
-        omega = omega_inv / np.sqrt(d.dot(d.transpose()))
+        omega = omega / np.sqrt(d.dot(d.transpose()))
 
         # Save omega to file
         fname = "%s/%s.task_similarities.txt" % (self.root_dir, self.simu_id)
@@ -116,7 +116,6 @@ class SyntheticDataGenerator(object):
 
         # Generate beta vectors that are correlated according to omega
         # Trick: cov(Ax) = Acov(x)A'
-        omega = np.linalg.inv(omega_inv)
         L = np.linalg.cholesky(omega) # i.e. LL' = omega
         b = np.random.normal(size=(self.num_tasks, NUM_CAUSAL_TOTAL))
         beta = L.dot(b)
