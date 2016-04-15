@@ -353,15 +353,13 @@ class Sfan(object):
                 self.precision_matrix = np.eye(self.num_tasks) * (self.num_tasks + epsilon) - \
                                         np.ones((self.num_tasks, self.num_tasks))
 
+            # If the precision matrix has non-negative off-diagonal entries,
+            # truncate those to 0.
+            precision_matrix_diag = np.diag(self.precision_matrix[np.diag_indices(self.num_tasks)])
+            self.precision_matrix[np.where((self.precision_matrix - precision_matrix_diag) > 0)] = 0
 
-            if self.mu > 0:
-                # If the precision matrix has non-negative off-diagonal entries,
-                # truncate those to 0.
-                precision_matrix_diag = np.diag(self.precision_matrix[np.diag_indices(self.num_tasks)])
-                self.precision_matrix[np.where((self.precision_matrix - precision_matrix_diag) > 0)] = 0
-
-                # Sum rows of the precision matrix
-                self.phi = self.precision_matrix.sum(axis=1, dtype='float')
+            # Sum rows of the precision matrix
+            self.phi = self.precision_matrix.sum(axis=1, dtype='float')
 
 
     def compute_hyperparameters_range_multiscones(self, num_values=5):
