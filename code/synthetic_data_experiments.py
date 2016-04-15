@@ -684,8 +684,6 @@ def run_repeat(repeat_idx, args, analysis_files):
                      (data_dir, args.simu_id, task_idx) \
                      for task_idx in range(args.num_tasks)]
 
-    logging.debug( "Data file names \n")
-    logging.debug(genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames)
     
     #-------------------------------------------------------------------------
 
