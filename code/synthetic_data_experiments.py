@@ -727,15 +727,25 @@ def run_repeat(repeat_idx, args, analysis_files):
     # find opt param
     # use these opt param to select feature using the all training set. = predict causal status of features <- quantify these perf
     # use a ridge regression trained with selected features only to predict quantitativ phenotypes on test set <- quantify these perf
-    for fold_idx in xrange(args.num_folds):
-        logging.info ("============= FOLD : %d"%fold_idx)
-        run_fold(
-            fold_idx,
-            args, 
-            lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
-            evalf.xp_indices[fold_idx], 
-            genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames,
-            resu_dir)
+    if SEQ_MODE : 
+        for fold_idx in xrange(args.num_folds):
+            logging.info ("============= FOLD : %d"%fold_idx)
+            run_fold(
+                fold_idx,
+                args, 
+                lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
+                evalf.xp_indices[fold_idx], 
+                genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames,
+                resu_dir)
+    else :
+        cmd = "qsub -cwd -V -N r%df -t 1-%d \
+               qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %d" \
+               %( 
+                  repeat_idx, args.num_folds,
+                  args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+                  args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname, repeat_idx)
+        print cmd
+        p = subprocess.Popen(shlex.split(cmd)) 
     # END for fold_idx in range(args.num_folds)
 
 
