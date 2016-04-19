@@ -748,7 +748,15 @@ def run_repeat(repeat_idx, args, analysis_files):
         p = subprocess.Popen(shlex.split(cmd)) 
     # END for fold_idx in range(args.num_folds)
 
-    print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices)
+    if SEQ_MODE : 
+        print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices)
+    else : 
+        cmd = "qsub -cwd -V -hold_jid r%df ./qsub_print_analysis_files.sh\
+            %d %d %d %d %d %d %s %s %s %d" \
+            %( repeat_idx, 
+               args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+               args.data_dir, args.resu_dir, args.simu_id, repeat_idx)
+        p = subprocess.Popen(shlex.split(cmd))
 
 
 
