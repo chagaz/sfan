@@ -5,6 +5,7 @@ In this version all experiments are run sequentially.
 """
 
 DEBUG_MODE = True
+DATA_GEN = False # have to gene dat or not ?
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -227,13 +228,14 @@ def run_repeat(repeat_idx, args, analysis_files):
     # Instantiate data generator
     data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
 
-    data_gen = generate_data.SyntheticDataGenerator(args.num_tasks,
-                                                    args.num_features,
-                                                    args.num_samples,
-                                                    data_dir,
-                                                    args.simu_id)
-    # Generate modular data
-    data_gen.generate_modular()
+    if DATA_GEN : 
+        data_gen = generate_data.SyntheticDataGenerator(args.num_tasks,
+                                                        args.num_features,
+                                                        args.num_samples,
+                                                        data_dir,
+                                                        args.simu_id)
+        # Generate modular data
+        data_gen.generate_modular()
 
     # Name of data files
     # "Hard-coded here", but maybe edit generate_modular
