@@ -349,7 +349,9 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
         
             # Generate sample-specific network scores from phenotypes and genotypes
             tmp_weights_f_list = [] # to hold temp files storing these scores
+            print ('DEBUG je vais lire un pytables file')
             with tb.open_file(genotype_fname, 'r') as h5f:
+                print ("DEBUG j'ai ouvert un pytables file")
                 Xtr = h5f.root.Xtr[:, sample_indices]
                 for task_idx in range(args.num_tasks):
                     # Read phenotype
