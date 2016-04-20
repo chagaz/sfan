@@ -1217,7 +1217,9 @@ def main():
 
 
     #-------------------------------------------------------------------------
-    
+    for repeat_idx in xrange(args.num_repeats):
+            run_repeat(repeat_idx, args, analysis_files)
+    """
     if SEQ_MODE : 
         for repeat_idx in xrange(args.num_repeats):
             run_repeat(repeat_idx, args, analysis_files)
@@ -1258,7 +1260,14 @@ def main():
             %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
             args.data_dir, args.resu_dir, args.simu_id)
         p = subprocess.Popen(shlex.split(cmd))
+    """
 
+    cmd = "qsub -cwd -V ./qsub_handle-measures-results.sh\
+            %d %d %d %d %d %d %s %s %s" \
+            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+            args.data_dir, args.resu_dir, args.simu_id)
+    with open('launcher_handle-measures-results.sh', 'a') as f : 
+        f.write(cmd)
 
 if __name__ == "__main__":
     
