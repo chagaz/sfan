@@ -1249,14 +1249,14 @@ def main():
 
     if not SEQ_MODE : 
         cmd = "python run_predictions.py\
-            %d %d %d %d %d %d %s %s %s" \
+            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
             %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
             args.data_dir, args.resu_dir, args.simu_id)
         with open('launcher_handle-measures-results.sh', 'a') as f : 
             f.write(cmd)
 
         cmd = "python print_analysis_files.py\
-            %d %d %d %d %d %d %s %s %s" \
+            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
             %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
                args.data_dir, args.resu_dir, args.simu_id)
         with open('launcher_handle-measures-results.sh', 'a') as f : 
@@ -1305,8 +1305,8 @@ def main():
         p = subprocess.Popen(shlex.split(cmd))
     """
 
-    cmd = "qsub -cwd -V ./qsub_handle-measures-results.sh\
-            %d %d %d %d %d %d %s %s %s" \
+    cmd = "python synthetic_data_experiments__parallel-result.py\
+            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
             %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
             args.data_dir, args.resu_dir, args.simu_id)
     with open('launcher_handle-measures-results.sh', 'a') as f : 
