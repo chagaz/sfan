@@ -701,6 +701,8 @@ def run_repeat(repeat_idx, args, analysis_files):
                 resu_dir)
             run_predictions(fold_idx, args, resu_dir, data_dir, ef.xp_indices[fold_idx]['trIndices'], ef.xp_indices[fold_idx]['teIndices']) #XXX here ? or in main ?
         # END for fold_idx in range(args.num_folds)
+        print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices) #XXX here ? or in main ?
+
     else :
         cmd = "qsub -cwd -V -N r%df -t 1-%d \
                qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %d" \
@@ -714,15 +716,8 @@ def run_repeat(repeat_idx, args, analysis_files):
         # END for fold_idx in range(args.num_folds)
         
 
-    if SEQ_MODE : 
-        print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices)
-    else : 
-        cmd = "qsub -cwd -V -hold_jid r%df ./qsub_print_analysis_files.sh\
-            %d %d %d %d %d %d %s %s %s %d" \
-            %( repeat_idx, 
-               args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-               args.data_dir, args.resu_dir, args.simu_id, repeat_idx)
-        p = subprocess.Popen(shlex.split(cmd))
+        #print analysis_files -> in main
+
 
 def run_predictions(fold_idx, args, resu_dir, data_dir, trIndices, teIndices ):
     # can't be in the qsub run fold due to pytable utilisation.
@@ -1259,6 +1254,14 @@ def main():
             args.data_dir, args.resu_dir, args.simu_id)
         with open('launcher_handle-measures-results.sh', 'a') as f : 
             f.write(cmd)
+
+        cmd = "python print_analysis_files.py\
+            %d %d %d %d %d %d %s %s %s" \
+            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+               args.data_dir, args.resu_dir, args.simu_id)
+        with open('launcher_handle-measures-results.sh', 'a') as f : 
+            f.write(cmd)
+
     """
     if SEQ_MODE : 
         for repeat_idx in xrange(args.num_repeats):
