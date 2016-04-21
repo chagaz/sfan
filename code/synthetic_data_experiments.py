@@ -490,6 +490,7 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
     selected, timing,maxRSS = ef.run_msfan(args.num_tasks, network_fname,
                                 scores_fnames, precision_fname,
                                 opt_params)
+
     #------
     # For each algorithm, save timing to file
     # Single task 
@@ -589,47 +590,8 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
     with open (tpr_template_f_name %"msfan", 'w') as f:
         f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
 
-
-    
-
-
     #------------------------------------------------------------------
 
-
-    #------------------------------------------------------------------
-    logging.info( "======== Prediction using opt param")
-    # For each algorithm, for each task,
-    # predict on the test set using a ridge-
-    # regression trained with the selected features only.
-    trIndices = evalf.xp_indices[fold_idx]['trIndices']
-    teIndices = evalf.xp_indices[fold_idx]['teIndices']
-
-    for task_idx in range(args.num_tasks):
-        logging.info ('task n. %d' %task_idx)
-        # Single task
-        logging.info("st")
-        fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-
-        # Multitask (no precision)
-        logging.info("np")
-        fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-
-        # Multitask (precision)
-        logging.info("msfan")
-        fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-    #------------------------------------------------------------------
 
 def run_repeat(repeat_idx, args, analysis_files):
     """ Run the repeat n° <repeat_idx>.
@@ -758,7 +720,73 @@ def run_repeat(repeat_idx, args, analysis_files):
                args.data_dir, args.resu_dir, args.simu_id, repeat_idx)
         p = subprocess.Popen(shlex.split(cmd))
 
+def run_predictions(fold_idx, args, resu_dir, data_dir, trIndices, teIndices ):
+    # can't be in the qsub run fold due to pytable utilisation.
 
+    genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
+    phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
+                        (data_dir, args.simu_id, task_idx) \
+                        for task_idx in range(args.num_tasks)]
+
+    #------------------------------------------------------------------
+    logging.info( "======== Prediction using opt param")
+
+    # need to know selected_<algo> (list of list :list of sel features, for each task)
+    # saved in files '<resu_dir>/<args.simu_id>.<algo>.fold_<fold_idx>.selected_features'
+    # one line per task, list of sel feature on each line. 
+    selected_st = []
+    fname = '%s/%s.sfan.fold_%d.selected_features' % \
+        (resu_dir, args.simu_id, fold_idx)
+    with open(fname, 'r') as f :
+        for line in f : #list of selected feature for a task
+            selected_st.append([int(x) for x in line.split()])
+
+    selected_np=[]
+    fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
+        (resu_dir, args.simu_id, fold_idx)
+    with open(fname, 'r') as f :
+        for line in f : #list of selected feature for a task
+            selected_np.append([int(x) for x in line.split()])
+
+    selected = []
+    fname = '%s/%s.msfan.fold_%d.selected_features' % \
+        (resu_dir, args.simu_id, fold_idx)
+    with open(fname, 'r') as f :
+        for line in f : #list of selected feature for a task
+            selected.append([int(x) for x in line.split()])
+
+
+
+    # For each algorithm, for each task,
+    # predict on the test set using a ridge-
+    # regression trained with the selected features only.
+
+    for task_idx in range(args.num_tasks):
+        logging.info ('task n. %d' %task_idx)
+        # Single task
+        logging.info("st")
+        fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
+                (resu_dir, args.simu_id, fold_idx, task_idx)
+        ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
+                              phenotype_fnames[task_idx],
+                              trIndices, teIndices, fname)
+
+        # Multitask (no precision)
+        logging.info("np")
+        fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
+                (resu_dir, args.simu_id, fold_idx, task_idx)
+        ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
+                              phenotype_fnames[task_idx],
+                              trIndices, teIndices, fname)
+
+        # Multitask (precision)
+        logging.info("msfan")
+        fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
+                (resu_dir, args.simu_id, fold_idx, task_idx)
+        ef.run_ridge_selected(selected[task_idx], genotype_fname,
+                              phenotype_fnames[task_idx],
+                              trIndices, teIndices, fname)
+    #------------------------------------------------------------------
 
 def print_analysis_files(args, resu_dir, data_dir, xp_indices):
     """TODO
