@@ -34,6 +34,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
+    args.fold_idx = args.fold_idx -1
+    
     if args.verbose:
         logging.basicConfig(format="[%(levelname)s] %(message)s",
                             level=logging.DEBUG)
