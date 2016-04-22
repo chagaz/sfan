@@ -124,8 +124,12 @@ def check_arguments_integrity(args):
         logging.basicConfig(format="%[(levelname)s] %(message)s")
 
 def get_integrous_arguments_values(): 
-    """
-    TODO
+    """ Get arguments passed through command line and check their integrity.
+    Returns
+    -------
+    args : namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications). 
     """
     args = get_arguments_values()
     check_arguments_integrity(args)
