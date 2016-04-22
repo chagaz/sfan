@@ -28,8 +28,15 @@ import shutil
 
 
 def get_arguments_values(): 
-    """
-    TODO
+    """ Use argparse module to get arguments values.
+
+    Returns
+    -------
+    args : Namespace object
+        Namespace object populated with arguments converted from strings to objects 
+        and assigned as attributes of the namespace object.
+        They store arguments values (str or int, according to the specifications in
+        the code)
     """
     help_str = "Validation experiments on synthetic data"
     parser = argparse.ArgumentParser(description=help_str,add_help=True)
