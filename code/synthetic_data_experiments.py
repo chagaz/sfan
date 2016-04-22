@@ -156,8 +156,21 @@ def create_dir_if_not_exists(dir_name):
                 raise
 
 def get_analysis_files_names(resu_dir, simu_id): 
-    """
-    TODO
+    """ Give analysis files names. 
+
+
+    Parameters
+    ----------
+    resu_dir: filename
+        Path of the directory in which to save the results.
+    simu_id: string
+        Name of the simulation, to be used to name files.
+
+    Returns
+    -------
+    analysis_files : dictionary
+        key : <measure>_<algo> 
+        value : filename
     """
     # - to hold PPV values
     ppv_st_fname = '%s/%s.sfan.ppv' % (resu_dir, simu_id)
