@@ -136,6 +136,17 @@ def get_integrous_arguments_values():
     return args
 
 def create_dir_if_not_exists(dir_name): 
+    """ Create a dir named <dir_name> if it does not already exists. 
+
+    Parameters
+    ----------
+    dir_name : str
+        Path of the wanted new dir. 
+
+    Side effects
+    ------------
+    Create a dir named <dir_name> if it does not already exists.
+    """
     if not os.path.isdir(dir_name):
         logging.info("Creating %s\n" % dir_name)
         try: 
