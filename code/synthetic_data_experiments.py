@@ -724,8 +724,24 @@ def print_plot_files(f_name, means_to_plot, std_to_plot):
             )
 
 def print_save_res_measures(means, std, fname):
-    """
-    TODO
+    """ Print out & save with LaTeX format a measure table.
+    
+    Parameters
+    ----------
+    means : list of means
+        (one per measure)
+    std : list of std
+        (one per measure)
+    fname : filename
+        Path to the output file.
+
+    /!\ : 
+    means and std should have the same length
+    
+    Side effects
+    ------------
+    Create a file named <fname> holding the table in LaTeX format.
+
     """
     #------------------
     # Print out measures tables
