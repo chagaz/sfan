@@ -333,7 +333,7 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
         tmp_weights_fnames.append(tmp_weights_f_list)
     return tmp_weights_fnames
 
-def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
+def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
     """TODO
     """
 
@@ -373,30 +373,9 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotyp
 
         for ss_idx in range(args.num_subsamples):
             logging.info ("========                        SS : %d" % ss_idx)
-            # Get samples
-            sample_indices = evalf.xp_indices[fold_idx]['ssIndices'][ss_idx]
-        
-            # Generate sample-specific network scores from phenotypes and genotypes
-            tmp_weights_f_list = [] # to hold temp files storing these scores
-            print ('DEBUG je vais lire un pytables file')
-            with tb.open_file(genotype_fname, 'r') as h5f:
-                print ("DEBUG j'ai ouvert un pytables file")
-                Xtr = h5f.root.Xtr[:, sample_indices]
-                for task_idx in range(args.num_tasks):
-                    # Read phenotype
-                    y = np.loadtxt(phenotype_fnames[task_idx])[sample_indices]
-        
-                    # Compute feature-phenotype correlations
-                    r2 = [st.pearsonr(Xtr[feat_idx, :].transpose(), y)[0]**2 \
-                          for feat_idx in range(args.num_features)]
-        
-                    # Save to temporary file tmp_weights_f_list[task_idx]
-                    # Create temporary file of name tmp_fname (use tempfile)
-                    fd, tmp_fname = tempfile.mkstemp()
-                    # Save to temporary file
-                    np.savetxt(tmp_fname, r2, fmt='%.3e')
-                    # Append temporary file to list
-                    tmp_weights_f_list.append(tmp_fname)
+
+            # Used to get_tms_weight_f_list
+            tmp_weights_f_list = tmp_weights_fnames[ss_idx]
         
             for params in lbd_eta_values:
                 logging.info("========                        lbd_eta_values : "+ `params`)
