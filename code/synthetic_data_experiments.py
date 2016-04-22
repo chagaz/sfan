@@ -59,6 +59,18 @@ def get_arguments_values():
     return parser.parse_args()
 
 def check_arguments_integrity(args): 
+    """ Check integrity of arguments pass through the command line. 
+
+    Parameters
+    ----------
+    args : namespace object
+        Its attributes are arguments names 
+        and contain arguments values. 
+
+    Side effects
+    ------------
+    Exit the script printing why if one arg is not integrous. 
+    """
     try:
         assert(args.num_tasks >= 1)
     except AssertionError:
