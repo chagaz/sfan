@@ -89,12 +89,13 @@ if __name__ == "__main__":
             line = ssIndices_f.readline().split()
             indices["ssIndices"].append(  [int (i) for i in line ] )        
                       
-                      
+    tmp_weights_fnames = sde.get_tmp_weights_fnames(resu_dir, args.simu_id, args.fold_idx)
+             
     sde.run_fold(
             args.fold_idx,
             args, 
             lbd_eta_values, lbd_eta_mu_values, 
             indices, 
-            genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames,
+            genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames,
             resu_dir)
     

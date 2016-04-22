@@ -700,18 +700,22 @@ def run_repeat(repeat_idx, args, analysis_files):
     if SEQ_MODE : 
         for fold_idx in xrange(args.num_folds):
             logging.info ("============= FOLD : %d"%fold_idx)
+            tmp_weights_fnames = get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, evalf.xp_indices[fold_idx]['ssIndices'])
             run_fold(
                 fold_idx,
                 args, 
                 lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
                 evalf.xp_indices[fold_idx], 
-                genotype_fname, network_fname , precision_fname , causal_fname, phenotype_fnames, scores_fnames,
+                genotype_fname, network_fname ,tmp_weights_fnames,  precision_fname , causal_fname, phenotype_fnames, scores_fnames,
                 resu_dir)
             run_predictions(fold_idx, args, resu_dir, data_dir, ef.xp_indices[fold_idx]['trIndices'], ef.xp_indices[fold_idx]['teIndices']) #XXX here ? or in main ?
         # END for fold_idx in range(args.num_folds)
         print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices) #XXX here ? or in main ?
 
     else :
+        for fold_idx in xrange(args.num_folds):
+            tmp_weights_fnames = get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, evalf.xp_indices[fold_idx]['ssIndices'])
+            save_tmp_weights_fnames(resu_dir, args.simu_id, fold_idx, tmp_weights_fnames)
         cmd = "qsub -cwd -V -N r%df -t 1-%d \
                qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %d" \
                %( 
