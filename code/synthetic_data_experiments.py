@@ -158,7 +158,6 @@ def create_dir_if_not_exists(dir_name):
 def get_analysis_files_names(resu_dir, simu_id): 
     """ Give analysis files names. 
 
-
     Parameters
     ----------
     resu_dir: filename
@@ -207,7 +206,31 @@ def get_analysis_files_names(resu_dir, simu_id):
     return analysis_files
 
 def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, precision_fname, args):
-    """TODO
+    """ Determine hyperparameters. 
+
+    Parameters
+    ----------
+
+    genotype_fname: filename
+        Path to genotype data.
+    phenotype_fname: filename
+        Path to phenotype data.
+    network_fname: filename
+        Path to the network file.
+    precision_fname: filename
+        Path to the precision / correlation matrix file. 
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
+    Returns
+    -------
+    lbd_eta_mu_values: list of strings
+        Values of hyperparameters, in the format:
+        "-l <lambda -e <eta> -m <mu>".
+    lbd_eta_values: list of strings
+        Values of hyperparameters, in the format:
+        "-l <lambda -e <eta>".
+
     """
     # Define the grid of hyperparameters
     # see paper/tech_note
