@@ -281,8 +281,19 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
 
 
 def run_repeat(repeat_idx, args, analysis_files):
-    """
-    TODO
+    """ Run the repeat n° <repeat_idx>.
+
+    Parameters
+    ----------
+    repeat_idx : int 
+        Index of the current repeat. 
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
+    analysis_files: dictionary
+        key : <measure>_<algo> 
+        value : filename
+
     """
     logging.info ("=============== REPETITION : %d" %repeat_idx)
 
