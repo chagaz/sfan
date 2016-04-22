@@ -693,6 +693,27 @@ def run_repeat(repeat_idx, args, analysis_files):
 
 
 def print_plot_files(f_name, means_to_plot, std_to_plot):
+    """ Print some means and std in a plot module understandable file format.
+
+    Parameters
+    ----------
+    f_name : filename
+        Path to the output file.
+    means_to_plot : list of means 
+        (one per task)
+    std_to_plot : list of std
+        (one per task)
+
+    /!\ : 
+    len(means_to_plot) and len(std_to_plot) should be equal.
+
+    Side effects
+    ------------
+    Print a file named <f_name>. 
+    Its format is the following : 
+    Space-separated list of means (one per task) | Space-separated list of std (one per task)
+    (one line per algo : st, np and msfan)
+    """
     algos = ['st', 'np', 'msfan']
     with open(f_name, 'w') as f: 
         for algo in algos : 
