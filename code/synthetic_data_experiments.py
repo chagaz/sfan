@@ -758,7 +758,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                 evalf.xp_indices[fold_idx], 
                 genotype_fname, network_fname ,tmp_weights_fnames,  precision_fname , causal_fname, phenotype_fnames, scores_fnames,
                 resu_dir)
-            run_predictions(fold_idx, args, resu_dir, data_dir, ef.xp_indices[fold_idx]['trIndices'], ef.xp_indices[fold_idx]['teIndices']) #XXX here ? or in main ?
+            run_predictions(fold_idx, args, resu_dir, data_dir, evalf.xp_indices[fold_idx]['trIndices'], evalf.xp_indices[fold_idx]['teIndices']) #XXX here ? or in main ?
         # END for fold_idx in range(args.num_folds)
         print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices) #XXX here ? or in main ?
 
