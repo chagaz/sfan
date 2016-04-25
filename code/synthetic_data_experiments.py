@@ -333,6 +333,56 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
         tmp_weights_fnames.append(tmp_weights_f_list)
     return tmp_weights_fnames
 
+def save_tmp_weights_fnames (resu_dir, simu_id, fold_idx, tmp_weights_fnames) :
+    """ Save temporary filenames in a filename
+
+    Parameters
+    ----------
+    resu_dir: filename
+        Path of the directory in which to save the results.
+    simu_id: string
+        Name of the simulation, to be used to name files.
+    fold_idx : int 
+        Index of the current fold
+    tmp_weights_fnames : list of list of strings
+        [subsample_idx][task_idx] = tmp filename
+
+    Side effects
+    ------------
+    Create a file named "<resu_dir>/<simu_id>.fold_<fold_idx>.tmp_weights_fnames 
+    holding temporary filenames. 
+    One line per subsample. 
+    On each line : space-separated list of tmp file names. (one per task)
+
+    """ 
+    fname = "%s/%s.fold_%d.tmp_weights_fnames" % (resu_dir, simu_id, fold_idx)
+    with open (fname, 'w') as f : 
+        for subsample in tmp_weights_fnames : 
+            f.write("%s\n" % ' '.join(tmp_weights_fnames))
+
+def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) : 
+    """ Get temporary weights filenames
+
+    Parameters
+    ----------
+    resu_dir: filename
+        Path of the directory in which to save the results.
+    simu_id: string
+        Name of the simulation, to be used to name files.
+    fold_idx : int 
+        Index of the current fold
+
+    Return
+    ------
+    tmp_weights_fnames : list of list of strings
+        [subsample_idx][task_idx] = tmp filename
+
+    """
+    fname = "%s/%s.fold_%d.tmp_weights_fnames" % (resu_dir, simu_id, fold_idx)
+    with open (fname, 'r' ) as f : 
+        tmp_weights_fnames = [line.split() for line in f.readlines()]
+    return tmp_weights_fnames
+
 def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
     """TODO
     """
