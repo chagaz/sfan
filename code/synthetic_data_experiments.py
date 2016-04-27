@@ -326,6 +326,9 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
                 # Save to temporary file tmp_weights_f_list[task_idx]
                 # Create temporary file of name tmp_fname (use tempfile)
                 fd, tmp_fname = tempfile.mkstemp()
+                # /!\ tmp_fname is open, fd is the file object
+                #-> close it to avoid 'Too many open files' error
+                os.close(fd)
                 # Save to temporary file
                 np.savetxt(tmp_fname, r2, fmt='%.3e')
                 # Append temporary file to list
