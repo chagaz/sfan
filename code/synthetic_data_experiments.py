@@ -311,9 +311,7 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
         sample_indices = ssIndices[ss_idx]
         # Generate sample-specific network scores from phenotypes and genotypes
         tmp_weights_f_list = [] # to hold temp files storing these scores
-        print ('DEBUG je vais lire un pytables file')
         with tb.open_file(genotype_fname, 'r') as h5f:
-            print ("DEBUG j'ai ouvert un pytables file")
             Xtr = h5f.root.Xtr[:, sample_indices]
             for task_idx in xrange(args.num_tasks):
                 # Read phenotype
