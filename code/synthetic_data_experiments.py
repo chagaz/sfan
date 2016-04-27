@@ -358,7 +358,7 @@ def save_tmp_weights_fnames (resu_dir, simu_id, fold_idx, tmp_weights_fnames) :
     fname = "%s/%s.fold_%d.tmp_weights_fnames" % (resu_dir, simu_id, fold_idx)
     with open (fname, 'w') as f : 
         for subsample in tmp_weights_fnames : 
-            f.write("%s\n" % ' '.join(tmp_weights_fnames))
+            f.write("%s\n" % ' '.join(subsample))
 
 def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) : 
     """ Get temporary weights filenames
