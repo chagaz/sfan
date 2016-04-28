@@ -305,6 +305,24 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
 
 
 def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices): 
+    """
+    Parameters
+    ----------
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
+    genotype_fname: filename
+        Path to genotype data.
+    phenotype_fname: filename
+        Path to phenotype data.
+    ssIndices: list of list of int
+        [subsample_idx] = list of subsample indices for the current fold_idx
+    
+    Returns
+    -------
+    tmp_weights_fnames : list of list of strings
+        [subsample_idx][task_idx] = tmp filename
+    """
     tmp_weights_fnames = []
     for ss_idx in xrange(args.num_subsamples):
         # Get samples
