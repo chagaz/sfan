@@ -341,7 +341,7 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
 
                 # Save to temporary file tmp_weights_f_list[task_idx]
                 # Create temporary file of name tmp_fname (use tempfile)
-                fd, tmp_fname = tempfile.mkstemp()
+                fd, tmp_fname = tempfile.mkstemp(dir = "/share/data40T/athenais/tmp") #TODO : use arg.tmpdir / change TMP TMPDIR TEMP
                 # /!\ tmp_fname is open, fd is the file object
                 #-> close it to avoid 'Too many open files' error
                 os.close(fd)
