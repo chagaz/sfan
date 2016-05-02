@@ -321,7 +321,7 @@ def get_optimal_parameters_from_dict(selected_dict, num_features):
         => params leading to the best ci mean.
     """
     opt_params = ''
-    opt_cindex_mean = 0
+    opt_cindex_mean = -1 # ??? XXX 0 ??? 
     for (params, selected_dict_p) in selected_dict.iteritems():
         cidx_list = []
         for (task_idx, sel_list) in selected_dict_p.iteritems():
