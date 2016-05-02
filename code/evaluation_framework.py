@@ -166,19 +166,22 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     argum.extend(weights_fnames)
     argum.extend(params.split())
     argum.extend(['-m', '0'])
+    argum.extend(['--verbose'])
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-    p_out = p.communicate()[0].split("\n")[2:2+num_tasks]
+    p_out = p.communicate()[0].split("\n")
 
-    # Process the output to get lists of selected
-    # features
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    # Process the output to get lists of selected features
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
     if not sel_list :
         print "returned sel_list empty !! algo = st ; param = ", params
         #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
         sel_list = [[] for i in xrange(num_tasks)]
-    return sel_list
+
+    # Process the output to get timing info 
+    timing = '\n'.join(p_out[2+num_tasks:2+8+num_tasks])
+    return sel_list, timing
                  
 
 def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
@@ -207,21 +210,24 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(params.split())
+    argum.extend(['--verbose'])
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)
 
-    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
+    p_out = p.communicate()[0].split("\n")
 
     # Process the output to get lists of selected features
     
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
     if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
         print "PB : returned sel_list empty !! algo = np ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
         #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
-    return sel_list
+    # Process the output to get timing info 
+    timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
+    return sel_list, timing
                  
 
 def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params):
@@ -253,19 +259,23 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     argum.extend(weights_fnames)
     argum.extend(['--covariance_matrix', covariance_fname])
     argum.extend(params.split())
+    argum.extend(['--verbose'])
 
     p = subprocess.Popen(argum, stdout=subprocess.PIPE)
 
-    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
+    p_out = p.communicate()[0].split("\n")
 
     # Process the output to get lists of selected features
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
     if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
         print "returned sel_list empty !! algo = msfan ; param = ", params
         #import pdb ; pdb.set_trace() #DEBUG
         sel_list = [[] for i in xrange(num_tasks)]
-    return sel_list
+
+    # Process the output to get timing info 
+    timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
+    return sel_list, timing
                  
 
 

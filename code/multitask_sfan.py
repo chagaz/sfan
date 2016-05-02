@@ -855,7 +855,7 @@ def main() :
             output_file.write(runtime_str)
             output_file.close()
     else:
-        logging.info("%s" % runtime_str)
+        print("%s" % runtime_str)
                 
         
 if __name__ == "__main__":

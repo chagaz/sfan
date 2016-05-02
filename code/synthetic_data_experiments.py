@@ -426,12 +426,13 @@ def run_repeat(repeat_idx, args, analysis_files):
                     logging.info("========                        lbd_eta_values : "+ `params`)
                     # Select features with single-task sfan
                     logging.info("                                   run_sfan")
-                    sel_ = ef.run_sfan(args.num_tasks, network_fname,
+                    sel_, timing = ef.run_sfan(args.num_tasks, network_fname,
                                        tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace() #DEBUG
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         sf_st_dict[params][task_idx].append(sel_list)
+
             
                 for params in lbd_eta_mu_values:
                     logging.info("========                        lbd_eta_mu_values"+ `params`)
@@ -439,7 +440,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                     
                     # Select features with multi-task (no precision) sfan
                     logging.info("                                   run_msfan_nocorr")
-                    sel_ = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                    sel_ , timing = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace()#DEBUG
                     # Store selected features in the dictionary
@@ -449,7 +450,7 @@ def run_repeat(repeat_idx, args, analysis_files):
             
                     # Select features with multi-task sfan
                     logging.info("                                   run_msfan")
-                    sel_ = ef.run_msfan(args.num_tasks, network_fname,
+                    sel_, timing = ef.run_msfan(args.num_tasks, network_fname,
                                         tmp_weights_f_list, precision_fname,
                                         params)
                     if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
@@ -507,15 +508,33 @@ def run_repeat(repeat_idx, args, analysis_files):
         # using the whole training set (i.e. scores_fnames)
         # and optimal parameters.
         logging.info("          run st")
-        selected_st = ef.run_sfan(args.num_tasks, network_fname,
+        selected_st, timing_st = ef.run_sfan(args.num_tasks, network_fname,
                                    scores_fnames, opt_params_st)
         logging.info("          run np")
-        selected_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+        selected_np, timing_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                            scores_fnames, opt_params_np)
         logging.info("          run msfan")
-        selected = ef.run_msfan(args.num_tasks, network_fname,
+        selected, timing = ef.run_msfan(args.num_tasks, network_fname,
                                     scores_fnames, precision_fname,
                                     opt_params)
+        #------
+        # For each algorithm, save timing to file
+        # Single task 
+        fname= '%s/%s.sfan.fold_%d.timing' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write("%s\n" % timing_st)
+        # Multitask (no precision)
+        fname= '%s/%s.msfan_np.fold_%d.timing' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write("%s\n" % timing_np)
+        # Multitask (precision)
+        fname= '%s/%s.msfan.fold_%d.timing' % \
+                (resu_dir, args.simu_id, fold_idx)
+        with open(fname, 'w') as f:
+            f.write("%s\n" % timing)
+
         #------
         # For each algorithm, save selected features to file
         # Single task
