@@ -4,7 +4,7 @@
 In this version all experiments are run sequentially.
 """
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 DATA_GEN = False # have to gene dat or not ?
 SEQ_MODE = False
 
