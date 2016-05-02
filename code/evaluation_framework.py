@@ -570,8 +570,9 @@ def extract_res_from_files(f_names, num_tasks, num_repeat, num_folds = None):
                 for j, line in enumerate(f) : 
                     content_task = [float (item) for item in line.split()]
                     val_ci[j] = content_task
-            means[algo] = np.mean(val_ci, axis=0) # give the means for each col in the file = per task
-            std[algo]= np.std (val_ci, axis = 0)
+            #use nanmean and nanstd so don't return nan if one of the number is nan
+            means[algo] = np.nanmean(val_ci, axis=0) # give the means for each col in the file = per task
+            std[algo]= np.nanstd (val_ci, axis = 0)
 
     return means, std
 
