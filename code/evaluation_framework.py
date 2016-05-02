@@ -268,8 +268,8 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     return sel_list
                  
 
-def get_optimal_parameters_from_dict(selected_dict, num_features):
-    #TODO : return params leading to the best mean of ci for all tasks. 
+
+def get_optimal_parameters_from_dict(selected_dict, num_features): 
     """ Find optimal parameters from dictionary of selected features
 
     Arguments
@@ -285,17 +285,21 @@ def get_optimal_parameters_from_dict(selected_dict, num_features):
     Returns
     -------
     opt_params: string
-        Optimal parameters, leading to highest consistency index ???between features selected for each subsample???.
-        XXX??? Why it is not params leading to highest ci mean per task ? ???
+        Optimal parameters, leading to highest consistency index mean
+        of features selected for each subsample for each task
+        => params leading to the best ci mean.
     """
     opt_params = ''
-    opt_cindex = 0
+    opt_cindex_mean = 0
     for (params, selected_dict_p) in selected_dict.iteritems():
+        cidx_list = []
         for (task_idx, sel_list) in selected_dict_p.iteritems():
             cidx = consistency_index_k(sel_list, num_features)
-            if cidx > opt_cindex:
-                opt_cindex = cidx
-                opt_params = params
+            cidx_list.append(cidx) #list of ci, one per task, computed for current params
+            cidx_mean = np.mean(cidx_list)
+        if cidx_mean >= opt_cindex_mean:
+            opt_cindex_mean = cidx_mean
+            opt_params = params
     return opt_params
 
 
