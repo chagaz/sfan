@@ -397,6 +397,10 @@ def run_repeat(repeat_idx, args, analysis_files):
                 for task_idx in range(args.num_tasks):
                     sf_np_dict[params][task_idx] = []
                     sf_dict[params][task_idx] = []
+
+            #process_time files template : 
+            process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.sfan.fold_'+str(fold_idx)+'.process_time'
+
             for ss_idx in range(args.num_subsamples):
                 logging.info ("========                        SS : %d" % ss_idx)
                 # Get samples
@@ -432,7 +436,11 @@ def run_repeat(repeat_idx, args, analysis_files):
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         sf_st_dict[params][task_idx].append(sel_list)
-
+                    #Store process time
+                    process_time = timing.split()[-1]
+                    fname= process_time_file_template % 'sfan'
+                    with open(fname, 'a') as f:
+                        f.write("%s\n" % process_time)
             
                 for params in lbd_eta_mu_values:
                     logging.info("========                        lbd_eta_mu_values"+ `params`)
@@ -446,7 +454,11 @@ def run_repeat(repeat_idx, args, analysis_files):
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         sf_np_dict[params][task_idx].append(sel_list)
-            
+                    #Store process time
+                    process_time = timing.split()[-1]
+                    fname= process_time_file_template % 'msfan_np'
+                    with open(fname, 'a') as f:
+                        f.write("%s\n" % process_time)
             
                     # Select features with multi-task sfan
                     logging.info("                                   run_msfan")
@@ -457,7 +469,12 @@ def run_repeat(repeat_idx, args, analysis_files):
                     # Store selected features in the dictionary
                     for task_idx, sel_list in enumerate(sel_):
                         sf_dict[params][task_idx].append(sel_list)
-                
+                    #Store process time
+                    process_time = timing.split()[-1]
+                    fname= process_time_file_template % 'msfan'
+                    with open(fname, 'a') as f:
+                        f.write("%s\n" % process_time)
+
               
                 # Delete the temporary files stored in tmp_weights_f_list
                 for fname in tmp_weights_f_list:
