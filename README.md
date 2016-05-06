@@ -62,7 +62,13 @@ python multitask_sfan.py -t -v
 ## Core optimization
 The core optimization (for given regularization parameters) is run by `code/multitask_sfan.py`. See `code/test_multitask_sfan.sh` for usage.
 
-Example:
+Single task example:
+```
+ python multitask_sfan.py --num_tasks 1 --networks ../data/simu_01/simu_01.network.dimacs \
+       --node_weights ../data/simu_01/simu_01.scores_0.txt -l 0.001 -e 0.02 --output runtime.txt
+```
+
+Multitask example:
 ```
  python multitask_sfan.py --num_tasks 2 --networks ../data/simu_01/simu_01.network.dimacs \
        --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
