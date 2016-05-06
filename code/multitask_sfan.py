@@ -587,23 +587,29 @@ class Sfan(object):
                     ls = f_nt.readline().split()
                     while ls[0] != "a":
                         ls = f_nt.readline().split()
-
+                        
                     for node_idx in range(self.num_nodes_each_network):
-                        current_node = ((self.num_nodes_each_network * current_task) \
-                                        + int(ls[1]))
-                        neighbour_node = ((self.num_nodes_each_network * current_task) \
-                                          + int(ls[2]))
+                        try:
+                            current_node = ((self.num_nodes_each_network * current_task) \
+                                            + int(ls[1]))
+                            neighbour_node = ((self.num_nodes_each_network * current_task) \
+                                              + int(ls[2]))
+                            # Connect nodes within the same task
+                            while int(ls[1]) == node_idx + 1:
+                                self.dimacs_graph += ("a %d %d %f\n" % \
+                                                      (current_node, neighbour_node,
+                                                       (float(ls[3])) * self.lbd))
+                                ls = f_nt.readline().split()
+                                if len(ls) == 0:
+                                    break
+                                neighbour_node = ((self.num_nodes_each_network * \
+                                                   current_task) + int(ls[2]))
 
-                        # Connect nodes within the same task
-                        while int(ls[1]) == node_idx + 1:
-                            self.dimacs_graph += ("a %d %d %f\n" % \
-                                                  (current_node, neighbour_node,
-                                                   (float(ls[3])) * self.lbd))
-                            ls = f_nt.readline().split()
-                            if len(ls) == 0:
-                                break
-                            neighbour_node = ((self.num_nodes_each_network * \
-                                               current_task) + int(ls[2]))
+                        except IndexError:
+                            # Some nodes (with indices greater than the last one in networks_f)
+                            # are disconnected from the rest of the network.
+                            current_node = ((self.num_nodes_each_network * current_task) \
+                                            + int(node_idx) + 1)
 
                         # Connect corresponding nodes across tasks
                         if self.num_tasks > 1:
