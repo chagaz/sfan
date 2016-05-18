@@ -224,12 +224,15 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
         and contain arguments values (str or int according to code specifications).
     Returns
     -------
-    lbd_eta_mu_values: list of strings
-        Values of hyperparameters, in the format:
-        "-l <lambda -e <eta> -m <mu>".
     lbd_eta_values: list of strings
         Values of hyperparameters, in the format:
-        "-l <lambda -e <eta>".
+        "-l <lambda -e <eta>". -> for Sfan
+    lbd_eta_mu_values_np: list of strings
+        Values of hyperparameters, in the format:
+        "-l <lambda -e <eta> -m <mu>". -> for MSfan_np 
+    lbd_eta_mu_values: list of strings
+        Values of hyperparameters, in the format:
+        "-l <lambda -e <eta> -m <mu>". -> for MSfan
 
     """
     # Define the grid of hyperparameters
@@ -270,14 +273,19 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
     # not 0, 0, 0 but 1, 1, 1 (or anything else > 0)
     # because if mu = 0, the matrix is not use 
     # -> no matrix, no phi, etc. 
-    lbd_eta_mu_values = sfan_.compute_hyperparameters_range(num_values=5)
+
+    # for Sfan & MSfan np : 
+    lbd_eta_mu_values_np = sfan_.compute_hyperparameters_range(num_values=5)
     lbd_eta_values = [" ".join(plist.split()[:-2]) \
-                      for plist in lbd_eta_mu_values]
+                      for plist in lbd_eta_mu_values_np]
+    # for MSfan : 
+    lbd_eta_mu_values = sfan_.compute_hyperparameters_range_multiscones(num_values=5)
+
     # Delete temporary files from tmp_scores_f_list
     for fname in tmp_scores_f_list:
         os.remove(fname)
 
-    return lbd_eta_mu_values, lbd_eta_values
+    return lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values
 
 
 def run_repeat(repeat_idx, args, analysis_files):
@@ -354,7 +362,7 @@ def run_repeat(repeat_idx, args, analysis_files):
 
     #-----------------------------------
     logging.info ("======== Defining grid of hyperparameters")
-    lbd_eta_mu_values , lbd_eta_values = determine_hyperparamaters( genotype_fname, 
+    lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values  = determine_hyperparamaters( genotype_fname, 
                                                                     phenotype_fnames,
                                                                     network_fname,
                                                                     precision_fname,
