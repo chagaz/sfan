@@ -459,7 +459,7 @@ class Sfan(object):
                 
 
     def compute_hyperparameters_range(self, num_values=5):
-        """ Compute a reasonable range of hyperparameters for a SFAN problem.
+        """ Compute a reasonable range of hyperparameters for a SFAN problem & MSFANnp.
 
         See paper/tech_note for details.
 
