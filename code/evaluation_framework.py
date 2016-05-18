@@ -5,8 +5,8 @@ import sklearn
 import sklearn.linear_model as lm
 import sklearn.cross_validation as cv
 import tables as tb
-import subprocess 
-
+import subprocess
+import shlex
 
 
 def consistency_index(sel1, sel2, num_features):
@@ -159,7 +159,8 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
 
     # But because cython output to screen is NOT caught by sys.stdout, 
     # we need to run this externally
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '--format=%e seconds', 
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
@@ -168,9 +169,12 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     argum.extend(['-m', '0'])
     argum.extend(['--verbose'])
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-    p_out = p.communicate()[0].split("\n")
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # stdout=subprocess.PIPE -> something should read the output while the process is still running
+    # stderr=subprocess.STDOUT : To also capture standard error in the result
 
+    p_out = p.communicate()[0].split("\n")
+    import pdb; pdb.set_trace()   
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
@@ -181,7 +185,11 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
 
     # Process the output to get timing info 
     timing = '\n'.join(p_out[2+num_tasks:2+8+num_tasks])
-    return sel_list, timing
+
+    # Process the outut to get maxRSS info : 
+    maxRSS = p_out[-1]
+
+    return sel_list, timing, maxRSS
                  
 
 def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
@@ -204,7 +212,8 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
         For each task, a list of selected features, as indices,
         STARTING AT 0.
     """
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '-f', '%M',
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
@@ -227,7 +236,11 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
 
     # Process the output to get timing info 
     timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
-    return sel_list, timing
+
+    # Process the outut to get maxRSS info : 
+    maxRSS = p_out[-1]
+
+    return sel_list, timing, maxRSS
                  
 
 def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params):
@@ -252,7 +265,8 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
         For each task, a list of selected features, as indices,
         STARTING AT 0.
     """
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '-f', '%M',
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
@@ -275,7 +289,11 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
 
     # Process the output to get timing info 
     timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
-    return sel_list, timing
+
+    # Process the outut to get maxRSS info : 
+    maxRSS = p_out[-1]
+
+    return sel_list, timing, maxRSS
                  
 
 
