@@ -399,11 +399,13 @@ def run_repeat(repeat_idx, args, analysis_files):
                 sf_st_dict[params] = {}
                 for task_idx in range(args.num_tasks):
                     sf_st_dict[params][task_idx] = []
-            for params in lbd_eta_mu_values:
+            for params in lbd_eta_mu_values_np:
                 sf_np_dict[params] = {}
-                sf_dict[params] = {}
                 for task_idx in range(args.num_tasks):
                     sf_np_dict[params][task_idx] = []
+            for params in lbd_eta_mu_values:
+                sf_dict[params] = {}
+                for task_idx in range(args.num_tasks):
                     sf_dict[params][task_idx] = []
 
             #process_time files template : 
@@ -455,11 +457,9 @@ def run_repeat(repeat_idx, args, analysis_files):
                     fname= max_RSS_file_template % 'sfan'
                     with open(fname, 'a') as f:
                         f.write("%d\n" % max_RSS)
-            
-                for params in lbd_eta_mu_values:
-                    logging.info("========                        lbd_eta_mu_values"+ `params`)
-            
-                    
+                
+                for params in lbd_eta_mu_values_np:
+                    logging.info("========                        lbd_eta_mu_values_np"+ `params`)
                     # Select features with multi-task (no precision) sfan
                     logging.info("                                   run_msfan_nocorr")
                     sel_ , timing, max_RSS = ef.run_msfan_nocorr(args.num_tasks, network_fname,
@@ -478,6 +478,8 @@ def run_repeat(repeat_idx, args, analysis_files):
                     with open(fname, 'a') as f:
                         f.write("%d\n" % max_RSS)
 
+                for params in lbd_eta_mu_values:
+                    logging.info("========                        lbd_eta_mu_values"+ `params`)
                     # Select features with multi-task sfan
                     logging.info("                                   run_msfan")
                     sel_, timing, max_RSS = ef.run_msfan(args.num_tasks, network_fname,
