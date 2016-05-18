@@ -400,6 +400,8 @@ def run_repeat(repeat_idx, args, analysis_files):
 
             #process_time files template : 
             process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.sfan.fold_'+str(fold_idx)+'.process_time'
+            #max RSS files template : 
+            max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.sfan.fold_'+str(fold_idx)+'.max_RSS'
 
             for ss_idx in range(args.num_subsamples):
                 logging.info ("========                        SS : %d" % ss_idx)
@@ -430,7 +432,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                     logging.info("========                        lbd_eta_values : "+ `params`)
                     # Select features with single-task sfan
                     logging.info("                                   run_sfan")
-                    sel_, timing = ef.run_sfan(args.num_tasks, network_fname,
+                    sel_, timing, max_RSS = ef.run_sfan(args.num_tasks, network_fname,
                                        tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace() #DEBUG
                     # Store selected features in the dictionary
@@ -441,6 +443,10 @@ def run_repeat(repeat_idx, args, analysis_files):
                     fname= process_time_file_template % 'sfan'
                     with open(fname, 'a') as f:
                         f.write("%s\n" % process_time)
+                    #Store max RSS : 
+                    fname= max_RSS_file_template % 'sfan'
+                    with open(fname, 'a') as f:
+                        f.write("%d\n" % max_RSS)
             
                 for params in lbd_eta_mu_values:
                     logging.info("========                        lbd_eta_mu_values"+ `params`)
@@ -448,7 +454,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                     
                     # Select features with multi-task (no precision) sfan
                     logging.info("                                   run_msfan_nocorr")
-                    sel_ , timing = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+                    sel_ , timing, max_RSS = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                                tmp_weights_f_list, params)
                     if not sel_ : import pdb; pdb.set_trace()#DEBUG
                     # Store selected features in the dictionary
@@ -459,10 +465,14 @@ def run_repeat(repeat_idx, args, analysis_files):
                     fname= process_time_file_template % 'msfan_np'
                     with open(fname, 'a') as f:
                         f.write("%s\n" % process_time)
-            
+                    #Store max RSS : 
+                    fname= max_RSS_file_template % 'msfan_np'
+                    with open(fname, 'a') as f:
+                        f.write("%d\n" % max_RSS)
+
                     # Select features with multi-task sfan
                     logging.info("                                   run_msfan")
-                    sel_, timing = ef.run_msfan(args.num_tasks, network_fname,
+                    sel_, timing, max_RSS = ef.run_msfan(args.num_tasks, network_fname,
                                         tmp_weights_f_list, precision_fname,
                                         params)
                     if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
@@ -474,6 +484,11 @@ def run_repeat(repeat_idx, args, analysis_files):
                     fname= process_time_file_template % 'msfan'
                     with open(fname, 'a') as f:
                         f.write("%s\n" % process_time)
+                    #Store max RSS : 
+                    fname= max_RSS_file_template % 'msfan'
+                    with open(fname, 'a') as f:
+                        f.write("%d\n" % max_RSS)
+
 
               
                 # Delete the temporary files stored in tmp_weights_f_list
@@ -1048,4 +1063,4 @@ if __name__ == "__main__":
     main()
     
     print("THE END")
-        
+          
