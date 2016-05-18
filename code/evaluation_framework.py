@@ -662,16 +662,16 @@ class Framework(object):
             }
         """
         # use sklearn.cross_validation
-        
-        kf = cv.KFold(self.num_samples, n_folds=self.num_folds)# ??? Add shuffle ??? XXX
-        for i, (train_index, test_index) in enumerate(kf):
+        kf = cv.KFold(self.num_samples, n_folds=self.num_folds, shuffle = True, random_state=seed)
+        for fold_idx, (train_indices_f, test_indices_f) in enumerate(kf):
+            print fold_idx, train_indices_f, test_indices_f
             # Generate cross-validation indices
-            self.xp_indices[i]['trIndices'] = train_index.tolist()
-            self.xp_indices[i]['teIndices'] = test_index.tolist()
-            # For each train set, generate self.num_subsamples subsample sets of indices
-            ss = cv.KFold(n=self.num_samples, n_folds=self.num_subsamples, shuffle=True, random_state=seed)
-            for train_index, test_index in ss:
-                self.xp_indices[i]['ssIndices'].append(train_index.tolist())
+            self.xp_indices[fold_idx]['trIndices'] = train_indices_f.tolist()
+            self.xp_indices[fold_idx]['teIndices'] = test_indices_f.tolist()
+            # For each train set, generate self.num_subsamples subsample sets of indices (90% of the train_set_f)
+            for i_ss in xrange(self.num_subsamples) : 
+                train_indices_ss, test_indices_ss = cv.train_test_split(train_indices_f, train_size=0.9)
+                self.xp_indices[fold_idx]['ssIndices'].append( train_indices_ss.tolist() ) 
 
         
     def save_indices(self, data_dir, simu_id):
