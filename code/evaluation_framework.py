@@ -485,7 +485,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
             not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
             rmse = math.sqrt (sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
 
-        print "rmse = %d" % rmse
+        print "rmse = %f" % rmse
         rmse_list.append(rmse)
 
     # return :
