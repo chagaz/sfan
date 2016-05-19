@@ -4,8 +4,8 @@
 In this version all experiments are run sequentially.
 """
 
-DEBUG_MODE = True
-DATA_GEN = False # have to gene dat or not ?
+DEBUG_MODE = False
+DATA_GEN = True # have to gene dat or not ?
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -187,6 +187,14 @@ def get_analysis_files_names(resu_dir, simu_id):
     rmse_st_fname = '%s/%s.sfan.rmse' % (resu_dir, simu_id)
     rmse_np_fname = '%s/%s.msfan_np.rmse' % (resu_dir, simu_id)
     rmse_fname = '%s/%s.msfan.rmse' % (resu_dir, simu_id)
+    # - to hold timing values
+    timing_st_fname = '%s/%s.sfan.timing' % (resu_dir, simu_id)
+    timing_np_fname = '%s/%s.msfan_np.timing' % (resu_dir, simu_id)
+    timing_fname = '%s/%s.msfan.timing' % (resu_dir, simu_id)
+    # - to hold maxRSS values 
+    maxRSS_st_fname = '%s/%s.sfan.maxRSS' % (resu_dir, simu_id)
+    maxRSS_np_fname = '%s/%s.msfan_np.maxRSS' % (resu_dir, simu_id)
+    maxRSS_fname = '%s/%s.msfan.maxRSS' % (resu_dir, simu_id)
     
     analysis_files = {
         'ppv_st':ppv_st_fname,
@@ -200,7 +208,13 @@ def get_analysis_files_names(resu_dir, simu_id):
         'ci_msfan':ci_fname, 
         'rmse_st':rmse_st_fname ,
         'rmse_msfan_np':rmse_np_fname ,
-        'rmse_msfan':rmse_fname
+        'rmse_msfan':rmse_fname,
+        'timing_st':timing_st_fname,
+        'timing_msfan_np':timing_np_fname,
+        'timing_msfan':timing_fname,
+        'maxRSS_st':maxRSS_st_fname,
+        'maxRSS_msfan_np':maxRSS_np_fname,
+        'maxRSS_msfan':maxRSS_fname
     }
 
     return analysis_files
@@ -409,9 +423,9 @@ def run_repeat(repeat_idx, args, analysis_files):
                     sf_dict[params][task_idx] = []
 
             #process_time files template : 
-            process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.sfan.fold_'+str(fold_idx)+'.process_time'
+            process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.process_time'
             #max RSS files template : 
-            max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.sfan.fold_'+str(fold_idx)+'.max_RSS'
+            max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.max_RSS'
 
             for ss_idx in range(args.num_subsamples):
                 logging.info ("========                        SS : %d" % ss_idx)
@@ -456,7 +470,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                     #Store max RSS : 
                     fname= max_RSS_file_template % 'sfan'
                     with open(fname, 'a') as f:
-                        f.write("%d\n" % max_RSS)
+                        f.write("%s\n" % max_RSS)
                 
                 for params in lbd_eta_mu_values_np:
                     logging.info("========                        lbd_eta_mu_values_np"+ `params`)
@@ -474,9 +488,9 @@ def run_repeat(repeat_idx, args, analysis_files):
                     with open(fname, 'a') as f:
                         f.write("%s\n" % process_time)
                     #Store max RSS : 
-                    fname= max_RSS_file_template % 'msfan_np'
+                    fname= max_RSS_file_template %  'msfan_np'
                     with open(fname, 'a') as f:
-                        f.write("%d\n" % max_RSS)
+                        f.write("%s\n" % max_RSS)
 
                 for params in lbd_eta_mu_values:
                     logging.info("========                        lbd_eta_mu_values"+ `params`)
@@ -497,7 +511,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                     #Store max RSS : 
                     fname= max_RSS_file_template % 'msfan'
                     with open(fname, 'a') as f:
-                        f.write("%d\n" % max_RSS)
+                        f.write("%s\n" % max_RSS)
 
 
               
@@ -550,32 +564,40 @@ def run_repeat(repeat_idx, args, analysis_files):
         # using the whole training set (i.e. scores_fnames)
         # and optimal parameters.
         logging.info("          run st")
-        selected_st, timing_st = ef.run_sfan(args.num_tasks, network_fname,
+        selected_st, timing_st, maxRSS_st = ef.run_sfan(args.num_tasks, network_fname,
                                    scores_fnames, opt_params_st)
         logging.info("          run np")
-        selected_np, timing_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
+        selected_np, timing_np, maxRSS_np = ef.run_msfan_nocorr(args.num_tasks, network_fname,
                                            scores_fnames, opt_params_np)
         logging.info("          run msfan")
-        selected, timing = ef.run_msfan(args.num_tasks, network_fname,
+        selected, timing,maxRSS = ef.run_msfan(args.num_tasks, network_fname,
                                     scores_fnames, precision_fname,
                                     opt_params)
         #------
         # For each algorithm, save timing to file
         # Single task 
-        fname= '%s/%s.sfan.fold_%d.timing' % \
-                (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
+        with open(analysis_files['timing_st'], 'a') as f:
             f.write("%s\n" % timing_st)
         # Multitask (no precision)
-        fname= '%s/%s.msfan_np.fold_%d.timing' % \
-                (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
+        with open(analysis_files['timing_st'], 'a') as f:
             f.write("%s\n" % timing_np)
         # Multitask (precision)
-        fname= '%s/%s.msfan.fold_%d.timing' % \
-                (resu_dir, args.simu_id, fold_idx)
-        with open(fname, 'w') as f:
+        with open(analysis_files['timing_st'], 'a') as f:
             f.write("%s\n" % timing)
+
+
+        #------
+        # For each algorithm, save maxRSS to file
+        # Single task 
+        with open(analysis_files['maxRSS_st'], 'a') as f:
+            f.write("%s\n" % maxRSS_st)
+        # Multitask (no precision)
+        with open(analysis_files['maxRSS_st'], 'a') as f:
+            f.write("%s\n" % maxRSS_np)
+        # Multitask (precision)
+        with open(analysis_files['maxRSS_st'], 'a') as f:
+            f.write("%s\n" % maxRSS)
+
 
         #------
         # For each algorithm, save selected features to file
