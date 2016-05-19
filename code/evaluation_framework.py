@@ -159,7 +159,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
 
     # But because cython output to screen is NOT caught by sys.stdout, 
     # we need to run this externally
-    argum = ['/usr/bin/time', '--format=%e seconds', 
+    argum = ['/usr/bin/time', '--format=%M', 
              'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
@@ -167,14 +167,15 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     argum.extend(weights_fnames)
     argum.extend(params.split())
     argum.extend(['-m', '0'])
-    argum.extend(['--verbose'])
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # stdout=subprocess.PIPE -> something should read the output while the process is still running
     # stderr=subprocess.STDOUT : To also capture standard error in the result
 
-    p_out = p.communicate()[0].split("\n")
-    import pdb; pdb.set_trace()   
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
+       
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
@@ -183,11 +184,11 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
         #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
         sel_list = [[] for i in xrange(num_tasks)]
 
-    # Process the output to get timing info 
+    # Process the standart output to get timing info 
     timing = '\n'.join(p_out[2+num_tasks:2+8+num_tasks])
 
-    # Process the outut to get maxRSS info : 
-    maxRSS = p_out[-1]
+    # Process the standart error to get maxRSS info : 
+    maxRSS = p_err[-2]
 
     return sel_list, timing, maxRSS
                  
@@ -219,11 +220,12 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(params.split())
-    argum.extend(['--verbose'])
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    p_out = p.communicate()[0].split("\n")
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
 
     # Process the output to get lists of selected features
     
@@ -238,7 +240,7 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
     timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
 
     # Process the outut to get maxRSS info : 
-    maxRSS = p_out[-1]
+    maxRSS = p_err[-2]
 
     return sel_list, timing, maxRSS
                  
@@ -273,11 +275,12 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     argum.extend(weights_fnames)
     argum.extend(['--covariance_matrix', covariance_fname])
     argum.extend(params.split())
-    argum.extend(['--verbose'])
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    p_out = p.communicate()[0].split("\n")
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
 
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
@@ -291,7 +294,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
 
     # Process the outut to get maxRSS info : 
-    maxRSS = p_out[-1]
+    maxRSS = p_err[-2]
 
     return sel_list, timing, maxRSS
                  
