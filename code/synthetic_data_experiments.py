@@ -5,8 +5,10 @@ In this version all experiments are run sequentially.
 """
 
 DEBUG_MODE = False
-DATA_GEN = False # have to gene dat or not ?
-SEQ_MODE = False
+DATA_GEN = True # have to gene dat or not ?
+SEQ_MODE = True
+
+NUM_VALUES=3 #range param
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -291,11 +293,11 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
     # -> no matrix, no phi, etc. 
 
     # for Sfan & MSfan np : 
-    lbd_eta_mu_values_np = sfan_.compute_hyperparameters_range(num_values=5)
+    lbd_eta_mu_values_np = sfan_.compute_hyperparameters_range(num_values=NUM_VALUES)
     lbd_eta_values = [" ".join(plist.split()[:-2]) \
                       for plist in lbd_eta_mu_values_np]
     # for MSfan : 
-    lbd_eta_mu_values = sfan_.compute_hyperparameters_range_multiscones(num_values=5)
+    lbd_eta_mu_values = sfan_.compute_hyperparameters_range_multiscones(num_values=NUM_VALUES)
 
     # Delete temporary files from tmp_scores_f_list
     for fname in tmp_scores_f_list:
@@ -409,6 +411,7 @@ def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) :
 def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
     """TODO
     """
+    analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
     if not DEBUG_MODE : 
         logging.info ("======== Feature selection :")
