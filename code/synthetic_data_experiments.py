@@ -406,7 +406,7 @@ def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) :
         tmp_weights_fnames = [line.split() for line in f.readlines()]
     return tmp_weights_fnames
 
-def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
+def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
     """TODO
     """
 
