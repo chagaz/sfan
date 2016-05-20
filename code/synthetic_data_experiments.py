@@ -8,7 +8,7 @@ DEBUG_MODE = False
 DATA_GEN = True # have to gene dat or not ?
 SEQ_MODE = True
 
-NUM_VALUES=3 #range param
+NUM_VALUES=5 #range param
 
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
@@ -761,9 +761,13 @@ def run_repeat(repeat_idx, args, analysis_files):
                                                                     args)
 
     # and save them :
+    hyperparam_fname_np = '%s/%s.hyperparameters_np.txt' % (data_dir, args.simu_id)
+    with open (hyperparam_fname_np, 'w') as hp_f : 
+        for combinaison in lbd_eta_mu_values_np : 
+            hp_f.write("%s\n" % combinaison)
     hyperparam_fname = '%s/%s.hyperparameters.txt' % (data_dir, args.simu_id)
     with open (hyperparam_fname, 'w') as hp_f : 
-        for combinaison in lbd_eta_mu_values : 
+        for combinaison in lbd_eta_mu_values_np : 
             hp_f.write("%s\n" % combinaison)
     #-----------------------------------
 
