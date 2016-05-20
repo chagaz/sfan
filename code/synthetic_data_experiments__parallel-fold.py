@@ -22,8 +22,10 @@ if __name__ == "__main__":
     parser.add_argument("resu_dir", help="Results directory")
     parser.add_argument("simu_id", help="Simulation name")
     
-    parser.add_argument("hyperparam_fname", help="Number of CV folds")
-                                  # arg that differ with sde. 
+    parser.add_argument("hyperparam_fname_np", help="File holding hyperparam for sfan and msfan np")
+                                  # arg that differ with sde.
+    parser.add_argument("hyperparam_fname", help="File holding hyperparam for msfan")
+                                  # arg that differ with sde.  
     parser.add_argument("repeat_idx", help="Index of the current repeat",
                         type=int) # arg that differ with sde. 
     parser.add_argument("fold_idx", help="Index of the current fold",
@@ -63,13 +65,17 @@ if __name__ == "__main__":
     #lbd_eta_values = [" ".join(plist.split()[:-2]) \
     #                  for plist in lbd_eta_mu_values]
     
-    lbd_eta_mu_values = []
-    lbd_eta_values = []
-    with open(args.hyperparam_fname) as f:
-        for line in f : 
-            lbd_eta_mu_values.append(line)
-            lbd_eta_values.append(" ".join(line.split()[:-2]) )
     
+    lbd_eta_values = []
+    lbd_eta_mu_values_np = []
+    lbd_eta_mu_values = []
+    with open(args.hyperparam_fname_np) as f:
+        for line in f : 
+            lbd_eta_mu_values_np.append(line)
+            lbd_eta_values.append(" ".join(line.split()[:-2]) )
+    with open(args.hyperparam_fname_np) as f:
+        for line in f :
+            lbd_eta_mu_values.append(" ".join(line.split()[:-2]) )
     
     # indices for this fold : 
     # TODO : factorisation of fname template...
@@ -94,7 +100,7 @@ if __name__ == "__main__":
     sde.run_fold(
             args.fold_idx,
             args, 
-            lbd_eta_values, lbd_eta_mu_values, 
+            lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values,
             indices, 
             genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames,
             resu_dir)
