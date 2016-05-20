@@ -801,7 +801,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                %( 
                   repeat_idx, args.num_folds,
                   args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-                  args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname, repeat_idx)
+                  args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
         print cmd
         p = subprocess.Popen(shlex.split(cmd))
         # run predictions -> in main
