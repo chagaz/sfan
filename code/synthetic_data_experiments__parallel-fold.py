@@ -75,7 +75,7 @@ if __name__ == "__main__":
             lbd_eta_values.append(" ".join(line.split()[:-2]) )
     with open(args.hyperparam_fname_np) as f:
         for line in f :
-            lbd_eta_mu_values.append(" ".join(line.split()[:-2]) )
+            lbd_eta_mu_values.append(line)
     
     # indices for this fold : 
     # TODO : factorisation of fname template...
