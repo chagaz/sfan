@@ -797,7 +797,7 @@ def run_repeat(repeat_idx, args, analysis_files):
             tmp_weights_fnames = get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, evalf.xp_indices[fold_idx]['ssIndices'])
             save_tmp_weights_fnames(resu_dir, args.simu_id, fold_idx, tmp_weights_fnames)
         cmd = "qsub -cwd -V -N r%df -t 1-%d \
-               qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %d" \
+               qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
                %( 
                   repeat_idx, args.num_folds,
                   args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
