@@ -5,6 +5,7 @@ In this version all experiments are run sequentially.
 """
 
 DEBUG_MODE = False
+TIME_EXP = True
 DATA_GEN = True # have to gene dat or not ?
 SEQ_MODE = True
 
@@ -29,7 +30,7 @@ import tempfile
 import shutil
 import shlex
 import glob
-
+import random
 
 def get_arguments_values(): 
     """ Use argparse module to get arguments values.
@@ -413,7 +414,25 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
     """
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
-    if not DEBUG_MODE : 
+    if not DEBUG_MODE and TIME_EXP :
+
+        # For each algorithm, get optimal parameters saved in file
+        path = "/share/data40T/athenais/exp_changeNbSNP/opt_param/numSNP_%d/repeat_%d"  %(args.num_features, resu_dir[-1]) #on cluster
+
+        # Single task
+        fname = '%s/%s.sfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        with open(fname, 'r') as f:
+            opt_params_st = f.read()
+        # Multitask (no precision)
+        fname = '%s/%s.msfan_np.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        with open(fname, 'r') as f:
+            opt_params_np = f.read()[-1] # to remove \n
+        # Multitask (precision)
+        fname = '%s/%s.msfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        with open(fname, 'r') as f:
+            opt_params = f.read()[-1] # to remove \n
+
+    elif not DEBUG_MODE and not TIME_EXP: 
         logging.info ("======== Feature selection :")
         #XXX DEBUG ???
 
@@ -796,12 +815,23 @@ def run_repeat(repeat_idx, args, analysis_files):
         for fold_idx in xrange(args.num_folds):
             tmp_weights_fnames = get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, evalf.xp_indices[fold_idx]['ssIndices'])
             save_tmp_weights_fnames(resu_dir, args.simu_id, fold_idx, tmp_weights_fnames)
-        cmd = "qsub -cwd -V -N r%df -t 1-%d \
+        if  TIME_EXP :
+            cmd = "qsub -l hostname='compute-0-%d' -cwd -V -N r%df -t 1-%d \
+                   qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
+                   %( 
+                      random.randint(15,24), #random node compute-0-N, with N :  15 <= N <= 24
+                      repeat_idx, args.num_folds,
+                      args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
+                      args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
+
+        else : 
+            cmd = "qsub -cwd -V -N r%df -t 1-%d \
                qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
                %( 
                   repeat_idx, args.num_folds,
                   args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
                   args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
+
         print cmd
         p = subprocess.Popen(shlex.split(cmd))
         # run predictions -> in main
