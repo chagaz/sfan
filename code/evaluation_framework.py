@@ -34,7 +34,7 @@ def consistency_index(sel1, sel2, num_features):
     observed = float(len(sel1.intersection(sel2)))
     expected = len(sel1) * len(sel2) / float(num_features)
     maxposbl = float(min(len(sel1), len(sel2)))
-    cidx = 0.
+    cidx = -1.
     # It's 0 and not 1 as expected if num_features == len(sel1) == len(sel2) => observed = n
     # Because "take everything" and "take nothing" are trivial solutions we don't want to select
     if expected != maxposbl:
