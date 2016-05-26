@@ -579,10 +579,10 @@ def run_repeat(repeat_idx, args, analysis_files):
         with open(analysis_files['timing_st'], 'a') as f:
             f.write("%s\n" % timing_st)
         # Multitask (no precision)
-        with open(analysis_files['timing_st'], 'a') as f:
+        with open(analysis_files['timing_msfan_np'], 'a') as f:
             f.write("%s\n" % timing_np)
         # Multitask (precision)
-        with open(analysis_files['timing_st'], 'a') as f:
+        with open(analysis_files['timing_msfan'], 'a') as f:
             f.write("%s\n" % timing)
 
 
@@ -592,10 +592,10 @@ def run_repeat(repeat_idx, args, analysis_files):
         with open(analysis_files['maxRSS_st'], 'a') as f:
             f.write("%s\n" % maxRSS_st)
         # Multitask (no precision)
-        with open(analysis_files['maxRSS_st'], 'a') as f:
+        with open(analysis_files['maxRSS_msfan_np'], 'a') as f:
             f.write("%s\n" % maxRSS_np)
         # Multitask (precision)
-        with open(analysis_files['maxRSS_st'], 'a') as f:
+        with open(analysis_files['maxRSS_msfan'], 'a') as f:
             f.write("%s\n" % maxRSS)
 
 
