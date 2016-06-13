@@ -144,4 +144,13 @@ if __name__ == "__main__":
                                       phenotype_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
+        # END for fold_idx in range(args.num_folds)
+        
+        sde.print_analysis_files( args, resu_dir, data_dir, xp_indices)
+        # concatenation ppv, 
+        # concatenation tpr
+        # compute & write RMSE 
+        # compute & write CI
+        
+    
     
