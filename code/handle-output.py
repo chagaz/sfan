@@ -112,5 +112,36 @@ if __name__ == "__main__":
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
                 
             #-----------------------------------------------------------------------   
-                    
+            # Run predictions : 
+             
+            # For each algorithm, for each task,
+            # predict on the test set using a ridge-
+            # regression trained with the selected features only.
 
+            for task_idx in xrange(args.num_tasks):
+                logging.info ('task n. %d' %task_idx)
+                # Single task
+                logging.info("prediction st")
+                fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
+                ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
+                                      phenotype_fnames[task_idx],
+                                      trIndices, teIndices, fname)
+
+                # Multitask (no precision)
+                logging.info("pred np")
+                fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
+                ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
+                                      phenotype_fnames[task_idx],
+                                      trIndices, teIndices, fname)
+
+                # Multitask (precision)
+                logging.info("pred msfan")
+                fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
+                        (resu_dir, args.simu_id, fold_idx, task_idx)
+                ef.run_ridge_selected(selected[task_idx], genotype_fname,
+                                      phenotype_fnames[task_idx],
+                                      trIndices, teIndices, fname)
+
+    
