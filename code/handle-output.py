@@ -82,4 +82,35 @@ if __name__ == "__main__":
             ppv_list_msfan, tpr_list_msfan = ef.compute_measures_classification(causal_fname,
                                                             selected,
                                                             args.num_features)
+            #--------------------------------------------------------------------------------
+            # Measure saving in <measure>_fname
+                                                #      v-- = fold_id
+            # print in files : %s/repeat%d/%s.sfan.fold*.ppv" % (resu_dir, repeat_idx, simu_id)
+            # with '%.2f' precision
+            # Files structure : 
+            # 1 line per repeat
+            # on each line : valTask1, valTask2, ... valTaskn for each fold
+            ppv_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".ppv"
+            tpr_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".tpr"
+
+            # Single task
+            with open (ppv_template_f_name %"sfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
+            with open (tpr_template_f_name %"sfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
+
+            # Multitask (no precision)
+            with open (ppv_template_f_name %"msfan_np", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
+            with open (tpr_template_f_name %"msfan_np", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
+
+            # Multitask (precision)
+            with open (ppv_template_f_name %"msfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
+            with open (tpr_template_f_name %"msfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
+                
+            #-----------------------------------------------------------------------   
+                    
 
