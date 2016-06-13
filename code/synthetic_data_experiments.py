@@ -647,51 +647,7 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
             f.write("%s\n" % ' '.join(str(x) for x in selected_features_list))
     
     #------
-    # For each algorithm, and for each task, compute PPV
-    # and sensitivity, and save to ppv_fname, tpr_fname
-    #                                          v-- = fold_id
-    # print in files : %s/repeat%d/%s.sfan.fold*.ppv" % (resu_dir, repeat_idx, simu_id)
-    # with '%.2f' precision
-    
-    # Files structure : 
-    # 1 line per repeat
-    # on each line : valTask1, valTask2, ... valTaskn for each fold
-    
-    # For the current repeat and the current fold, 
-    # ppv_list ant tpr_list and list of ppv ant tpr respectively
-    # for each task
 
-
-
-    ppv_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".ppv"
-    tpr_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".tpr"
-
-    # Single task
-    ppv_list_st, tpr_list_st = ef.compute_ppv_sensitivity(causal_fname,
-                                                    selected_st,
-                                                    args.num_features)
-    with open (ppv_template_f_name %"sfan", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
-    with open (tpr_template_f_name %"sfan", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
-
-    # Multitask (no precision)
-    ppv_list_np, tpr_list_np = ef.compute_ppv_sensitivity(causal_fname,
-                                                    selected_np,
-                                                    args.num_features)
-    with open (ppv_template_f_name %"msfan_np", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
-    with open (tpr_template_f_name %"msfan_np", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
-
-    # Multitask (precision)
-    ppv_list_msfan, tpr_list_msfan = ef.compute_ppv_sensitivity(causal_fname,
-                                                    selected,
-                                                    args.num_features)
-    with open (ppv_template_f_name %"msfan", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
-    with open (tpr_template_f_name %"msfan", 'w') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
 
     #------------------------------------------------------------------
 
@@ -807,9 +763,6 @@ def run_repeat(repeat_idx, args, analysis_files):
                 evalf.xp_indices[fold_idx], 
                 genotype_fname, network_fname ,tmp_weights_fnames,  precision_fname , causal_fname, phenotype_fnames, scores_fnames,
                 resu_dir)
-            run_predictions(fold_idx, args, resu_dir, data_dir, evalf.xp_indices[fold_idx]['trIndices'], evalf.xp_indices[fold_idx]['teIndices']) #XXX here ? or in main ?
-        # END for fold_idx in range(args.num_folds)
-        print_analysis_files(args, resu_dir, data_dir,  evalf.xp_indices) #XXX here ? or in main ?
 
     else :
         for fold_idx in xrange(args.num_folds):
@@ -834,11 +787,9 @@ def run_repeat(repeat_idx, args, analysis_files):
 
         print cmd
         p = subprocess.Popen(shlex.split(cmd))
-        # run predictions -> in main
-        # END for fold_idx in range(args.num_folds)
-        
 
-        #print analysis_files -> in main
+    # run predictions -> in main
+    # print analysis_files -> in main
 
 
 def run_predictions(fold_idx, args, resu_dir, data_dir, trIndices, teIndices ):
@@ -1215,7 +1166,6 @@ def handle_measures_results(analysis_files, args):
         if SEQ_MODE : #XXX cluster  no display name and no $DISPLAY environment variable
             plot.bar_plot(measure, f_name) 
 
-
 def main():
     """ Sequentially run validation experiments on synthetic data.
 
@@ -1369,70 +1319,11 @@ def main():
     for repeat_idx in xrange(args.num_repeats):
             run_repeat(repeat_idx, args, analysis_files)
 
-    if not SEQ_MODE : 
-        cmd = "python run_predictions.py\
-            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
-            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-            args.data_dir, args.resu_dir, args.simu_id)
-        with open('launcher_handle-measures-results.sh', 'a') as f : 
-            f.write(cmd)
 
-        cmd = "python print_analysis_files.py\
-            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
-            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-               args.data_dir, args.resu_dir, args.simu_id)
-        with open('launcher_handle-measures-results.sh', 'a') as f : 
-            f.write(cmd)
-
-    """
-    if SEQ_MODE : 
-        for repeat_idx in xrange(args.num_repeats):
-            run_repeat(repeat_idx, args, analysis_files)
-    else : 
-        # run a job array of which each job is a repeat. 
-        # -N    : job array name is 'repeats' 
-        # -cwd  : execute the job in the current work directory 
-        #         make scritp knowing each other. 
-        # -j y  : join stout and stderr
-        # -o <path> : Place the joined output in another location other than the working directory XXX
-        # -V : pass all environement variables
-        # TODO : use -v VAR1="hello",VAR2="Sreedhar",VAR3="How are you?" to pass variables ? 
-        cmd = "qsub -cwd -V -t 1-%d -N repeats\
-               qsub_run-repeat.sh  %d %d %d %d %d %d %s %s %s" \
-               %( args.num_repeats,
-                  args.num_tasks, args.num_features, args.num_samples, args.num_repeats,args.num_folds, args.num_subsamples,
-                  args.data_dir, args.resu_dir, args.simu_id)
-        print cmd
-        p = subprocess.Popen(shlex.split(cmd))
-        # Even though shlex.split strips off the single quotes, it appears to be interpreted fine when using subprocess.
-
-    # END for repeat_idx in range(args.num_repeats)
     #-------------------------------------------------------------------------
-   
-    if SEQ_MODE : 
-        #-------------------------------------------------------------------------
-        # Handle measures results : 
-        handle_measures_results(analysis_files, args)
-        #------------------
-    else : 
-        # run this job when repeats are finished. 
-        # -hold_jid repeats : hold job starting until the job named repeat is complete. 
-        # -m e -M vaginay.athenais@gmail.com : send me an email when the job is finished. 
-        # -V : pass all environement variables
-        # TODO : use -v VAR1="hello",VAR2="Sreedhar",VAR3="How are you?" to pass variables ? 
-        cmd = "qsub -cwd -V -hold_jid repeats ./qsub_handle-measures-results.sh\
-            %d %d %d %d %d %d %s %s %s" \
-            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-            args.data_dir, args.resu_dir, args.simu_id)
-        p = subprocess.Popen(shlex.split(cmd))
-    """
 
-    cmd = "python synthetic_data_experiments__parallel-result.py\
-            -k %d -m %d -n %d -r %d -f %d -s %d %s %s %s \n" \
-            %( args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
-            args.data_dir, args.resu_dir, args.simu_id)
-    with open('launcher_handle-measures-results.sh', 'a') as f : 
-        f.write(cmd)
+    # Handle ouputs = run script handle-output.py
+
 
 if __name__ == "__main__":
     
