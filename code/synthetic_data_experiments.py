@@ -786,7 +786,7 @@ def run_repeat(repeat_idx, args, analysis_files):
             hp_f.write("%s\n" % combinaison)
     hyperparam_fname = '%s/%s.hyperparameters.txt' % (data_dir, args.simu_id)
     with open (hyperparam_fname, 'w') as hp_f : 
-        for combinaison in lbd_eta_mu_values_np : 
+        for combinaison in lbd_eta_mu_values : 
             hp_f.write("%s\n" % combinaison)
     #-----------------------------------
 
