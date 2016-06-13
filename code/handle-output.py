@@ -10,6 +10,9 @@ if __name__ == "__main__":
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
         
 
+        causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
+        
+        
         trIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.trIndices'
         teIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.teIndices'
         ssIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
@@ -58,4 +61,25 @@ if __name__ == "__main__":
                 for line in f : #list of selected feature for a task
                     selected.append([int(x) for x in line.split()])
 
+            #--------------------------------------------------------------------------------
+            # Measure computation : 
+            
+            # For each algorithm, and for each task, compute measures
+            #   (PPV, sensitivity, ...)
+            # For the current repeat and the current fold, 
+            # ppv_list ant tpr_list and list of ppv and tpr respectively
+            # for each task
+            
+            # Single task
+            ppv_list_st, tpr_list_st = ef.compute_measures_classification(causal_fname,
+                                                            selected_st,
+                                                            args.num_features)
+            # Multitask (no precision)
+            ppv_list_np, tpr_list_np = ef.compute_measures_classification(causal_fname,
+                                                            selected_np,
+                                                            args.num_features)
+            # Multitask (precision)
+            ppv_list_msfan, tpr_list_msfan = ef.compute_measures_classification(causal_fname,
+                                                            selected,
+                                                            args.num_features)
 
