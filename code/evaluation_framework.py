@@ -186,7 +186,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the standart output to get timing info 
-    timing = '\n'.join(p_out[2+num_tasks:2+8+num_tasks])
+    timing = '\n'.join(p_out[2+num_tasks:])
 
     # Process the standart error to get maxRSS info : 
     maxRSS = p_err[-2]
@@ -238,7 +238,7 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
         #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
     # Process the output to get timing info 
-    timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
+    timing = '\n'.join(p_out[3+num_tasks:])
 
     # Process the outut to get maxRSS info : 
     maxRSS = p_err[-2]
@@ -292,7 +292,7 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the output to get timing info 
-    timing = '\n'.join(p_out[3+num_tasks:3+8+num_tasks])
+    timing = '\n'.join(p_out[3+num_tasks:])
 
     # Process the outut to get maxRSS info : 
     maxRSS = p_err[-2]
