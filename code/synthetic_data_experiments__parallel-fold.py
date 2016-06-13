@@ -73,7 +73,7 @@ if __name__ == "__main__":
         for line in f : 
             lbd_eta_mu_values_np.append(line)
             lbd_eta_values.append(" ".join(line.split()[:-2]) )
-    with open(args.hyperparam_fname_np) as f:
+    with open(args.hyperparam_fname) as f:
         for line in f :
             lbd_eta_mu_values.append(line)
     
