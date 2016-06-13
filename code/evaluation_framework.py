@@ -7,6 +7,7 @@ import sklearn.cross_validation as cv
 import tables as tb
 import subprocess
 import shlex
+import math
 
 
 def consistency_index(sel1, sel2, num_features):
@@ -480,7 +481,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         else : 
             not_NaN_y_true =  [all_y_true[i] for i in not_NaN_idx]
             not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
-            rmse = sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) 
+            rmse = math.sqrt (sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
         rmse_list.append(rmse)
 
     # return :
