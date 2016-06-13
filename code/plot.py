@@ -25,7 +25,7 @@ def bar_plot(measure, f_name ):
     colors = ['b', 'r', 'k'] # blue, red, black
     opacity = 0.5 #0.4
 
-    error_config = {'ecolor': '0.3'} #TODO : kezako ? 
+    error_config = {'ecolor': '0.3'} #configuration of error bars
 
 
     plt.xlabel('Task')
