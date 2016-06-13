@@ -9,7 +9,7 @@ if __name__ == "__main__":
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
         
-  
+
         trIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.trIndices'
         teIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.teIndices'
         ssIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
@@ -32,4 +32,30 @@ if __name__ == "__main__":
                     line = ssIndices_f.readline().split()
                     xp_indices[fold_idx]["ssIndices"].append( [int (i) for i in line ] ) 
             #----------------------------------------------------------------------------
+            
+            
+            #-----------------------------------------------------------------------------
+            # Get selected features from files : 
+            
+            selected_st = []
+            fname = '%s/%s.sfan.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'r') as f :
+                for line in f : #list of selected feature for a task
+                    selected_st.append([int(x) for x in line.split()])
+
+            selected_np=[]
+            fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'r') as f :
+                for line in f : #list of selected feature for a task
+                    selected_np.append([int(x) for x in line.split()])
+
+            selected = []
+            fname = '%s/%s.msfan.fold_%d.selected_features' % \
+                (resu_dir, args.simu_id, fold_idx)
+            with open(fname, 'r') as f :
+                for line in f : #list of selected feature for a task
+                    selected.append([int(x) for x in line.split()])
+
 
