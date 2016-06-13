@@ -152,5 +152,26 @@ if __name__ == "__main__":
         # compute & write RMSE 
         # compute & write CI
         
+    # END for repeat_idx in xrange(args.num_repeats)
+    
+    
+    #----------------------------------------------------------------------------
+    
+    analysis_files = sde.get_analysis_files_names(args.resu_dir, args.simu_id)
+    
+    # For each measure compute average/mean +- standard deviation per task 
+    means, std = extract_res_means_and_std(analysis_files, args)
+    
+    
+    # Write means and std : 
+    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
+    print_save_res_measures(means, std, fname)
+
+    # Plots : 
+
+    for measure in means : 
+        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
+        print_plot_files(f_name, means[measure], std[measure])
+        plot.bar_plot(measure, f_name)
     
     
