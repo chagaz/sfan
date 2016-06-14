@@ -10,6 +10,21 @@ colors = ['darkkhaki', 'royalblue', 'white']
 
 
 
+def gene_fake_data () : 
+    # Generate data
+    data = {}
+    for key in xrange(num_tasks) : 
+        data[key] = {}
+    n = 5
+    for k,v in data.iteritems():
+        upper = random.randint(0, 1000)
+        v[algos_names[0]] = np.random.uniform(0, upper, size=n)
+        v[algos_names[1]] = np.random.uniform(0, upper, size=n-1)
+        v[algos_names[2]] = np.random.uniform(0, upper, size=n+103)
+    return data
+####################################################
+
+
 
 
 def add_hlines(axe) : 
@@ -148,4 +163,4 @@ def make_filled_legend():
                 weight='roman', size='medium')
     plt.figtext(0.83, 0.015, 'Mean', color='black', weight='roman',
                 size='x-small')
-
+            
