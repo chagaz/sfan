@@ -9,8 +9,28 @@ colors = ['darkkhaki', 'royalblue', 'white']
 
 
 
-def vertical_boxplots(data) : 
 
+
+
+def add_hlines(axe) : 
+    # Add a horizontal grid to the plot, but make it very light in color
+    # so we can use it for reading data values but not be distracting
+    axe.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+                   alpha=0.5)
+    # Hide these grid behind plot objects
+    axe.set_axisbelow(True)
+
+def add_vlines(axe) : 
+    # Add a vertical grid to the plot, but make it very light in color
+    # so we can use it for reading data values but not be distracting
+    axe.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
+                   alpha=0.5)
+    # Hide these grid behind plot objects
+    axe.set_axisbelow(True)
+    
+
+
+def vertical_boxplots(data) : 
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
     fig.subplots_adjust(wspace=0)
     fig.canvas.set_window_title('Boxlots')
