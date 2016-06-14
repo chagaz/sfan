@@ -79,3 +79,22 @@ def horizontal_boxplots(data) :
     plt.savefig('boxplots2.png')   
     plt.show()
 
+
+def vertical_barplots(data) : 
+    fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
+    fig.subplots_adjust(wspace=0)
+    fig.canvas.set_window_title('Barplots')
+
+    x_loc = np.arange( len(algos_names) ) # [0, 1, 2] # 3 algos
+    bar_width = 0.35
+
+    for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
+        ax.bar(x_loc, [np.mean(data[task_id][algo_id]) for algo_id in algos_names], bar_width )
+        ax.set_xticks(x_loc)
+        ax.set(xticklabels=algos_names, xlabel=task_id)
+        #ax.margins(0.05) # Optional
+
+    fig.tight_layout() #ajuste le cadrage
+    plt.savefig('barplots.png')    
+    plt.show()
+ 
