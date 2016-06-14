@@ -163,4 +163,27 @@ def make_filled_legend():
                 weight='roman', size='medium')
     plt.figtext(0.83, 0.015, 'Mean', color='black', weight='roman',
                 size='x-small')
-            
+
+################################################################################
+################################################################################
+
+
+if __name__ == "__main__":
+    
+    # data [taskid][algoid] = list of values
+    data = gene_fake_data()
+
+    # create fig instances : 
+
+    #-----------
+    # one for boxplots : 
+    # ... VERTICAL boxplots : 
+    vertical_boxplots(data) 
+    # ... HORIZONTAL boxplots  : 
+    horizontal_boxplots(data) 
+    #-----------
+    # one for barplots : 
+    vertical_barplots(data) 
+    
+    print("plot, THE END")
+
