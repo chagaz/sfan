@@ -117,4 +117,35 @@ def vertical_barplots(data) :
     fig.tight_layout() #ajuste le cadrage
     plt.savefig('barplots.png')    
     plt.show()
- 
+
+
+
+
+
+def make_lined_legend():
+    # draw temporary red and blue lines and use them to create a legend
+    hM, = plt.plot([1,1],'m-') #magenta
+    hB, = plt.plot([1,1],'b-') #blue
+    hK, = plt.plot([1,1],'k-') #black
+    plt.legend((hM, hB, hK),algos_names)
+    # on ne veut pas vraiment les dessiner : 
+    hO.set_visible(False) 
+    hP.set_visible(False)
+    hB.set_visible(False)
+
+
+def make_filled_legend():
+    plt.figtext(0.80, 0.18,  algos_names[0],
+                backgroundcolor=colors[0], color='black', weight='roman',
+                size='x-small')
+    plt.figtext(0.80, 0.145, algos_names[1],
+                backgroundcolor=colors[1], color='white', weight='roman', 
+                size='x-small')
+    plt.figtext(0.80, 0.110, algos_names[2],
+                 backgroundcolor=colors[2], color='black', weight='roman', 
+                size='x-small')
+    plt.figtext(0.80, 0.015, '*', color='white', backgroundcolor='silver',
+                weight='roman', size='medium')
+    plt.figtext(0.83, 0.015, 'Mean', color='black', weight='roman',
+                size='x-small')
+
