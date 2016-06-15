@@ -18,14 +18,14 @@ colors = ['darkkhaki', 'royalblue', 'white']
 def gene_fake_data () : 
     # Generate data
     data = {}
-    for key in xrange(num_tasks) : 
-        data[key] = {}
+    for key in algos_names : 
+        data[key] = []
     n = 5
-    for k,v in data.iteritems():
-        upper = random.randint(0, 1000)
-        v[algos_names[0]] = np.random.uniform(0, upper, size=n)
-        v[algos_names[1]] = np.random.uniform(0, upper, size=n-1)
-        v[algos_names[2]] = np.random.uniform(0, upper, size=n+103)
+    for task_id in xrange(num_tasks) :
+        upper = random.randint(0, 1000)  
+        data[algos_names[0]].append(np.random.uniform(0, upper, size=n))
+        data[algos_names[1]].append(np.random.uniform(0, upper, size=n-1))
+        data[algos_names[2]].append(np.random.uniform(0, upper, size=n+103))
     return data
 ####################################################
 
@@ -58,7 +58,7 @@ def vertical_boxplots(data) :
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
         print task_id
         # plot task per task : 
-        boxp = ax.boxplot([data[task_id][algo_id] for algo_id in algos_names], vert = True)
+        boxp = ax.boxplot([data[algo_id][task_id] for algo_id in algos_names], vert = True)
         # add vertical x ticks : 
         ax.set(xticklabels=algos_names)#, xlabel=task_id)
         for tick in ax.get_xticklabels():
@@ -92,7 +92,7 @@ def horizontal_boxplots(data) :
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
         print task_id
         # plot task per task : 
-        boxp = ax.boxplot([data[task_id][algo_id] for algo_id in algos_names], vert = False)
+        boxp = ax.boxplot([data[algo_id][task_id] for algo_id in algos_names], vert = False)
         # left x labels  = algos names  
         ax.set(yticklabels=algos_names)
         # right x labels = num task : 
@@ -129,7 +129,7 @@ def vertical_barplots(data) :
     bar_width = 0.35
 
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
-        ax.bar(x_loc, [np.mean(data[task_id][algo_id]) for algo_id in algos_names], bar_width )
+        ax.bar(x_loc, [np.mean(data[algo_id][task_id]) for algo_id in algos_names], bar_width )
         ax.set_xticks(x_loc)
         ax.set(xticklabels=algos_names, xlabel=task_id)
         #ax.margins(0.05) # Optional
@@ -175,7 +175,7 @@ def make_filled_legend():
 
 if __name__ == "__main__":
     
-    # data [taskid][algoid] = list of values
+    # data [algo_id][task_id] = list of values
     data = gene_fake_data()
 
     # create fig instances : 
