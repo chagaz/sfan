@@ -4,7 +4,7 @@ import logging
 import plot
 
 
-def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeat, num_folds):
+def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, num_folds):
     """ Extract plotable data from analsis files 
 
     Arguments
