@@ -9,10 +9,17 @@ if __name__ == "__main__":
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
         
-
+        #------------------
+        # get causal features from files
         causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
+        causal_features = []
+        with open(causal_fname, 'r') as f:
+            for line_idx, line in enumerate(f):
+                causal_features.append( map(int, line.split()) )
+        #-------------------
         
-        
+
+        #-------------------
         trIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.trIndices'
         teIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.teIndices'
         ssIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
@@ -65,21 +72,28 @@ if __name__ == "__main__":
             # Measure computation : 
             
             # For each algorithm, and for each task, compute measures
-            #   (PPV, sensitivity, ...)
+            #   - accuracy_score
+            #   - matthews_corrcoef
+            #   - precision_score = pvv
+            #   - recall_score = tpr
             # For the current repeat and the current fold, 
             # ppv_list ant tpr_list and list of ppv and tpr respectively
             # for each task
             
+
             # Single task
-            ppv_list_st, tpr_list_st = ef.compute_measures_classification(causal_fname,
+            acc_list_st, mcc_list_st, ppv_list_st, tpr_list_st = ef.evaluate_classification(
+                                                            causal_features,
                                                             selected_st,
                                                             args.num_features)
             # Multitask (no precision)
-            ppv_list_np, tpr_list_np = ef.compute_measures_classification(causal_fname,
+            acc_list_np, mcc_list_np, ppv_list_np, tpr_list_np = ef.evaluate_classification(
+                                                            causal_features,
                                                             selected_np,
                                                             args.num_features)
             # Multitask (precision)
-            ppv_list_msfan, tpr_list_msfan = ef.compute_measures_classification(causal_fname,
+            acc_list_msfan, mcc_list_msfan, ppv_list_msfan, tpr_list_msfan = ef.evaluate_classification(
+                                                            causal_features,
                                                             selected,
                                                             args.num_features)
             #--------------------------------------------------------------------------------
@@ -90,22 +104,39 @@ if __name__ == "__main__":
             # Files structure : 
             # 1 line per repeat
             # on each line : valTask1, valTask2, ... valTaskn for each fold
+            acc_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".acc"
+            mcc_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".mcc"
             ppv_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".ppv"
             tpr_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".tpr"
 
             # Single task
+
+            with open (acc_template_f_name %"sfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
+            with open (mcc_template_f_name %"sfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
             with open (ppv_template_f_name %"sfan", 'w') as f:
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
             with open (tpr_template_f_name %"sfan", 'w') as f:
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
 
             # Multitask (no precision)
+
+            with open (acc_template_f_name %"msfan_np", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
+            with open (mcc_template_f_name %"msfan_np", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
             with open (ppv_template_f_name %"msfan_np", 'w') as f:
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
             with open (tpr_template_f_name %"msfan_np", 'w') as f:
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
 
             # Multitask (precision)
+
+            with open (acc_template_f_name %"msfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
+            with open (mcc_template_f_name %"msfan", 'w') as f:
+                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
             with open (ppv_template_f_name %"msfan", 'w') as f:
                 f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
             with open (tpr_template_f_name %"msfan", 'w') as f:

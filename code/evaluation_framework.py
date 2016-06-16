@@ -492,6 +492,75 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
     return rmse_list
 
 
+def evaluate_classification(causal_features, selected_features, num_features):
+    """ Compute metrics scoring classification, for all tasks.
+
+    Arguments
+    ---------
+    causal_features:  list of lists
+        List of lists of real causal features (one list per task).
+    selected_features: list of lists
+        List of lists of selected features (one list per task).
+    num_features : int
+        Total number of features
+
+    Returns
+    -------
+                # accuracy_score
+                # matthews_corrcoef
+                # precision_score
+                # recall_score
+    acc_list: list
+        List of Accuracy, task per task.
+        fraction of correct predictions = predictions matching observations.
+    mcc_list: list
+        List of Matthews correlation coefficient task per task.
+        Better than Accuracy because classes are of very different sizes.
+    pre_list: list
+        List of Positive Precision = Predicted Values (PPV), task per task.
+        = TP / (TP + FP)
+    spe_list: list
+        List of Recall = Sensitivity =  True Positive Rate (TPR), task per task.
+        = TP / (TP + FN)
+    """
+    acc_list = []
+    mcc_list = []
+    pre_list = []
+    spe_list = []
+    
+    
+    # For each task, 
+    for task_idx in xrange(len(causal_features)):
+
+        # at the beginning, we consider that the features are 
+        # neither causal...
+        y_true = [False]*num_features
+        # ... nor predicted as such.
+        y_pred = [False]*num_features
+
+        # Then we change the status of the causal ones 
+        # (these are y_true True),
+        for y_true_idx in causal_features[task_idx] :
+            y_true[y_true_idx] = True
+        # and of those that have been predicted as such 
+        # (these are y_pred True). 
+        for y_pred_idx in selected_features[task_idx] :
+            y_pred[y_pred_idx] = True
+
+        # and we compute 
+        #   - accuracy_score
+        #   - matthews_corrcoef
+        #   - precision_score
+        #   - recall_score
+        # based on these 2 sets : 
+        acc_list.append( sklearn.metrics.accuracy_score    (y_true, y_pred) )
+        mcc_list.append( sklearn.metrics.matthews_corrcoef (y_true, y_pred) )
+        pre_list.append( sklearn.metrics.precision_score   (y_true, y_pred) )
+        spe_list.append( sklearn.metrics.recall_score      (y_true, y_pred) )
+
+    return acc_list, mcc_list, pre_list, spe_list
+
+
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     """ Compute PPV (Positive Predicted Values) = Accuracy = Precision
     and sensitivity (true positive rate) for all tasks.
