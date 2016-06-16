@@ -212,7 +212,7 @@ if __name__ == "__main__":
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
                                       phenotypes_fnames[task_idx],
-                                      trIndices, teIndices, fname)
+                                      xp_indices[fold_idx]['trIndices'], xp_indices[fold_idx]['teIndices'], fname)
 
                 # Multitask (no precision)
                 logging.info("pred np")
@@ -220,7 +220,7 @@ if __name__ == "__main__":
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
                                       phenotypes_fnames[task_idx],
-                                      trIndices, teIndices, fname)
+                                      xp_indices[fold_idx]['trIndices'], xp_indices[fold_idx]['teIndices'], fname)
 
                 # Multitask (precision)
                 logging.info("pred msfan")
@@ -228,7 +228,7 @@ if __name__ == "__main__":
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected[task_idx], genotype_fname,
                                       phenotypes_fnames[task_idx],
-                                      trIndices, teIndices, fname)
+                                      xp_indices[fold_idx]['trIndices'], xp_indices[fold_idx]['teIndices'], fname)
 
         # END for fold_idx in range(args.num_folds)
         
