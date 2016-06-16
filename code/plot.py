@@ -50,12 +50,12 @@ def add_vlines(axe) :
     
 
 
-def vertical_boxplots(data) : 
+def vertical_boxplots(data, name) : 
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
     fig.subplots_adjust(wspace=0)
-    fig.canvas.set_window_title('Boxlots')
+    fig.canvas.set_window_title(name)
 
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
         print task_id
@@ -81,17 +81,17 @@ def vertical_boxplots(data) :
     #make_filled_legend() 
     
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig('boxplots1.png')   
+    plt.savefig(name+'.png')   
     plt.show()
 
 
 
-def horizontal_boxplots(data) : 
+def horizontal_boxplots(data,name) : 
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(num_tasks, 1, sharex=True)
     fig.subplots_adjust(wspace=0, hspace=0)
-    fig.canvas.set_window_title('Boxlots')
+    fig.canvas.set_window_title(name)
 
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
         print task_id
@@ -120,16 +120,16 @@ def horizontal_boxplots(data) :
     #make_filled_legend() 
     
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig('boxplots2.png')   
+    plt.savefig(name+'.png')   
     plt.show()
 
 
-def vertical_barplots(data) : 
+def vertical_barplots(data, name) : 
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
     fig.subplots_adjust(wspace=0)
-    fig.canvas.set_window_title('Barplots')
+    fig.canvas.set_window_title(name)
 
     x_loc = np.arange( len(algos_names) ) # [0, 1, 2] # 3 algos
     bar_width = 0.35
@@ -141,7 +141,7 @@ def vertical_barplots(data) :
         #ax.margins(0.05) # Optional
 
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig('barplots.png')    
+    plt.savefig(name+'.png')    
     plt.show()
 
 
@@ -192,12 +192,12 @@ if __name__ == "__main__":
     #-----------
     # one for boxplots : 
     # ... VERTICAL boxplots : 
-    vertical_boxplots(data) 
+    vertical_boxplots(data, 'vertical_boxplots') 
     # ... HORIZONTAL boxplots  : 
-    horizontal_boxplots(data) 
+    horizontal_boxplots(data, 'horizontal_boxplots') 
     #-----------
     # one for barplots : 
-    vertical_barplots(data) 
+    vertical_barplots(data, 'vertical_barplots') 
     
     print("plot, THE END")
 
