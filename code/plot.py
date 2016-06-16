@@ -9,13 +9,13 @@ import random
 
 
 algos_names = ('SConES', 'MSConESnp', 'MSConES')
-num_tasks = 4
+
 colors = ['darkkhaki', 'royalblue', 'white']
 
 
 
 
-def gene_fake_data () : 
+def gene_fake_data (num_tasks) : 
     # Generate data
     data = {}
     for key in algos_names : 
@@ -51,6 +51,8 @@ def add_vlines(axe) :
 
 
 def vertical_boxplots(data) : 
+    num_tasks = len(data['MSConES'] ) 
+
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
     fig.subplots_adjust(wspace=0)
     fig.canvas.set_window_title('Boxlots')
@@ -85,6 +87,8 @@ def vertical_boxplots(data) :
 
 
 def horizontal_boxplots(data) : 
+    num_tasks = len(data['MSConES'] ) 
+
     fig, axes = plt.subplots(num_tasks, 1, sharex=True)
     fig.subplots_adjust(wspace=0, hspace=0)
     fig.canvas.set_window_title('Boxlots')
@@ -121,6 +125,8 @@ def horizontal_boxplots(data) :
 
 
 def vertical_barplots(data) : 
+    num_tasks = len(data['MSConES'] ) 
+
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
     fig.subplots_adjust(wspace=0)
     fig.canvas.set_window_title('Barplots')
@@ -174,9 +180,12 @@ def make_filled_legend():
 
 
 if __name__ == "__main__":
-    
+
+    num_tasks = 4
+
+
     # data [algo_id][task_id] = list of values
-    data = gene_fake_data()
+    data = gene_fake_data(num_tasks)
 
     # create fig instances : 
 
