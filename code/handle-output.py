@@ -30,7 +30,8 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
 
     """
     data = {}
-    algos = ['st', 'np', 'msfan']
+    algos = ('SConES', 'MSConESnp', 'MSConES')
+
     # for acc, mcc, ppv and tpr file for which values per repeat = per line 
     # are per fold, then per task, 
     # we have to compute means per task taking account of value per repeat and per fold. 
