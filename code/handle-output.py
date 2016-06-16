@@ -103,51 +103,41 @@ if __name__ == "__main__":
                                                             causal_features,
                                                             selected,
                                                             args.num_features)
+
             #--------------------------------------------------------------------------------
             # Measure saving in <measure>_fname
-                                                #      v-- = fold_id
-            # print in files : %s/repeat%d/%s.sfan.fold*.ppv" % (resu_dir, repeat_idx, simu_id)
-            # with '%.2f' precision
+            # print in analysis files 
             # Files structure : 
             # 1 line per repeat
             # on each line : valTask1, valTask2, ... valTaskn for each fold
-            acc_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".acc"
-            mcc_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".mcc"
-            ppv_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".ppv"
-            tpr_template_f_name = str(resu_dir)+"/"+str(args.simu_id)+".%s.fold_"+str(fold_idx)+".tpr"
+            
+            with open(analysis_files['acc_st'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in acc_list_st]))
+            with open(analysis_files['acc_msfan_np'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in acc_list_np]))
+            with open(analysis_files['acc_msfan'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in acc_list_msfan]))
 
-            # Single task
+            with open(analysis_files['mcc_st'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
+            with open(analysis_files['mcc_msfan_np'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in mcc_list_np]))
+            with open(analysis_files['mcc_msfan'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in mcc_list_msfan]))
 
-            with open (acc_template_f_name %"sfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
-            with open (mcc_template_f_name %"sfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
-            with open (ppv_template_f_name %"sfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
-            with open (tpr_template_f_name %"sfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
+            with open(analysis_files['ppv_st'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list_st]))
+            with open(analysis_files['ppv_msfan_np'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
+            with open(analysis_files['ppv_msfan'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
 
-            # Multitask (no precision)
-
-            with open (acc_template_f_name %"msfan_np", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
-            with open (mcc_template_f_name %"msfan_np", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
-            with open (ppv_template_f_name %"msfan_np", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_np]))
-            with open (tpr_template_f_name %"msfan_np", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
-
-            # Multitask (precision)
-
-            with open (acc_template_f_name %"msfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in acc_list_st]))
-            with open (mcc_template_f_name %"msfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in mcc_list_st]))
-            with open (ppv_template_f_name %"msfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in ppv_list_msfan]))
-            with open (tpr_template_f_name %"msfan", 'w') as f:
-                f.write('%s \n' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
+            with open(analysis_files['tpr_st'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list_st]))
+            with open(analysis_files['tpr_msfan_np'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list_np]))
+            with open(analysis_files['tpr_msfan'], 'a') as f:
+                f.write('%s ' % ' '.join(['%.2f ' % x for x in tpr_list_msfan]))
                 
             #-----------------------------------------------------------------------   
             # Run predictions : 
