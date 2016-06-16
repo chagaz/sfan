@@ -9,6 +9,13 @@ if __name__ == "__main__":
         resu_dir = "%s/repeat_%d" % (args.resu_dir, repeat_idx)
         data_dir = '%s/repeat_%d' % (args.data_dir, repeat_idx)
         
+        #-----------------
+        genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
+        #------------------
+        phenotypes_fnames = ['%s/%s.phenotype_%d.txt' % \
+                        (data_dir, args.simu_id, task_idx) \
+                        for task_idx in range(args.num_tasks)]
+
         #------------------
         # get causal features from files
         causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
@@ -156,7 +163,7 @@ if __name__ == "__main__":
                 fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
+                                      phenotypes_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
                 # Multitask (no precision)
@@ -164,7 +171,7 @@ if __name__ == "__main__":
                 fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
+                                      phenotypes_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
                 # Multitask (precision)
@@ -172,11 +179,45 @@ if __name__ == "__main__":
                 fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
                         (resu_dir, args.simu_id, fold_idx, task_idx)
                 ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                                      phenotype_fnames[task_idx],
+                                      phenotypes_fnames[task_idx],
                                       trIndices, teIndices, fname)
 
         # END for fold_idx in range(args.num_folds)
         
+            #----------------------------------------------------------------------
+    logging.info( "======== Compute & save RMSE")
+    # For each algorithm, and for each task, compute RMSE
+    # using :
+    #   - an external function : compute_ridge_selected_RMSE() returns list of rmse, task per task
+    #   - the predictions saved in files (fold per fold)
+    #   - the true values given by phenotypes_fnames[task_idx] and te_indices
+    # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
+    # => rmse_st_fname ; rmse_np_fname ; rmse_fname
+    # Files structure : 
+    # each line = a repeat
+    # on each line there are several RMSE values, one per task
+
+    # Single task
+    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                    xp_indices, args.num_tasks)
+    with open(analysis_files['rmse_st'], 'a') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (no precision)
+    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                    xp_indices, args.num_tasks)
+    with open(analysis_files['rmse_msfan_np'], 'a') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    # Multitask (precision)
+    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
+    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                    xp_indices, args.num_tasks)             
+    with open(analysis_files['rmse_msfan'], 'a') as f:
+        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+    #----------------------------------------------------------------------
+
+
         sde.print_analysis_files( args, resu_dir, data_dir, xp_indices)
         # concatenation ppv, 
         # concatenation tpr
