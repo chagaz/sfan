@@ -184,67 +184,67 @@ if __name__ == "__main__":
 
         # END for fold_idx in range(args.num_folds)
         
-            #----------------------------------------------------------------------
-    logging.info( "======== Compute & save RMSE")
-    # For each algorithm, and for each task, compute RMSE
-    # using :
-    #   - an external function : compute_ridge_selected_RMSE() returns list of rmse, task per task
-    #   - the predictions saved in files (fold per fold)
-    #   - the true values given by phenotypes_fnames[task_idx] and te_indices
-    # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
-    # => rmse_st_fname ; rmse_np_fname ; rmse_fname
-    # Files structure : 
-    # each line = a repeat
-    # on each line there are several RMSE values, one per task
+        #----------------------------------------------------------------------
+        logging.info( "======== Compute & save RMSE")
+        # For each algorithm, and for each task, compute RMSE
+        # using :
+        #   - an external function : compute_ridge_selected_RMSE() returns list of rmse, task per task
+        #   - the predictions saved in files (fold per fold)
+        #   - the true values given by phenotypes_fnames[task_idx] and te_indices
+        # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
+        # => rmse_st_fname ; rmse_np_fname ; rmse_fname
+        # Files structure : 
+        # each line = a repeat
+        # on each line there are several RMSE values, one per task
 
-    # Single task
-    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                    xp_indices, args.num_tasks)
-    with open(analysis_files['rmse_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    # Multitask (no precision)
-    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                    xp_indices, args.num_tasks)
-    with open(analysis_files['rmse_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    # Multitask (precision)
-    predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                    xp_indices, args.num_tasks)             
-    with open(analysis_files['rmse_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    #----------------------------------------------------------------------
+        # Single task
+        predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
+        rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                        xp_indices, args.num_tasks)
+        with open(analysis_files['rmse_st'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+        # Multitask (no precision)
+        predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
+        rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                        xp_indices, args.num_tasks)
+        with open(analysis_files['rmse_msfan_np'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+        # Multitask (precision)
+        predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
+        rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
+                                        xp_indices, args.num_tasks)             
+        with open(analysis_files['rmse_msfan'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
+        #----------------------------------------------------------------------
 
-    #-----------------------------------------------------------------------
-    logging.info( "======== Compute & save CI ")
-    # For each algorithm, and for each task, compute consistency index
-    # between the features selected for each fold.
-    # Use an external function using ef.consistency_index_k()
-    # use the selected features saved to files and the true causal features
-    # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
-    # File structure : 
-    # each line = a repeat
-    # on each line there are several ci values, one per task
+        #-----------------------------------------------------------------------
+        logging.info( "======== Compute & save CI ")
+        # For each algorithm, and for each task, compute consistency index
+        # between the features selected for each fold.
+        # Use an external function using ef.consistency_index_k()
+        # use the selected features saved to files and the true causal features
+        # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
+        # File structure : 
+        # each line = a repeat
+        # on each line there are several ci values, one per task
 
-    # Single task
-    selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
-    # Multitask (no precision)
-    selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
-    # Multitask (precision)
-    selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
+        # Single task
+        selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        with open(analysis_files['ci_st'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
+        # Multitask (no precision)
+        selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        with open(analysis_files['ci_msfan_np'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
+        # Multitask (precision)
+        selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
+        ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
+        with open(analysis_files['ci_msfan'], 'a') as f:
+            f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
 
-    #-----------------------------------------------------------------------
+        #-----------------------------------------------------------------------
 
         sde.print_analysis_files( args, resu_dir, data_dir, xp_indices)
         # concatenation ppv, 
