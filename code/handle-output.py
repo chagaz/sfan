@@ -235,6 +235,35 @@ if __name__ == "__main__":
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
 
         #-----------------------------------------------------------------------
+        # At the end of a repeat, add a carriage return to analysis files holding measures assessing classification : 
+        # acc, mcc, ppv, tpr files : 
+            with open(analysis_files['acc_st'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['acc_msfan_np'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['acc_msfan'], 'a') as f:
+                f.write('\n')
+
+            with open(analysis_files['mcc_st'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['mcc_msfan_np'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['mcc_msfan'], 'a') as f:
+                f.write('\n')
+
+            with open(analysis_files['ppv_st'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['ppv_msfan_np'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['ppv_msfan'], 'a') as f:
+                f.write('\n')
+
+            with open(analysis_files['tpr_st'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['tpr_msfan_np'], 'a') as f:
+                f.write('\n')
+            with open(analysis_files['tpr_msfan'], 'a') as f:
+                f.write('\n')
 
         sde.print_analysis_files( args, resu_dir, data_dir, xp_indices)
         # concatenation ppv, 
