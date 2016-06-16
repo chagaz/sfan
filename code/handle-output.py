@@ -265,11 +265,6 @@ if __name__ == "__main__":
             with open(analysis_files['tpr_msfan'], 'a') as f:
                 f.write('\n')
 
-        sde.print_analysis_files( args, resu_dir, data_dir, xp_indices)
-        # concatenation ppv, 
-        # concatenation tpr
-        # compute & write RMSE 
-        # compute & write CI
         
     # END for repeat_idx in xrange(args.num_repeats)
     
