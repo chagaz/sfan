@@ -176,6 +176,14 @@ def get_analysis_files_names(resu_dir, simu_id):
         key : <measure>_<algo> 
         value : filename
     """
+    # - to hold accuracy values  
+    acc_st_fname = '%s/%s.sfan.acc' % (resu_dir, simu_id) 
+    acc_np_fname = '%s/%s.msfan_np.acc' % (resu_dir, simu_id) 
+    acc_fname = '%s/%s.msfan.acc' % (resu_dir, simu_id)    
+    # - to hold mcc values
+    mcc_st_fname = '%s/%s.sfan.mcc' % (resu_dir, simu_id) 
+    mcc_np_fname = '%s/%s.msfan_np.mcc' % (resu_dir, simu_id) 
+    mcc_fname = '%s/%s.msfan.mcc' % (resu_dir, simu_id)    
     # - to hold PPV values
     ppv_st_fname = '%s/%s.sfan.ppv' % (resu_dir, simu_id)
     ppv_np_fname = '%s/%s.msfan_np.ppv' % (resu_dir, simu_id)
@@ -202,6 +210,12 @@ def get_analysis_files_names(resu_dir, simu_id):
     maxRSS_fname = '%s/%s.msfan.maxRSS' % (resu_dir, simu_id)
     
     analysis_files = {
+        'acc_st':acc_st_fname, 
+        'acc_msfan_np': acc_np_fname, 
+        'acc_msfan': acc_fname, 
+        'mcc_st': mcc_st_fname, 
+        'mcc_msfan_np': mcc_np_fname, 
+        'mcc_msfan': mcc_fname, 
         'ppv_st':ppv_st_fname,
         'ppv_msfan_np':ppv_np_fname,
         'ppv_msfan':ppv_fname,
