@@ -2,6 +2,7 @@ import synthetic_data_experiments as sde
 import evaluation_framework as ef
 import logging
 import plot
+import numpy as np
 
 
 def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, num_folds):
