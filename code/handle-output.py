@@ -349,7 +349,7 @@ if __name__ == "__main__":
     plot.horizontal_boxplots(data, 'mcc')
 
     data = extract_plotable_data_from_analysis_files(
-        [analysis_files['ppv_st'], analysis_files['pvv_msfan_np'], analysis_files['ppv_msfan'] ], 
+        [analysis_files['ppv_st'], analysis_files['ppv_msfan_np'], analysis_files['ppv_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
     plot.horizontal_boxplots(data, 'ppv')
