@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
+
 # TODO : fill box + legende
 # TODO : add means as star
 # TODO : add all points 
@@ -92,7 +93,7 @@ def horizontal_boxplots(data,name) :
     fig, axes = plt.subplots(num_tasks, 1, sharex=True)
     fig.subplots_adjust(wspace=0, hspace=0)
     fig.canvas.set_window_title(name)
-
+    
     for i, (ax, task_id) in enumerate( zip(axes, xrange(num_tasks) )) : 
         print task_id
         # plot task per task : 
@@ -114,7 +115,7 @@ def horizontal_boxplots(data,name) :
 
     axes[0].set_title('Title')
     #axes[num_tasks / 2].set_xlabel('Task')
-    axes[3].set_xlabel('Measure')
+    axes[num_tasks / 2 -1].set_ylabel('Measure')
 
     #make_lined_legend()
     #make_filled_legend() 
