@@ -74,7 +74,7 @@ def vertical_boxplots(data, name) :
         # set grid : 
         add_hlines(ax) 
 
-    axes[num_tasks / 2 -1].set_title('Title')
+    axes[num_tasks / 2 -1].set_title(name)
     #axes[num_tasks / 2].set_xlabel('Task')
     axes[0].set_ylabel('Measure')
 
@@ -113,7 +113,7 @@ def horizontal_boxplots(data,name) :
         # set grid : 
         add_vlines(ax) 
 
-    axes[0].set_title('Title')
+    axes[0].set_title(name)
     #axes[num_tasks / 2].set_xlabel('Task')
     axes[num_tasks / 2 -1].set_ylabel('Measure')
 
