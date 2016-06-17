@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 
+# known bug : 
+# should not be used with pdb debugger...
 
 # TODO : fill box + legende
 # TODO : add means as star
