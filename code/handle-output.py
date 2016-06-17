@@ -38,7 +38,9 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
     for algo_idx, algo in enumerate(algos) : 
         data_for_an_algo  = [[float() for i in xrange(num_repeats)] for j in xrange(num_tasks)]
         with open (f_names[algo_idx], 'r') as f : 
-            for repeat_idx, line in enumerate(f) : 
+            # for repeat_idx, line in enumerate(f) :
+            for repeat_idx in xrange(num_repeats) : 
+                line = f.readline()
                 line_content = [float (item) for item in line.split()]
                 # line_content contains every float of the line 
                 for task_idx in xrange(num_tasks) :
@@ -47,7 +49,7 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
                     #   the slice take values stepped by num_tasks until the end of the line
                     # - if data are holded one line per repeat, one column per task as mean for every fold, 
                     #   then it works too, taking the task_idx th value
-                    content_for_a_task = line_content[task_idx::num_tasks] 
+                    content_for_a_task = line_content[task_idx::num_tasks]
                     print content_for_a_task
                     # content_for_a_task_contains float of the current task for each folds of the current repeat
                     # we take the mean of them to have the mean of the repeat
