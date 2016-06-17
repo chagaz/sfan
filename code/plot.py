@@ -85,7 +85,7 @@ def vertical_boxplots(data, name) :
     
     fig.tight_layout() #ajuste le cadrage
     plt.savefig(name+'.png')   
-    plt.show()
+    #plt.show()
 
 
 
@@ -124,7 +124,7 @@ def horizontal_boxplots(data,name) :
     
     fig.tight_layout() #ajuste le cadrage
     plt.savefig(name+'.png')   
-    plt.show()
+    #plt.show()
 
 
 def vertical_barplots(data, name) : 
@@ -145,7 +145,7 @@ def vertical_barplots(data, name) :
 
     fig.tight_layout() #ajuste le cadrage
     plt.savefig(name+'.png')    
-    plt.show()
+    #plt.show()
 
 
 
