@@ -6,11 +6,13 @@ import sys
 import argparse
 
 def main():
+    # get arguments : 
     parser = argparse.ArgumentParser(description='Convert ACSN gene to HUGO gene')
-    parser.add_argument('acsn', help='ACSN to convert')
-    parser.add_argument('curated', help='reference file')
+    parser.add_argument('acsn', help='ACSN to convert in .sif format')
+    parser.add_argument('curated', help='reference file in gmt format')
     parser.add_argument('hugo', help='HUGO file to create')
     args = parser.parse_args()
+    
     curated = dict()
     # read the curated file and save into a dictionary :
     # the key is the acsn gene name and the value is the hugo gene name
