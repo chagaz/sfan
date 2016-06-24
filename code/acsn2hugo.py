@@ -1,4 +1,4 @@
-# acsn2hugo.py -- Convert ACSN gene to HUGO gene
+# acsn2hugo.py -- Convert ACSN entities network to HUGO genes network
 #
 # jean-daniel.granet@mines-paristech.fr
 
@@ -7,7 +7,7 @@ import argparse
 
 def main():
     # get arguments : 
-    parser = argparse.ArgumentParser(description='Convert ACSN gene to HUGO gene')
+    parser = argparse.ArgumentParser(description='Convert ACSN entities network to HUGO genes network')
     parser.add_argument('acsn', help='ACSN to convert in .sif format')
     parser.add_argument('curated', help='reference file in gmt format')
     parser.add_argument('hugo', help='HUGO file to create')
