@@ -28,6 +28,7 @@ def main():
     with open(args.acsn, 'r') as fdAcsn:
         # File structure : acsn entity name 1\tName of relationship\t acsn entity name 2
         with open(args.hugo, 'w') as fdHugo:
+            #File structure : hugo gene symbol\tName of relationship\thugo gene symbol
             for line in fdAcsn:
                 line_split = line.split('\t')
                 geneA = curated[line_split[0].strip()].split()
