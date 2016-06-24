@@ -22,7 +22,12 @@ def main():
         for line in fdCorrespondances:
             line_split = line.split('\tna\t')
             ACSN_entity = line_split[0].strip()
-            correspondances[ACSN_entity] = line_split[1].strip()
+            HUGO_gene_symbols_in_ACSN_entity = line_split[1].strip().split('\t')
+            
+            if ACSN_entity not in correspondances : 
+                correspondances[ACSN_entity] = set() 
+            
+            correspondances[ACSN_entity].update(HUGO_gene_symbols_in_ACSN_entity) #do not keep duplicates
         fdCorrespondances.close()
 
     # read the acsn network file and write the corresponding hugo network into the output file
@@ -34,8 +39,8 @@ def main():
                 line_split = line.split('\t')# ["acsn entity name 1","Name of relationship","acsn entity name 2"]
                 ACSN_entity_A = line_split[0].strip()
                 ACSN_entity_B = line_split[2].strip()
-                HUGO_genes_symbols_in_ACSN_entity_A = correspondances[ACSN_entity_A].split()
-                HUGO_genes_symbols_in_ACSN_entity_B = correspondances[ACSN_entity_B].split()
+                HUGO_genes_symbols_in_ACSN_entity_A = correspondances[ACSN_entity_A]
+                HUGO_genes_symbols_in_ACSN_entity_B = correspondances[ACSN_entity_B]
                 for elemA in HUGO_genes_symbols_in_ACSN_entity_A:
                     for elemB in HUGO_genes_symbols_in_ACSN_entity_B:
                         fdOut.write("%s\n" % "\n".join(["%s %s %s" % (elemA, line_split[1], elemB)]))
