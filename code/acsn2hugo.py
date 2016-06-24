@@ -8,9 +8,9 @@ import argparse
 def main():
     # get arguments : 
     parser = argparse.ArgumentParser(description='Convert ACSN entities network to HUGO genes network')
-    parser.add_argument('acsn', help='ACSN to convert in .sif format')
-    parser.add_argument('curated', help='reference file in gmt format')
-    parser.add_argument('hugo', help='HUGO file to create')
+    parser.add_argument('acsn', help='ACSN entities network to convert, in .sif format')
+    parser.add_argument('curated', help='reference file : correspondance between ACSN entities and HUGO genes symbols, in .gmt format')
+    parser.add_argument('hugo', help='file to create : genes network using HUGO gene symbols, in sif format')
     args = parser.parse_args()
     
     curated = dict()
