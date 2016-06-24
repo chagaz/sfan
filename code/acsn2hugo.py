@@ -26,6 +26,7 @@ def main():
 
     # read the acsn network file and write the corresponding hugo network into the output file
     with open(args.acsn, 'r') as fdAcsn:
+        # File structure : acsn entity name 1\tName of relationship\t acsn entity name 2
         with open(args.hugo, 'w') as fdHugo:
             for line in fdAcsn:
                 line_split = line.split('\t')
