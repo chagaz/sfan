@@ -16,11 +16,13 @@ def main():
     curated = dict()
     # read the curated file and save into a dictionary :
     # the key is the acsn gene name and the value is the hugo gene name
+    # curated [ "acsn entity name" ] = "hugo\tgene\tnames\tin\tthe\tacsn\tentity"
     with open(args.curated, 'r') as fdCurated:
         for line in fdCurated:
             line_split = line.split('\tna\t')
             curated[line_split[0].strip()] = line_split[1].strip()
         fdCurated.close()
+
     # read the acsn network file and write the corresponding hugo network into the output file
     with open(args.acsn, 'r') as fdAcsn:
         with open(args.hugo, 'w') as fdHugo:
