@@ -18,6 +18,7 @@ def main():
     # the key is the acsn gene name and the value is the hugo gene name
     # curated [ "acsn entity name" ] = "hugo\tgene\tnames\tin\tthe\tacsn\tentity"
     with open(args.curated, 'r') as fdCurated:
+        # File structure : acsn entity name\t description (=na)\tgene\list\in\tHUGO\symbol
         for line in fdCurated:
             line_split = line.split('\tna\t')
             curated[line_split[0].strip()] = line_split[1].strip()
