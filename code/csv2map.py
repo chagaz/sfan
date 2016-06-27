@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description='Convert .csv to .map')
     parser.add_argument('csv', help="""CSV file to convert. Fields are : Index,Illumina_SNP_Name,Alternative_SNP_Name,Chromosome,Build36_Position,Build37_Position,new_rsname,Strand,TopAlleles,ForwardAlleles,DesignAlleles
     """)
-    parser.add_argument('map', help='MAP file to create')
+    parser.add_argument('map', help='MAP file to create. Fields will be : num chromosome (1-22, X, Y or 0 if unplaced), snp identifier, Genetic distance (morgans) = 0, Base-pair position (bp units)')
     args = parser.parse_args()
     
     # read the csv file and convert it into a MAP file
