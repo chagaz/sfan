@@ -63,7 +63,7 @@ def main():
     print 'Connect each SNPs to the nearest : ',
     Start = time.time()
     
-    Chromosome = [(0,0)] * 26 # 26 = 22 pairs of autosomes (1-22) + 3 gonosomes : X (23), Y (24), XY (25) + 1 mitochondrial : MT (26)
+    Chromosome = [(-1,-1)] * 26 # 26 = 22 pairs of autosomes (1-22) + 3 gonosomes : X (23), Y (24), XY (25) + 1 mitochondrial : MT (26)
     # This list saves, for each chromo, which SNP is at the begining, which one is at the end
     
     for idxSNP in xrange(0, len(SNPs)):
