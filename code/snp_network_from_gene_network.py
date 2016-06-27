@@ -18,22 +18,23 @@ def main():
     parser.add_argument('window', help='window for SNP-gene association')
     parser.add_argument('output', help='output file')
     args = parser.parse_args()
-    # create a list wich contains SNPs positions
+    # create a list wich contains SNPs positions. Using PLINK's internal numeric coding for chromosome number
     print 'Creation of the list of SNPS positions : ',
     Start = time.time()
     SNPs = list()
     with open(args.map, 'r') as fdMap:
+        # Map file structure description : http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#map
         for (line_idx, line) in enumerate(fdMap):
-            if line_idx > 0:
+            if line_idx > 0: # avoid header of map file
                 line_split = line.split()
-                if int(line_split[3]) >= 0:
-                    if line_split[0] == 'X':
+                if int(line_split[3]) >= 0: # "To exclude a SNP from analysis, set the 4th column (physical base-pair position) to any negative value" -- http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#map
+                    if line_split[0] == 'X': # X chromosome
                         SNPs.append((23, int(line_split[3])))
-                    elif line_split[0] == 'Y':
+                    elif line_split[0] == 'Y': # Y chromosome
                         SNPs.append((24, int(line_split[3])))
-                    elif line_split[0] == 'XY':
+                    elif line_split[0] == 'XY': # Pseudo-autosomal region of X
                         SNPs.append((25, int(line_split[3])))
-                    elif line_split[0] == 'MT':
+                    elif line_split[0] == 'MT': # Mitochondrial
                         SNPs.append((26, int(line_split[3])))
                     else:
                         SNPs.append((int(line_split[0]), int(line_split[3])))
