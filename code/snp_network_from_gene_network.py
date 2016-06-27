@@ -10,7 +10,10 @@ import numpy as np # numerical python module
 import scipy.sparse as sp # scientific python sparse module
 
 def main():
+    
     TotalStartTime = time.time()
+    
+    #---------------------------------------------------------------------------
     parser = argparse.ArgumentParser(description='Create SNPs network')
     parser.add_argument('acsn', help='gene network')
     parser.add_argument('map', help='SNPs positions')
@@ -18,6 +21,9 @@ def main():
     parser.add_argument('window', help='window for SNP-gene association')
     parser.add_argument('output', help='output file')
     args = parser.parse_args()
+    #---------------------------------------------------------------------------
+    
+    #---------------------------------------------------------------------------
     # create a list wich contains SNPs positions. Using PLINK's internal numeric coding for chromosome number
     print 'Creation of the list of SNPS positions : ',
     Start = time.time()
@@ -42,12 +48,17 @@ def main():
     End = time.time()
     print '\033[92m' + 'DONE' + '\033[0m'
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
     # sort the SNPs array by chromosome
     SNPs.sort(key=itemgetter(0, 1))
+    
     # create a sparse matrix of size len(SNPs) x len(SNPs) to create the network
     print 'Creation of the matrix to save the network : ',
     net = sp.lil_matrix((len(SNPs), len(SNPs)))
     print '\033[92m' + 'DONE' + '\033[0m'
+
+    #---------------------------------------------------------------------------
     # connect each SNPs to the nearest
     print 'Connect each SNPs to the nearest : ',
     Start = time.time()
@@ -64,6 +75,9 @@ def main():
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
+    #---------------------------------------------------------------------------
     # read hugogenes.txt and save into a dictionnary : the key is the name of the gene
     print 'Save the genes positions : ',
     Start = time.time()
@@ -82,6 +96,9 @@ def main():
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
+    #---------------------------------------------------------------------------
     # attach the SNPs to the genes
     print 'Attach each SNPs of a gene to each other : ',
     Start = time.time()
@@ -97,6 +114,9 @@ def main():
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
+    #---------------------------------------------------------------------------
     # connect the SNPs of gene A to the SNPs of gene B
     print 'Connect each SNPs of gene A to each SNPs of gene B : ',
     Start = time.time()
@@ -113,6 +133,9 @@ def main():
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
+    #---------------------------------------------------------------------------
     # write the network into the output file
     print 'Write the network into the output file : ',
     Start = time.time()
@@ -126,6 +149,9 @@ def main():
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
+    #---------------------------------------------------------------------------
+    
+    
     TotalEndTime = time.time()
     print "Total excution time :" + str(TotalEndTime - TotalStartTime)
 
