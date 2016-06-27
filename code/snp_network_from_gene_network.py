@@ -62,20 +62,26 @@ def main():
     # connect each SNPs to the nearest
     print 'Connect each SNPs to the nearest : ',
     Start = time.time()
-    Chromosome = [(0,0)] * 26
+    
+    Chromosome = [(0,0)] * 26 # 26 = 22 pairs of autosomes (1-22) + 3 gonosomes : X (23), Y (24), XY (25) + 1 mitochondrial : MT (26)
+    # This list saves, for each chromo, which SNP is at the begining, which one is at the end
+    
     for idxSNP in xrange(0, len(SNPs)):
-        if idxSNP + 1 < len(SNPs):
-            if SNPs[idxSNP][0] != SNPs[idxSNP + 1][0]:
-                Chromosome[SNPs[idxSNP][0] - 1] = (Chromosome[SNPs[idxSNP][0] - 1][0], idxSNP)
+        if idxSNP + 1 < len(SNPs): # the current SNP is not the last. +1 is needed because numerotation begin to 0
+            if SNPs[idxSNP][0] != SNPs[idxSNP + 1][0]: # the current SNP and the next one are not on the same chromosome
+                # save the current SNP_index as the last SNP of the current chromo : 
+                Chromosome[SNPs[idxSNP][0] - 1] = (Chromosome[SNPs[idxSNP][0] - 1][0], idxSNP) # /!\ -1 needed because in Python, chromo numeratation begin to 0, not 1
+                # save the next SNP index as the first of the next chromo : 
                 Chromosome[SNPs[idxSNP][0]] = (idxSNP + 1, 0)
-            if SNPs[idxSNP][0] == SNPs[idxSNP + 1][0]:
+            if SNPs[idxSNP][0] == SNPs[idxSNP + 1][0]: # the current SNP and the next one are on the same chromosome -> connect them
                 net[idxSNP, idxSNP + 1] = 1
-        else:
+        else: # the current studied SNP is the last one
             Chromosome[SNPs[idxSNP][0] - 1] = (Chromosome[SNPs[idxSNP][0] - 1][0], idxSNP)
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
     #---------------------------------------------------------------------------
+
     
     #---------------------------------------------------------------------------
     # read hugogenes.txt and save into a dictionnary : the key is the name of the gene
