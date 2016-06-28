@@ -89,9 +89,10 @@ def main():
     Start = time.time()
     genes = dict()
     with open(args.hugo, 'r') as fdHugo:
+        # each line : num chromo \t start pos \t end pos \t HUGO gene symbol
         for line in fdHugo:
             line_split = line.split()
-            if line_split[3] in genes.keys():
+            if line_split[3] in genes.keys(): # handling HUGO gene symbols duplicates
                 if genes[line_split[3]][1] > int(line_split[1]) - int(args.window):
                     genes[line_split[3]][1] = int(line_split[1]) - int(args.window)
                 elif genes[line_split[3]][2] > int(line_split[2]) + int(args.window):
