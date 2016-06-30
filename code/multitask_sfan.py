@@ -405,7 +405,7 @@ class Sfan(object):
                     amax = max(amax, np.max(avec))
                     amin = min(amin, np.min(avec))
                     if amin < 1e-10:
-                        logging.error("!amin too small!", amin, eta)
+                        logging.error("!amin too small! amin = %f eta = %f", amin, eta)
                         sys.exit(-1)
                     amed = np.median(avec)
                     f.close()
@@ -517,7 +517,7 @@ class Sfan(object):
                         amax = max(amax, np.max(avec))
                         amin = min(amin, np.min(avec))
                         if amin < 1e-10:
-                            logging.error("!amin too small!\n", amin, mu, eta)
+                            logging.error("!amin too small! amin = %f mu = %f eta = %f\n", amin, mu, eta)
                             sys.exit(-1)
                         amed = np.median(avec)
                         f.close()
