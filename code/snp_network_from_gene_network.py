@@ -142,17 +142,40 @@ def main():
     
     #---------------------------------------------------------------------------
     # attach the SNPs to the genes
+    import pdb
+
     print 'Attach each SNPs of a gene to each other : ',
     Start = time.time()
-    for keyG in genes:
-        for idxSNP in xrange(Chromosome[genes[keyG][0] - 1][0], Chromosome[genes[keyG][0] - 1][1] + 1):
-            if SNPs[idxSNP][0] == genes[keyG][0]:
-                if SNPs[idxSNP][1] > genes[keyG][1] and SNPs[idxSNP][1] < genes[keyG][2]:
-                    genes[keyG].append(idxSNP)
-        for idxG in xrange(3, len(genes[keyG])):
-            for idxG2 in xrange(idxG + 1, len(genes[keyG])):
-                if net[genes[keyG][idxG2], genes[keyG][idxG]] != 1:
-                    net[genes[keyG][idxG], genes[keyG][idxG2]] = 1
+    for Hgs in genes:
+        Chromosome[0] = (0 , 14373) #TODO : Fix -1 in Chromosome
+
+        #----------
+        # List SNPs belonging to a gene :
+        SNPs_in_Hgs = list() 
+        # Each Hgs can be on several chromo. 
+        # Get the list of chromo num of current Hgs: 
+        list_chromo_num = [dupe[0]-1 for dupe in genes[Hgs] ]
+        # /!\ -1 because numeration begin to 0 and not to 1
+
+        # For each chromo num, we have an union of interval : 
+
+        for dupe_idx, chromo_num in enumerate(list_chromo_num) : 
+            # Get the range of SNP that are positionated on this chromo : 
+            num_SNP_range = xrange(Chromosome[chromo_num][0], Chromosome[chromo_num][1] + 1)
+            # For each SNP in this range : 
+            for SNP_idx in num_SNP_range : 
+                # If the SNP belong to gene dupe on this chromo (take the window into account)
+                if SNPs[SNP_idx][1] in genes[Hgs][dupe_idx][1] : 
+                    # Add the gene to the list : 
+                    SNPs_in_Hgs.append(SNP_idx)
+        #----------
+        # Attach each SNPs of a gene to each other :
+        for SNP_idx1 in xrange(len(SNPs_in_Hgs)):
+            for SNP_idx2 in xrange(SNP_idx1 + 1, len(SNPs_in_Hgs)):
+                if net[SNPs_in_Hgs[SNP_idx2], SNPs_in_Hgs[SNP_idx2]] != 1: #why ??? 
+                    net[SNPs_in_Hgs[SNP_idx1], SNPs_in_Hgs[SNP_idx2]] = 1
+                else : import pdb; pdb.set_trace() 
+        print 'bim'
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
