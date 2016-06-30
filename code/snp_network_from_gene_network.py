@@ -10,45 +10,6 @@ import numpy as np # numerical python module
 import scipy.sparse as sp # scientific python sparse module
 from sympy import Interval, Union
 
-def get_occ_len(occ):
-    return occ[2]-occ[1] + 1
-
-def on_same_chromo(occ1, occ2) : 
-    return occ1[0] == occ2[0]
-
-def get_overlap(occ1, occ2):
-    return max(0, min(occ1[2], occ2[2]) - max(occ1[1], occ2[1]) + 1 )
-    
-
-def touch(occ1, occ2):
-    if on_same_chromo(occ1, occ2) and 0 < get_overlap(occ1, occ2) < get_occ_len(occ2) : 
-        # on same chromo and overlap's length < len(occ2)
-        return True
-    return False 
-
-def cover(occ1, occ2):
-    if on_same_chromo(occ1, occ2) and 0 < get_overlap(occ1, occ2) == get_occ_len(occ2) : 
-        # on same chromo and overlap's length == len(occ2)
-        return True
-    return False 
-
-def get_all_indices(l, e):
-    """Get indices of an element in list containing duplicates
-    
-    Arguments 
-    ---------
-    l : list 
-        can have dupes
-    e : an element
-        possibly in the list, possibly several times 
-    
-    Return : 
-    --------
-    indices : list 
-        list of indices where e was seen
-    """
-    return [index for index in xrange(len(l)) if l[index] == e]
-     
 def main():
     
     TotalStartTime = time.time()
@@ -124,95 +85,55 @@ def main():
 
     
     #---------------------------------------------------------------------------
-    # read hugogenes.txt and save into a dictionnary : the key is the name of the gene
+    # read hugogenes.txt and save gene duplicates of each Hgs of the file in
+    # into a dictionnary : 
     print 'Save the genes positions : ',
     Start = time.time()
-    genes_occ = dict()
     genes = dict()
     # key : hugo gene symbol 
-    # values : tuples containing 3 items : 
+    # values : tuples containing 2 items : 
     #   - the first = chromo num
-    #   - the second = starting position - window value
-    #   - the third = ending position + window value
-    # genes_occ : one tuple per HUGO gene symbol occurence
-    # genes : one tuple per gene duplicates
-    # /!\ 'duplicates' =/= occurence of HUGO gene symbol in hugo file
-    # see Technotes. TODO : Technotes
+    #   - the second = Interval 
+    #     ( starting position - window value, ending position + window value) 
+    # genes : one tuple per chromosome where duplicates are founded
+    # /!\ 'genes duplicates' =/= occurence of HUGO gene symbol in hugo file
 
-    # Save every occurences (exept duplicates) of each Hgs of the file in genes_occ : 
+
     with open(args.hugo, 'r') as fdHugo:
         # each line : num chromo \t start pos \t end pos \t HUGO gene symbol
         for line in fdHugo:
 
+            # get data from file : 
             line_split = line.split()
             current_Hgs = line_split[3]
-            current_data = (int(line_split[0]), int(line_split[1]), int(line_split[2]) ) 
+            current_chromo_num = int(line_split[0])
+            current_Interval = Interval(int(line_split[1]), int(line_split[2]) )
+            current_data = (current_chromo_num, current_Interval ) 
 
-            if current_Hgs not in genes_occ.keys() : 
-                genes_occ[current_Hgs] = set() #set not allow duplicate info
- 
-            genes_occ[current_Hgs].add(current_data)
 
-    
-    for Hgs in genes_occ : 
+            if current_Hgs not in genes.keys() : 
+                genes[current_Hgs] = list() 
 
-        genes[Hgs] = set()
+            print 'before', genes[current_Hgs]
+            print current_data
 
-        # Sort occurences of each Hgs by their length = pos_end - pos_start + 1  
-        genes_occ[Hgs] = sorted( genes_occ[Hgs], key = lambda occurence : occurence[2]-occurence[1] + 1 , reverse = True) 
+            # handle multi occurence and save new data
+            chromo_num_list = [genes[current_Hgs][i][0] for i in xrange (len (genes[current_Hgs]))]
+            if current_chromo_num in chromo_num_list : # there is possibly an overlap 
+                # get the index of the tuple holding info on the same chromo...
+                duplicate_idx = chromo_num_list.index(current_chromo_num) 
+                # ... and the associated data, 
+                duplicate_data = genes[current_Hgs][duplicate_idx]
+                # merge old and current data, 
+                to_save = (current_chromo_num, Union (current_Interval, duplicate_data[1]))
+                # and save the merged data : 
+                genes[current_Hgs][duplicate_idx] = to_save
+            else : # no overlap are possible,
+                # thus just add a new tuple holding current data : 
+                genes[current_Hgs].append(current_data)
 
-        occ_infos =  [ [None, list()]  for _ in xrange(len( genes_occ[Hgs]) )  ] 
-        print "166", occ_infos
-        # occ_infos = a list
-        # for each occurence : 
-        # a tag : 
-        #   - None : no info : unseen / seen but nothing to say 
-        #   - 'c' : covered
-        #   - 't' : touched
-        # a list of touched occ
-        for current_occ_idx, current_occ in enumerate(genes_occ[Hgs]) : 
-            print "175", occ_infos
-            if occ_infos[current_occ_idx][0] != 'c' : #if uncovered : 
-                # tag info on remaining uncoverded occ:  
-                for i, occ in enumerate(genes_occ[Hgs][current_occ_idx+1:]) :
-                    occ_idx = i + current_occ_idx + 1
-                    print occ_infos
-                    if occ_infos[occ_idx][0] != 'c' : 
-                        if cover(current_occ, occ): 
-                            occ_infos[occ_idx][0] = 'c'
-                        elif touch(current_occ, occ) : 
-                            occ_infos[occ_idx][0] = 't'
-                            occ_infos[current_occ_idx][1].append(occ_idx)
-
-            # otherwise, info is already tagged by previous occ
- 
-
-        if (len( genes_occ[Hgs] )) >= 2 : 
-
-            # occ to keep = those that haven't 'c' tag :
-            tag_list = [occ_infos[i][0] for i in xrange (len(occ_infos) ) ]
-            c_tagged = get_all_indices( tag_list , 'c')
-
-            all_tagged = range(len(occ_infos))
-            no_c_tagged = [i for i in reversed(all_tagged) if i not in c_tagged] # a stack-list
-
-            if len (get_all_indices( tag_list , 't') ) > 0 : import pdb; pdb.set_trace() 
-            
-            while no_c_tagged:
-                occ_idx = no_c_tagged.pop()
-
-                current_data = genes_occ[Hgs][occ_idx]
-
-                if not occ_infos[occ_idx][1] : # touches no one
-                    genes[Hgs].add(current_data)
-
-                else  : # touches someth
-                    touched_list = occ_infos[occ_idx][1]
-                    for touched_idx in touched_list : 
-                        current_data = get_union(current_data, genes_occ[Hgs][touched_idx])
-                        touched_list.extend(occ_infos[touched_idx][1])
-                        no_c_tagged.remove(touched_idx)
-
+            print 'after', genes[current_Hgs]
+            print '-------------------'
 
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
