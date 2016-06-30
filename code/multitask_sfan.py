@@ -396,6 +396,9 @@ class Sfan(object):
 
         for eta in eta_values:
             #print "eta ", eta
+            
+            eta_to_reject_list = list() 
+            
             amax = 0
             amin = np.inf
             for current_task in range(self.num_tasks):
@@ -406,9 +409,17 @@ class Sfan(object):
                     amin = min(amin, np.min(avec))
                     if amin < 1e-10:
                         logging.error("!amin too small! amin = %f eta = %f", amin, eta)
-                        sys.exit(-1)
+                        #sys.exit(-1)
+                        # if cvec -eta next to 0, it is as nodes were not connected
+                        # -> trivial solution -> we don't want this kind of value
+                        eta_to_reject_list.append(eta)
                     amed = np.median(avec)
                     f.close()
+        
+        for eta_to_reject in eta_to_reject_list : 
+            eta_values.remove(eta_to_reject) 
+
+        for eta in eta_values:
 
             Wmax = 0
             Wmin = np.inf
