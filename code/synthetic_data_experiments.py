@@ -738,7 +738,7 @@ def run_repeat(repeat_idx, args, analysis_files):
     evalf.compute_indices()
 
     # Save cross-validation folds and subsample indices to file
-    evalf.save_indices(data_dir, args.simu_id)
+    evalf.save_indices(resu_dir, args.simu_id)
 
 
     #-------------------------------------------------------------------------

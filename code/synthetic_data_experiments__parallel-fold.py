@@ -79,9 +79,9 @@ if __name__ == "__main__":
     
     # indices for this fold : 
     # TODO : factorisation of fname template...
-    trIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.trIndices'
-    teIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.teIndices'
-    ssIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
+    trIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.trIndices'
+    teIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.teIndices'
+    ssIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
 
     indices = {'trIndices': list(), 'teIndices':list(), 'ssIndices':list()}
     with open(trIndices_fname %(args.fold_idx), 'r') as trIndices_f : 
