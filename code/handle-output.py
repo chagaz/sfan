@@ -50,7 +50,7 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
                     # - if data are holded one line per repeat, one column per task as mean for every fold, 
                     #   then it works too, taking the task_idx th value
                     content_for_a_task = line_content[task_idx::num_tasks]
-                    print content_for_a_task
+                    #print content_for_a_task
                     # content_for_a_task_contains float of the current task for each folds of the current repeat
                     # we take the mean of them to have the mean of the repeat
                     data_for_an_algo[task_idx][repeat_idx]  = np.mean(content_for_a_task)

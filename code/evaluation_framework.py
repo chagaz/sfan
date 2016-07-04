@@ -443,16 +443,16 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
     """
     rmse_list = []
     for task_idx in range(num_tasks):
-        print "\n\n\n\n==== tache num %d" %task_idx
+        #print "\n\n\n\n==== tache num %d" %task_idx
         # For n inds :
         # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
         # read all_y_true :
-        print '\ni read phenotype_fname[task_idx = %d] = %s' %(task_idx, phenotype_fname[task_idx]) 
+        #print '\ni read phenotype_fname[task_idx = %d] = %s' %(task_idx, phenotype_fname[task_idx]) 
         with open(phenotype_fname[task_idx], 'r') as f_true:
             all_y_true = [float(y) for y in f_true.read().split()]
-        print "\nall_y_true = "
-        print all_y_true
+        #print "\nall_y_true = "
+        #print all_y_true
         # read all_y_pred :
         # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
         # we open each file (one per fold) and append predicted phenotypes
@@ -467,8 +467,8 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
                 all_y_pred.extend(float(y) for y in content)
          
         all_y_pred_sorted = [all_y_pred[i] for i in all_y_pred_indices]
-        print "\n all_y_pred_sorted = "
-        print all_y_pred_sorted
+        #print "\n all_y_pred_sorted = "
+        #print all_y_pred_sorted
         # compute rmse using metrics : 
         # wanted to use : rmse = sklearn.metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
         # be if all_y_pred_sorted have NaN, there is a problem
@@ -485,7 +485,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
             not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
             rmse = math.sqrt (sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
 
-        print "rmse = %f" % rmse
+        #print "rmse = %f" % rmse
         rmse_list.append(rmse)
 
     # return :
@@ -741,7 +741,7 @@ class Framework(object):
         # use sklearn.cross_validation
         kf = cv.KFold(self.num_samples, n_folds=self.num_folds, shuffle = True, random_state=seed)
         for fold_idx, (train_indices_f, test_indices_f) in enumerate(kf):
-            print fold_idx, train_indices_f, test_indices_f
+            #print fold_idx, train_indices_f, test_indices_f
             # Generate cross-validation indices
             self.xp_indices[fold_idx]['trIndices'] = train_indices_f.tolist()
             self.xp_indices[fold_idx]['teIndices'] = test_indices_f.tolist()
