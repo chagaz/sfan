@@ -168,7 +168,8 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     argum.extend(weights_fnames)
     argum.extend(params.split())
     argum.extend(['-m', '0'])
-
+    print '+++'
+    print argum
     p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # stdout=subprocess.PIPE -> something should read the output while the process is still running
     # stderr=subprocess.STDOUT : To also capture standard error in the result
@@ -176,7 +177,7 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     p_com = p.communicate()
     p_out = p_com[0].split("\n")
     p_err = p_com[1].split("\n")
-       
+    print p_com
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
@@ -221,13 +222,14 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(params.split())
-
+    print '+++'
+    print argum
     p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     p_com = p.communicate()
     p_out = p_com[0].split("\n")
     p_err = p_com[1].split("\n")
-
+    print p_com
     # Process the output to get lists of selected features
     
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
@@ -276,13 +278,14 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     argum.extend(weights_fnames)
     argum.extend(['--covariance_matrix', covariance_fname])
     argum.extend(params.split())
-
+    print '+++'
+    print argum
     p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     p_com = p.communicate()
     p_out = p_com[0].split("\n")
     p_err = p_com[1].split("\n")
-
+    print p_com
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
