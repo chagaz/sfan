@@ -94,7 +94,8 @@ def main():
     # values : tuples containing 2 items : 
     #   - the first = chromo num
     #   - the second = Interval 
-    #     ( starting position - window value, ending position + window value) 
+    #     ( starting position - window value, ending position + window value)
+    #   - the third = list of SPNs (empty list at this steps)
     # genes : one tuple per chromosome where duplicates are founded
     # /!\ 'genes duplicates' =/= occurence of HUGO gene symbol in hugo file
 
@@ -108,7 +109,7 @@ def main():
             current_Hgs = line_split[3]
             current_chromo_num = int(line_split[0])
             current_Interval = Interval(int(line_split[1]), int(line_split[2]) )
-            current_data = (current_chromo_num, current_Interval ) 
+            current_data = (current_chromo_num, current_Interval , list() ) 
 
 
             if current_Hgs not in genes.keys() : 
@@ -125,7 +126,7 @@ def main():
                 # ... and the associated data, 
                 duplicate_data = genes[current_Hgs][duplicate_idx]
                 # merge old and current data, 
-                to_save = (current_chromo_num, Union (current_Interval, duplicate_data[1]))
+                to_save = (current_chromo_num, Union (current_Interval, duplicate_data[1]), list() )
                 # and save the merged data : 
                 genes[current_Hgs][duplicate_idx] = to_save
             else : # no overlap are possible,
@@ -168,6 +169,9 @@ def main():
                 if SNPs[SNP_idx][1] in genes[Hgs][dupe_idx][1] : 
                     # Add the gene to the list : 
                     SNPs_in_Hgs.append(SNP_idx)
+        
+        if SNPs_in_Hgs : 
+            genes[Hgs][3].extend(SNPs_in_Hgs)
         #----------
         # Attach each SNPs of a gene to each other :
         for SNP_idx1 in xrange(len(SNPs_in_Hgs)):
