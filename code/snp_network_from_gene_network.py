@@ -169,8 +169,7 @@ def main():
                 if SNPs[SNP_idx][1] in genes[Hgs][dupe_idx][1] : 
                     # Add the gene to the list : 
                     SNPs_in_Hgs.append(SNP_idx)
-        if SNPs_in_Hgs : 
-            genes[Hgs][3].extend(SNPs_in_Hgs)
+                    genes[Hgs][dupe_idx][2].append(SNP_idx)
         #----------
         # Attach each SNPs of a gene to each other :
         for SNP_idx1 in xrange(len(SNPs_in_Hgs)):
