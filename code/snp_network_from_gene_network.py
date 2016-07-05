@@ -187,13 +187,17 @@ def main():
     
     #---------------------------------------------------------------------------
     # connect the SNPs of gene A to the SNPs of gene B
-    print 'Connect each SNPs of gene A to each SNPs of gene B : ',
+    print 'Connect each SNP of Hgs A to each SNP of Hgs B : ',
     Start = time.time()
     with open(args.acsn, 'r') as fdAcsn:
+        # each line : <hgsA> <name of relationship> <hgsB>
         for line in fdAcsn:
             line_split = line.split()
+            # we can only use Hgs for which we have infos about localisation : 
             if line_split[0] in genes and line_split[2] in genes:
+                # if these 2 interacting Hgs have some SNPs : 
                 if len(genes[line_split[0]]) > 3 and len(genes[line_split[2]]) > 3:
+                    # Connect each SNP of hgsA to each SNP of hgsB : 
                     for idxGA in xrange(3, len(genes[line_split[0]])):
                         for idxGB in xrange(3, len(genes[line_split[2]])):
                             if net[genes[line_split[2]][idxGB], genes[line_split[0]][idxGA]] != 1:
