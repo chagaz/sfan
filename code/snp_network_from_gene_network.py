@@ -169,7 +169,6 @@ def main():
                 if SNPs[SNP_idx][1] in genes[Hgs][dupe_idx][1] : 
                     # Add the gene to the list : 
                     SNPs_in_Hgs.append(SNP_idx)
-        
         if SNPs_in_Hgs : 
             genes[Hgs][3].extend(SNPs_in_Hgs)
         #----------
@@ -184,7 +183,7 @@ def main():
     End = time.time()
     print 'Exec time :' + str(End - Start)
     #---------------------------------------------------------------------------
-    
+
     #---------------------------------------------------------------------------
     # connect the SNPs of gene A to the SNPs of gene B
     print 'Connect each SNP of Hgs A to each SNP of Hgs B : ',
@@ -193,21 +192,27 @@ def main():
         # each line : <hgsA> <name of relationship> <hgsB>
         for line in fdAcsn:
             line_split = line.split()
+            HgsA = line_split[0]
+            HgsB = line_split[2] 
             # we can only use Hgs for which we have infos about localisation : 
-            if line_split[0] in genes and line_split[2] in genes:
+            if HgsA in genes and HgsB in genes:
+                SNPs_of_A = [genes[HgsA][dupe_idx][3]] for dupe_idx in len(genes[HgsA])]
+                SNPs_of_B = [genes[HgsB][dupe_idx][3]] for dupe_idx in len(genes[HgsB])]
                 # if these 2 interacting Hgs have some SNPs : 
-                if len(genes[line_split[0]]) > 3 and len(genes[line_split[2]]) > 3:
+                # genes[Hgs] = (chromo num, Interval, [list, of, SNPs, indices])
+                if len( SNPs_of_A ) > 0 and len(SNPs_of_B) > 0:
                     # Connect each SNP of hgsA to each SNP of hgsB : 
-                    for idxGA in xrange(3, len(genes[line_split[0]])):
-                        for idxGB in xrange(3, len(genes[line_split[2]])):
-                            if net[genes[line_split[2]][idxGB], genes[line_split[0]][idxGA]] != 1:
-                                net[genes[line_split[0]][idxGA], genes[line_split[2]][idxGB]] = 1
+                    for SNPA in xrange(len(SNPs_of_A)):
+                        for SNPB in xrange(len(SNPs_of_B)):
+                            if net[SNPB, genes[SNPA] != 1: # why ???
+                                net[ SNPA, genes[SNPB] = 1
+                            else : import pdb; pdb.set_trace()
         fdAcsn.close()
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
     #---------------------------------------------------------------------------
-    
+
     #---------------------------------------------------------------------------
     # write the network into the output file
     print 'Write the network into the output file : ',
