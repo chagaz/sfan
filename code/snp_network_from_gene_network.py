@@ -195,16 +195,16 @@ def main():
             HgsB = line_split[2] 
             # we can only use Hgs for which we have infos about localisation : 
             if HgsA in genes and HgsB in genes:
-                SNPs_of_A = [genes[HgsA][dupe_idx][3]] for dupe_idx in len(genes[HgsA])]
-                SNPs_of_B = [genes[HgsB][dupe_idx][3]] for dupe_idx in len(genes[HgsB])]
+                SNPs_of_A = [genes[HgsA][dupe_idx][3] for dupe_idx in len(genes[HgsA])]
+                SNPs_of_B = [genes[HgsB][dupe_idx][3] for dupe_idx in len(genes[HgsB])]
                 # if these 2 interacting Hgs have some SNPs : 
                 # genes[Hgs] = (chromo num, Interval, [list, of, SNPs, indices])
                 if len( SNPs_of_A ) > 0 and len(SNPs_of_B) > 0:
                     # Connect each SNP of hgsA to each SNP of hgsB : 
                     for SNPA in xrange(len(SNPs_of_A)):
                         for SNPB in xrange(len(SNPs_of_B)):
-                            if net[SNPB, genes[SNPA] != 1: # why ???
-                                net[ SNPA, genes[SNPB] = 1
+                            if net[SNPB, SNPA] != 1: # why ???
+                                net[ SNPA, SNPB] = 1
                             else : import pdb; pdb.set_trace()
         fdAcsn.close()
     print '\033[92m' + 'DONE' + '\033[0m'
