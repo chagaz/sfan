@@ -222,6 +222,10 @@ def main():
     [X, Y] = net.nonzero()
     #X : line number with non zero data
     #Y : for each X, col number with non zero data
+    # /!\ dimacs numeration begin to 1 but python to 0 !! 
+    # so move the numeratation : 
+    X += 1 
+    Y += 1
     array_xy = zip(X, Y)
     # array_xy is a list of tuples, where i-th tuple contains the i-th element from X and Y
 
