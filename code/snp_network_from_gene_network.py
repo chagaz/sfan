@@ -143,7 +143,6 @@ def main():
     
     #---------------------------------------------------------------------------
     # attach the SNPs to the genes
-    import pdb
 
     print 'Attach each SNPs of a gene to each other : ',
     Start = time.time()
@@ -195,8 +194,9 @@ def main():
             HgsB = line_split[2] 
             # we can only use Hgs for which we have infos about localisation : 
             if HgsA in genes and HgsB in genes:
-                SNPs_of_A = [genes[HgsA][dupe_idx][3] for dupe_idx in len(genes[HgsA])]
-                SNPs_of_B = [genes[HgsB][dupe_idx][3] for dupe_idx in len(genes[HgsB])]
+
+                SNPs_of_A = [genes[HgsA][dupe_idx][3] for dupe_idx in xrange(len(genes[HgsA]))]
+                SNPs_of_B = [genes[HgsB][dupe_idx][3] for dupe_idx in xrange(len(genes[HgsB]))]
                 # if these 2 interacting Hgs have some SNPs : 
                 # genes[Hgs] = (chromo num, Interval, [list, of, SNPs, indices])
                 if len( SNPs_of_A ) > 0 and len(SNPs_of_B) > 0:
