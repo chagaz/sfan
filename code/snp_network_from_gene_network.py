@@ -140,7 +140,7 @@ def main():
     End = time.time()
     print 'Exec time :' + str(End - Start)
     #---------------------------------------------------------------------------
-    
+
     #---------------------------------------------------------------------------
     # attach the SNPs to the genes
 
@@ -215,7 +215,7 @@ def main():
     #---------------------------------------------------------------------------
     # write the network into the output file
     print 'Write the network into the output file : ',
-    # format : <chromo_a>, <pos_a>, <chromo_b>, <pos_b>
+    # dimacs format
 
     Start = time.time()
 
@@ -226,11 +226,17 @@ def main():
     # array_xy is a list of tuples, where i-th tuple contains the i-th element from X and Y
 
     with open(args.output, 'w') as fdOutput:
+        # write problem line : 
+        fdOutput.write('p max %d %d n\n' % (len(SNPs), len(array_xy) ) ) 
+        # write an Arc Descriptor
         # for each coord of non zero value in net : 
         for (x, y) in array_xy:
             if x != y: # if non zero value is not on diag... why ??? 
                 # write 
-                fdOutput.write('%s\n' % '\n'.join(['%s %s %s %s' % (SNPs[x][0], SNPs[x][1], SNPs[y][0], SNPs[y][1])]))
+                fdOutput.write('a %d %d 1\n' % (x, y) )
+                fdOutput.write('a %d %d 1\n' % (y, x) )
+                # Remark : need an undirected graph
+                # -> we give the link in both direction
         fdOutput.close()
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
