@@ -215,12 +215,21 @@ def main():
     #---------------------------------------------------------------------------
     # write the network into the output file
     print 'Write the network into the output file : ',
+    # format : <chromo_a>, <pos_a>, <chromo_b>, <pos_b>
+
     Start = time.time()
+
     [X, Y] = net.nonzero()
+    #X : line number with non zero data
+    #Y : for each X, col number with non zero data
     array_xy = zip(X, Y)
+    # array_xy is a list of tuples, where i-th tuple contains the i-th element from X and Y
+
     with open(args.output, 'w') as fdOutput:
+        # for each coord of non zero value in net : 
         for (x, y) in array_xy:
-            if x != y:
+            if x != y: # if non zero value is not on diag... why ??? 
+                # write 
                 fdOutput.write('%s\n' % '\n'.join(['%s %s %s %s' % (SNPs[x][0], SNPs[x][1], SNPs[y][0], SNPs[y][1])]))
         fdOutput.close()
     print '\033[92m' + 'DONE' + '\033[0m'
