@@ -231,7 +231,7 @@ def main():
 
     with open(args.output, 'w') as fdOutput:
         # write problem line : 
-        fdOutput.write('p max %d %d n\n' % (len(SNPs), len(array_xy) ) ) 
+        fdOutput.write('p max %d %d n\n' % (len(SNPs), len(array_xy)*2 ) ) # * 2 because ege are written in both direction
         # write an Arc Descriptor
         # for each coord of non zero value in net : 
         for (x, y) in array_xy:
