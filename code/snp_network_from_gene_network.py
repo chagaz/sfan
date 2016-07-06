@@ -68,6 +68,10 @@ def main():
     # This list saves, for each chromo, which SNP is at the begining, which one is at the end
     
     for idxSNP in xrange(0, len(SNPs)):
+        # handle first read SNPs that can not be on the first Chromo
+        if idxSNP == 0 : 
+            Chromosome[SNPs[idxSNP][0] -1 ] = (0, -1)  #/!\ -1 needed because in Python, chromo numeratation begin to 0, not 1
+            # Can't do Chromosome[SNPs[idxSNP][0][0] because tuple do not support item assignment
         if idxSNP + 1 < len(SNPs): # the current SNP is not the last. +1 is needed because numerotation begin to 0
             if SNPs[idxSNP][0] != SNPs[idxSNP + 1][0]: # the current SNP and the next one are not on the same chromosome
                 # save the current SNP_index as the last SNP of the current chromo : 
@@ -147,7 +151,6 @@ def main():
     print 'Attach each SNPs of a gene to each other : ',
     Start = time.time()
     for Hgs in genes:
-        Chromosome[0] = (0 , 14373) #TODO : Fix -1 in Chromosome
 
         #----------
         # List SNPs belonging to a gene :
