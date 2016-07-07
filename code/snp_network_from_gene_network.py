@@ -197,15 +197,15 @@ def main():
             HgsB = line_split[2] 
             # we can only use Hgs for which we have infos about localisation : 
             if HgsA in genes and HgsB in genes:
-
-                SNPs_of_A = [genes[HgsA][dupe_idx][3] for dupe_idx in xrange(len(genes[HgsA]))]
-                SNPs_of_B = [genes[HgsB][dupe_idx][3] for dupe_idx in xrange(len(genes[HgsB]))]
+                # get SNPs of these Hgs : 
+                SNPs_of_A = [SNP_idx for dupe_infos in genes[HgsA] for SNP_idx in dupe_infos[2]  ]
+                SNPs_of_B = [SNP_idx for dupe_infos in genes[HgsB] for SNP_idx in dupe_infos[2]  ]
                 # if these 2 interacting Hgs have some SNPs : 
                 # genes[Hgs] = (chromo num, Interval, [list, of, SNPs, indices])
                 if len( SNPs_of_A ) > 0 and len(SNPs_of_B) > 0:
                     # Connect each SNP of hgsA to each SNP of hgsB : 
-                    for SNPA in xrange(len(SNPs_of_A)):
-                        for SNPB in xrange(len(SNPs_of_B)):
+                    for SNPA in SNPs_of_A:
+                        for SNPB in SNPs_of_B:
                             if net[SNPB, SNPA] != 1: # why ???
                                 net[ SNPA, SNPB] = 1
                             else : import pdb; pdb.set_trace()
