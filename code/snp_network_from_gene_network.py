@@ -91,7 +91,7 @@ def main():
     #---------------------------------------------------------------------------
     # read hugogenes.txt and save gene duplicates of each Hgs of the file in
     # into a dictionnary : 
-    print 'Save the genes positions : ',
+    print 'Save the genes positions, taking the window into account : ',
     Start = time.time()
     genes = dict()
     # key : hugo gene symbol 
@@ -112,7 +112,8 @@ def main():
             line_split = line.split()
             current_Hgs = line_split[3]
             current_chromo_num = int(line_split[0])
-            current_Interval = Interval(int(line_split[1]), int(line_split[2]) )
+            current_Interval = Interval(int(line_split[1]) - window, int(line_split[2]) + window) # take the window into account
+            # if line_split[1] = start pos < window , start pos - window < 0, but it is not a problem 
             current_data = (current_chromo_num, current_Interval , list() ) 
 
 
