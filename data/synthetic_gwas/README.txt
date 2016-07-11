@@ -1,10 +1,12 @@
 FILE FORMAT
 
-.gmt:
-	Each line corresponds to one gene
-	<gene name in ACSN> <dataset name> <gene name 1 in HUGO>  <gene name 2 in HUGO> ...
+acsn_names.gmt:
+    Correspondence between ACSN entities and HUGO names (gmt format)
+    From: https://acsn.curie.fr/files/acsn_names.gmt
+	Each line corresponds to one ACSN entity
+	<entity name in ACSN> <dataset name> <gene name 1 in HUGO>  <gene name 2 in HUGO> ...
 	columns are TAB separated
-	each colum can contain SPACES
+	each column can contain SPACES
 
 .sif:
 	Each line corresponds to one interaction (network edge)
