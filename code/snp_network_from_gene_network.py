@@ -30,7 +30,7 @@ def main():
     parser.add_argument('acsn', help='gene network')
     parser.add_argument('map', help='SNPs positions')
     parser.add_argument('hugo', help='gene positions')
-    parser.add_argument('window', help='window for SNP-gene association')
+    parser.add_argument('window', help='window for SNP-gene association', type = int)
     parser.add_argument('output', help='output file')
     args = parser.parse_args()
     #---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ def main():
                     
                 current_Hgs = line_split[3]
                 
-                current_Interval = Interval(int(line_split[1]) - window, int(line_split[2]) + window) # take the window into account
+                current_Interval = Interval(int(line_split[1]) - args.window, int(line_split[2]) + args.window) # take the window into account
                 # if line_split[1] = start pos < window , start pos - window < 0, but it is not a problem 
                 current_data = (current_chromo_num, current_Interval , list() ) 
 
