@@ -119,7 +119,7 @@ def main():
         # each line : num chromo \t start pos \t end pos \t HUGO gene symbol
         # /!\ no header ! should be removed before
         
-        for line in fdHugo:
+        for line_idx, line in enumerate(fdHugo):
 
             # get data from file : 
             line_split = line.split('\t')
@@ -128,7 +128,9 @@ def main():
             
             if current_chromo_num : # if no unlocalized sequences, unplaced sequences, alternate loci
                     
-                current_Hgs = line_split[3]
+                current_Hgs = line_split[3].strip()
+                if not current_Hgs : 
+                    current_Hgs = line_idx
                 
                 current_Interval = Interval(int(line_split[1]) - args.window, int(line_split[2]) + args.window) # take the window into account
                 # if line_split[1] = start pos < window , start pos - window < 0, but it is not a problem 
