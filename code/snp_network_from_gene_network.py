@@ -14,6 +14,17 @@ def main():
     
     TotalStartTime = time.time()
     
+    
+    #---------------------------------------------------------------------------
+    # /!\ in files, chromo numerotation begin to 1
+    chromo_num_correspondance = {str(i): i for i in xrange(1, 23) } 
+    chromo_num_correspondance['X'] = 23
+    chromo_num_correspondance['Y'] = 24
+    chromo_num_correspondance['XY'] = 25
+    chromo_num_correspondance['MT'] = 26
+    # no unlocalized sequences, unplaced sequences, alternate loci
+    
+    
     #---------------------------------------------------------------------------
     parser = argparse.ArgumentParser(description='Create SNPs network')
     parser.add_argument('acsn', help='gene network')
@@ -106,40 +117,47 @@ def main():
 
     with open(args.hugo, 'r') as fdHugo:
         # each line : num chromo \t start pos \t end pos \t HUGO gene symbol
+        # /!\ no header ! should be removed before
+        
         for line in fdHugo:
 
             # get data from file : 
-            line_split = line.split()
-            current_Hgs = line_split[3]
-            current_chromo_num = int(line_split[0])
-            current_Interval = Interval(int(line_split[1]) - window, int(line_split[2]) + window) # take the window into account
-            # if line_split[1] = start pos < window , start pos - window < 0, but it is not a problem 
-            current_data = (current_chromo_num, current_Interval , list() ) 
+            line_split = line.split('\t')
+            
+            current_chromo_num = chromo_num_correspondance.get(line_split[0])
+            
+            if current_chromo_num : # if no unlocalized sequences, unplaced sequences, alternate loci
+                    
+                current_Hgs = line_split[3]
+                
+                current_Interval = Interval(int(line_split[1]) - window, int(line_split[2]) + window) # take the window into account
+                # if line_split[1] = start pos < window , start pos - window < 0, but it is not a problem 
+                current_data = (current_chromo_num, current_Interval , list() ) 
 
 
-            if current_Hgs not in genes.keys() : 
-                genes[current_Hgs] = list() 
+                if current_Hgs not in genes.keys() : 
+                    genes[current_Hgs] = list() 
 
-            print 'before', genes[current_Hgs]
-            print current_data
+                print 'before', genes[current_Hgs]
+                print current_data
 
-            # handle multi occurence and save new data
-            chromo_num_list = [genes[current_Hgs][i][0] for i in xrange (len (genes[current_Hgs]))]
-            if current_chromo_num in chromo_num_list : # there is possibly an overlap 
-                # get the index of the tuple holding info on the same chromo...
-                duplicate_idx = chromo_num_list.index(current_chromo_num) 
-                # ... and the associated data, 
-                duplicate_data = genes[current_Hgs][duplicate_idx]
-                # merge old and current data, 
-                to_save = (current_chromo_num, Union (current_Interval, duplicate_data[1]), list() )
-                # and save the merged data : 
-                genes[current_Hgs][duplicate_idx] = to_save
-            else : # no overlap are possible,
-                # thus just add a new tuple holding current data : 
-                genes[current_Hgs].append(current_data)
+                # handle multi occurence and save new data
+                chromo_num_list = [genes[current_Hgs][i][0] for i in xrange (len (genes[current_Hgs]))]
+                if current_chromo_num in chromo_num_list : # there is possibly an overlap 
+                    # get the index of the tuple holding info on the same chromo...
+                    duplicate_idx = chromo_num_list.index(current_chromo_num) 
+                    # ... and the associated data, 
+                    duplicate_data = genes[current_Hgs][duplicate_idx]
+                    # merge old and current data, 
+                    to_save = (current_chromo_num, Union (current_Interval, duplicate_data[1]), list() )
+                    # and save the merged data : 
+                    genes[current_Hgs][duplicate_idx] = to_save
+                else : # no overlap are possible,
+                    # thus just add a new tuple holding current data : 
+                    genes[current_Hgs].append(current_data)
 
-            print 'after', genes[current_Hgs]
-            print '-------------------'
+                print 'after', genes[current_Hgs]
+                print '-------------------'
 
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
