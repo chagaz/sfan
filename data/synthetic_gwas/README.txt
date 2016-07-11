@@ -22,3 +22,6 @@ hugogenes.txt
 	<chromosome> <start position> <end position> <HUGO name>
 	columns are TAB separated
 	For chromosomes, 23 denotes chromosome X and 24 denotes chromosome Y
+
+icogs_snp_list.csv
+    From: http://ccge.medschl.cam.ac.uk/files/2014/03/icogs_snp_list.csv
