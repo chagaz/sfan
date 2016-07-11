@@ -8,12 +8,13 @@ acsn_names.gmt:
 	columns are TAB separated
 	each column can contain SPACES
 
-.sif:
+acsn_ppi_ver2.txt:
+    PPI interactions (Tab-delimited text format)
+    From: https://acsn.curie.fr/files/acsn_ppi_ver2.txt
 	Each line corresponds to one interaction (network edge)
-	<gene 1 name in ACSN> <name of relationship> <gene 2 name in ACSN>
+	<gene 1 name in ACSN> <name of relationship> <gene 2 name in ACSN> <semi-colon separated list of PubMedID >
 	columns are TAB separated
 	each colum can contain SPACES
-
 
 hugogenes.txt
 	Positions of HUGO genes on Build37 (= hg19)
