@@ -229,13 +229,13 @@ def main():
                         for SNPB in SNPs_of_B:
                             if net[SNPB, SNPA] != 1: # why ???
                                 net[ SNPA, SNPB] = 1
-                            else : import pdb; pdb.set_trace()
+                            #else : import pdb; pdb.set_trace()
         fdAcsn.close()
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
     #---------------------------------------------------------------------------
-
+    import pdb; pdb.set_trace()
     #---------------------------------------------------------------------------
     # write the network into the output file
     print 'Write the network into the output file : ',
