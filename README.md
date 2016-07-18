@@ -35,9 +35,30 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
 * Python2.7
 * Python header files (libpython-dev)
 * Python libraries/packages/ecosystems:
+  
   * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
   * [PyTables](http://www.pytables.org/), at least for data generation.
+  * [scikit-learn](http://scikit-learn.org/stable)
+  * [Matplotlib](http://matplotlib.org/)
+    
+  From standard : 
+  * [argparse](https://docs.python.org/2/library/argparse.html)
+  * [doctest](https://docs.python.org/2/library/doctest.html)
+  * [glob](https://docs.python.org/2.7/library/glob.html)
+  * [logging](https://docs.python.org/2.7/library/logging.html)
+  * [math](https://docs.python.org/2.7/library/math.html)
+  * [operator](https://docs.python.org/2.7/library/operator.html)
+  * [os](https://docs.python.org/2.7/library/os.html)
+  * [random](https://docs.python.org/2.7/library/random.html)
+  * [shlex](https://docs.python.org/2.7/library/shlex.html)
+  * [shutil](https://docs.python.org/2.7/library/shutil.html)
+  * [subprocess](https://docs.python.org/2.7/library/subprocess.html)
+  * [sys](https://docs.python.org/2.7/library/sys.html)
+  * [tempfile](https://docs.python.org/2.7/library/tempfile.html)
+  * [time](https://docs.python.org/2.7/library/time.html)
+
+
 * python-dev
 # Installation
 ```
