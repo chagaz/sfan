@@ -983,7 +983,7 @@ def print_analysis_files(args, resu_dir, data_dir, xp_indices):
     # For each algorithm, and for each task, compute consistency index
     # between the features selected for each fold.
     # Use an external function using ef.consistency_index_k()
-    # use the selected features saved to files and the true causal features
+    # use the selected features saved to files
     # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
     # File structure : 
     # each line = a repeat
