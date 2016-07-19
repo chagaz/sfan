@@ -156,6 +156,86 @@ Example: `data/simu_multitask_01.task_similarities.txt`.
 Commented lines give the parameter values.
 Then each line corresponds to one tasks, and is a space-separated list of node indices, __starting at 1__.
 
+## Output of 'code/synthetic_data_experiments.py'
+
+### Results are saved in following files : 
+
+* <simu_id>.results :
+  Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
+
+
+#### For each algo ('sfan', 'msfan_np', 'msfan'):
+
+* <simu_id>.<algo>.maxRSS : 
+  maxRSS used during feature selection using all training set and optimal parameters.
+  One value per line, one line per fold, all repeats mixed.
+
+* <simu_id>.<algo>.timing : 
+  Timing infos when runing feature selection using all training set and optimal paramters :
+  ```
+  Task (<task_idx>) computation time : <value>
+  Task average computation time: <value>
+  Standard deviation computation time: <value>
+  Network building time: <value>
+  gt_maxflow computation time: <value>
+  ```
+  for each fold. 
+
+* <simu_id>.<algo>.rmse : 
+  List of final RMSEs 
+  one line per repeat
+  for each repeat, one value per task
+* <simu_id>.<algo>.consistency : 
+  List of final Consistency Indices 
+  one line per repeat
+  for each repeat, one value per task
+
+For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) ), a file named <simu_id>.<algo>.<measure> :
+Space-separated lists of PPVs (one value per task and per fold),
+each line corresponds to one repeat. 
+
+
+* <simu_id>.<algo>.acc
+* <simu_id>.<algo>.mcc
+* <simu_id>.<algo>.ppv
+* <simu_id>.<algo>.tpr 
+
+#### For each repeat : 
+
+##### For each fold : 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters : 
+list of optimal parameters retain for the fold
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features : 
+space separated list of features
+one line per task 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS : 
+One value of max RSS per line, one line per subsample
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time : 
+One value of max RSS per line, one line per subsample
+
+###### For each task : 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+phenotype prediction of the test set using a ridge-regression trained with the selected features only.
+One value per line, one line per sample
+
+    
+###### For each measure (pvv, tpr) :
+<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure> : 
+space-separated list of value measure
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr
+  
+
+### Chart :
+For each measure (ci, mcc, ppv, tpr, rmse, acc), a chart named <simu_id>.<measure>.png : one boxplot per algorithm, grouped per task, with error bars. 
+* <simu_id>.ci.png
+* <simu_id>.rmse.png
+* <simu_id>.acc.png
+* <simu_id>.mcc.png
+* <simu_id>.ppv.png
+* <simu_id>.tpr.png
+
+
 # References
 Azencott, C.-A., Grimm, D., Sugiyama, M., Kawahara, Y., and Borgwardt, K.M. (2013). Efficient network-guided multi-locus association mapping with graph cuts. Bioinformatics 29, i171–i179.
 
