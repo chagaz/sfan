@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+plt.ioff() #turn interactive mode off -> need to use plt.show() to make the plot appear
+
 import numpy as np
 import random
 
