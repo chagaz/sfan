@@ -84,7 +84,7 @@ def vertical_boxplots(data, name) :
     #make_filled_legend() 
     
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig(name+'.png')   
+    plt.savefig(name+'.png', transparent = True)   
     #plt.show()
 
 
@@ -123,7 +123,7 @@ def horizontal_boxplots(data,name) :
     #make_filled_legend() 
     
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig(name+'.png')   
+    plt.savefig(name+'.png', transparent = True)   
     #plt.show()
 
 
@@ -144,7 +144,7 @@ def vertical_barplots(data, name) :
         #ax.margins(0.05) # Optional
 
     fig.tight_layout() #ajuste le cadrage
-    plt.savefig(name+'.png')    
+    plt.savefig(name+'.png', transparent = True)    
     #plt.show()
 
 
