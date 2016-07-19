@@ -299,33 +299,33 @@ if __name__ == "__main__":
         #-----------------------------------------------------------------------
         # At the end of a repeat, add a carriage return to analysis files holding measures assessing classification : 
         # acc, mcc, ppv, tpr files : 
-            with open(analysis_files['acc_st'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['acc_msfan_np'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['acc_msfan'], 'a') as f:
-                f.write('\n')
+        with open(analysis_files['acc_st'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['acc_msfan_np'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['acc_msfan'], 'a') as f:
+            f.write('\n')
 
-            with open(analysis_files['mcc_st'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['mcc_msfan_np'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['mcc_msfan'], 'a') as f:
-                f.write('\n')
+        with open(analysis_files['mcc_st'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['mcc_msfan_np'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['mcc_msfan'], 'a') as f:
+            f.write('\n')
 
-            with open(analysis_files['ppv_st'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['ppv_msfan_np'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['ppv_msfan'], 'a') as f:
-                f.write('\n')
+        with open(analysis_files['ppv_st'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['ppv_msfan_np'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['ppv_msfan'], 'a') as f:
+            f.write('\n')
 
-            with open(analysis_files['tpr_st'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['tpr_msfan_np'], 'a') as f:
-                f.write('\n')
-            with open(analysis_files['tpr_msfan'], 'a') as f:
-                f.write('\n')
+        with open(analysis_files['tpr_st'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['tpr_msfan_np'], 'a') as f:
+            f.write('\n')
+        with open(analysis_files['tpr_msfan'], 'a') as f:
+            f.write('\n')
 
         
     # END for repeat_idx in xrange(args.num_repeats)
