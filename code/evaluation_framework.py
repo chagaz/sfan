@@ -324,15 +324,15 @@ def get_optimal_parameters_from_dict(selected_dict, num_features):
         => params leading to the best ci mean.
     """
     opt_params = ''
-    opt_cindex_mean = -1 # ??? XXX 0 ??? 
+    opt_ci_mean = -1 # set to -1 because it is the worst case ci value 
     for (params, selected_dict_p) in selected_dict.iteritems():
-        cidx_list = []
+        ci_list = [] #list of ci, one per task, computed with current params
         for (task_idx, sel_list) in selected_dict_p.iteritems():
-            cidx = consistency_index_k(sel_list, num_features)
-            cidx_list.append(cidx) #list of ci, one per task, computed for current params
-            cidx_mean = np.mean(cidx_list)
-        if cidx_mean >= opt_cindex_mean:
-            opt_cindex_mean = cidx_mean
+            ci_of_current_task = consistency_index_k(sel_list, num_features)
+            ci_list.append(ci_of_current_task) 
+        ci_mean = np.mean(ci_list)
+        if ci_mean >= opt_ci_mean:
+            opt_ci_mean = ci_mean
             opt_params = params
     return opt_params
 
