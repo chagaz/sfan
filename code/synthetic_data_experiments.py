@@ -478,9 +478,9 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
                 sf_dict[params][task_idx] = []
 
         #process_time files template : 
-        process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.process_time'
+        process_time_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'.ss.processTime'
         #max RSS files template : 
-        max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'ss.max_RSS'
+        max_RSS_file_template = resu_dir+'/'+args.simu_id+'.%s.fold_'+str(fold_idx)+'.ss.maxRSS'
 
         for ss_idx in range(args.num_subsamples):
             logging.info ("========                        SS : %d" % ss_idx)
