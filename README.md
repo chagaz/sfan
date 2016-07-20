@@ -118,11 +118,21 @@ python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbo
 `code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
- 
+
+`code/handle-output.py` uses output of `code/synthetic_data_experiment.py` to produce results 
+- For each fold : 
+    - Fit a ridge regression model between finally selected features genotype of train set and their phenotype
+    - Predict phenotype of test set using  this model with finally selected features genotype of test set
+- Output values of each criterion for each fold of each plot 
+- Output summary 
+- Boxplot results
+
 Example : 
 ```
 cd code
 python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
 ```
 
@@ -174,14 +184,8 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
 
 ## Output of 'code/synthetic_data_experiments.py'
 
-### Results are saved in following files : 
 
-* <simu_id>.results :
-  Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
-
-
-#### For each algo ('sfan', 'msfan_np', 'msfan'):
-
+### For each algo ('sfan', 'msfan_np', 'msfan'):
 * <simu_id>.<algo>.maxRSS : 
   maxRSS used during feature selection using all training set and optimal parameters.
   One value per line, one line per fold, all repeats mixed.
@@ -197,24 +201,7 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
   ```
   for each fold. 
 
-* <simu_id>.<algo>.rmse : 
-  List of final RMSEs 
-  one line per repeat
-  for each repeat, one value per task
-* <simu_id>.<algo>.consistency : 
-  List of final Consistency Indices 
-  one line per repeat
-  for each repeat, one value per task
 
-For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) ), a file named <simu_id>.<algo>.<measure> :
-Space-separated lists of PPVs (one value per task and per fold),
-each line corresponds to one repeat. 
-
-
-* <simu_id>.<algo>.acc
-* <simu_id>.<algo>.mcc
-* <simu_id>.<algo>.ppv
-* <simu_id>.<algo>.tpr 
 
 #### For each repeat : 
 
@@ -229,12 +216,7 @@ One value of max RSS per line, one line per subsample
 * <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time : 
 One value of max RSS per line, one line per subsample
 
-###### For each task : 
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
-phenotype prediction of the test set using a ridge-regression trained with the selected features only.
-One value per line, one line per sample
 
-    
 ###### For each measure (pvv, tpr) :
 <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure> : 
 space-separated list of value measure
@@ -242,7 +224,47 @@ space-separated list of value measure
 * <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr
   
 
-### Chart :
+
+
+
+## Output of 'code/handle-output.py'
+
+### Results are saved in following files : 
+* <simu_id>.results :
+  Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
+
+
+
+#### For each algo ('sfan', 'msfan_np', 'msfan'):
+
+* <simu_id>.<algo>.rmse : 
+  List of final RMSEs 
+  one line per repeat
+  for each repeat, one value per task
+* <simu_id>.<algo>.consistency : 
+  List of final Consistency Indices 
+  one line per repeat
+  for each repeat, one value per task
+
+#### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+a file named <simu_id>.<algo>.<measure> :
+Space-separated lists of PPVs (one value per task and per fold),
+each line corresponds to one repeat. 
+* <simu_id>.<algo>.acc
+* <simu_id>.<algo>.mcc
+* <simu_id>.<algo>.ppv
+* <simu_id>.<algo>.tpr 
+
+
+#### For each repeat, fold and task : 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+phenotype prediction of the test set using a ridge-regression trained with the selected features only.
+One value per line, one line per sample
+
+    
+    
+    
+### Charts :
 For each measure (ci, mcc, ppv, tpr, rmse, acc), a chart named <simu_id>.<measure>.png : one boxplot per algorithm, grouped per task, with error bars. 
 * <simu_id>.ci.png
 * <simu_id>.rmse.png
