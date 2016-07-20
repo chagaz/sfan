@@ -118,6 +118,22 @@ python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbo
 `code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
+ 
+Example : 
+```
+cd code
+python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+```
+
+### Usage on SGE cluster 
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of ```synthetic_data_experiment.py``` is ```False```. Moreover, ensure ```SEQ_MODE``` flag is ```False``` and set a ```tmp_dir``` .
+
+```synthetic_data_experiment.py``` will use a qsub job for each fold. 
+
+#### Runtime performances (on SGE cluster only) 
+Ensure TIME_EXP flag at the begining of ```synthetic_data_experiment.py``` is True. This qsub job on node 15-24 which have the same spec.
+
 
 
 # File formats
