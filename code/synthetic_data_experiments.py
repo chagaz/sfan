@@ -560,8 +560,6 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
         
         # END for ss_idx in range(args.num_subsamples)
         
-        # XXX DEBUG : 
-        sf_np_dict = sf_dict
         #-----------------------------------   
         # Get optimal parameter values for each algo.
         # ??? some lists are empty, is it normal ??? 
