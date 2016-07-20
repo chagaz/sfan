@@ -5,15 +5,15 @@ In this version all experiments are run sequentially.
 """
 
 DEBUG_MODE = False
-TIME_EXP = True
+TIME_EXP = False
 DATA_GEN = True # have to gene dat or not ?
 SEQ_MODE = True
 
-NUM_VALUES=5 #range param
+NUM_VALUES=3 #range param
 
 
-#tmp_dir= "/tmp"
-tmp_dir = "/share/data40T/athenais/tmp"
+tmp_dir= "/tmp"
+#tmp_dir = "/share/data40T/athenais/tmp"
 
 
 
