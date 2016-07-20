@@ -89,9 +89,9 @@ if __name__ == "__main__":
         
 
         #-------------------
-        trIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.trIndices'
-        teIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.teIndices'
-        ssIndices_fname = data_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
+        trIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.trIndices'
+        teIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.teIndices'
+        ssIndices_fname = resu_dir+'/'+args.simu_id+'.fold%d.ss%d.ssIndices'
         
         xp_indices = [{'trIndices': list(), 'teIndices':list(), 'ssIndices':list()} for fold in xrange(args.num_folds)]
 
