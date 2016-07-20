@@ -380,7 +380,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
         # Avoid not allowed empty selections
         #import pdb; pdb.set_trace() 
         ### XXX ??? 
-        preds = np.array([np.nan ] * len(tr_indices) )
+        preds = np.array([np.nan ] * len(te_indices) )
     else :
         # read genotypes : 
         with tb.open_file(genotype_fname, 'r') as h5f:
