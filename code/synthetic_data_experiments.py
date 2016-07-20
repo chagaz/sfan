@@ -244,23 +244,25 @@ def get_analysis_files_names(resu_dir, simu_id):
 
     return analysis_files
 
-def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, precision_fname, args):
+def determine_hyperparamaters(args, genotype_fname, phenotype_fnames, network_fname, covariance_fname = None, precision_fname=None):
     """ Determine hyperparameters. 
 
     Parameters
     ----------
-
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
     genotype_fname: filename
         Path to genotype data.
     phenotype_fname: filename
         Path to phenotype data.
     network_fname: filename
         Path to the network file.
+    covariance_fname: filename
+        Path to the correlation matrix file. 
     precision_fname: filename
-        Path to the precision / correlation matrix file. 
-    args : Namespace object
-        Its attributes are arguments names 
-        and contain arguments values (str or int according to code specifications).
+        Path to the precision matrix
+    
     Returns
     -------
     lbd_eta_values: list of strings
@@ -308,6 +310,7 @@ def determine_hyperparamaters(genotype_fname, phenotype_fnames, network_fname, p
     # Compute grid (WARNING: STILL NOT WORKING WELL)
     sfan_ = multitask_sfan.Sfan(args.num_tasks, [network_fname],
                                 tmp_scores_f_list, 1, 1, 1,
+                                covariance_matrix_f=covariance_fname,
                                 precision_matrix_f=precision_fname)
     # not 0, 0, 0 but 1, 1, 1 (or anything else > 0)
     # because if mu = 0, the matrix is not use 
@@ -425,7 +428,7 @@ def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) :
         tmp_weights_fnames = [line.split() for line in f.readlines()]
     return tmp_weights_fnames
 
-def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, precision_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
+def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, covariance_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
     """TODO
     """
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
@@ -533,7 +536,7 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
                 # Select features with multi-task sfan
                 logging.info("                                   run_msfan")
                 sel_, timing, max_RSS = ef.run_msfan(args.num_tasks, network_fname,
-                                    tmp_weights_f_list, precision_fname,
+                                    tmp_weights_f_list, covariance_fname,
                                     params)
                 if not sel_ : import pdb; pdb.set_trace() #DEBUG                                      
                 # Store selected features in the dictionary
@@ -607,7 +610,7 @@ def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_va
                                        scores_fnames, opt_params_np)
     logging.info("          run msfan")
     selected, timing,maxRSS = ef.run_msfan(args.num_tasks, network_fname,
-                                scores_fnames, precision_fname,
+                                scores_fnames, covariance_fname,
                                 opt_params)
 
     #------
@@ -713,7 +716,7 @@ def run_repeat(repeat_idx, args, analysis_files):
     # to return the names of these files
     genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
     network_fname = '%s/%s.network.dimacs' % (data_dir, args.simu_id)
-    precision_fname = '%s/%s.task_similarities.txt' % (data_dir,
+    covariance_fname = '%s/%s.task_similarities.txt' % (data_dir,
                                                          args.simu_id)
     causal_fname = '%s/%s.causal_features.txt' % (data_dir, args.simu_id)
     phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
@@ -745,11 +748,14 @@ def run_repeat(repeat_idx, args, analysis_files):
     # Looking for optimal parameters : 
 
     logging.info ("======== Defining grid of hyperparameters")
-    lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values  = determine_hyperparamaters( genotype_fname, 
+    lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values  = determine_hyperparamaters(
+                                                                    args, 
+                                                                    genotype_fname, 
                                                                     phenotype_fnames,
                                                                     network_fname,
-                                                                    precision_fname,
-                                                                    args)
+                                                                    covariance_fname = covariance_fname, 
+                                                                    precision_fname = None
+                                                                    )
 
     # and save them :
     hyperparam_fname_np = '%s/%s.hyperparameters_np.txt' % (data_dir, args.simu_id)
@@ -777,7 +783,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                 args, 
                 lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
                 evalf.xp_indices[fold_idx], 
-                genotype_fname, network_fname ,tmp_weights_fnames,  precision_fname , causal_fname, phenotype_fnames, scores_fnames,
+                genotype_fname, network_fname ,tmp_weights_fnames,  covariance_fname , causal_fname, phenotype_fnames, scores_fnames,
                 resu_dir)
 
     else :
