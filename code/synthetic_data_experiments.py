@@ -784,19 +784,19 @@ def run_repeat(repeat_idx, args, analysis_files):
             tmp_weights_fnames = get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, evalf.xp_indices[fold_idx]['ssIndices'])
             save_tmp_weights_fnames(resu_dir, args.simu_id, fold_idx, tmp_weights_fnames)
         if  TIME_EXP :
-            cmd = "qsub -l hostname='compute-0-%d' -cwd -V -N r%df -t 1-%d \
+            cmd = "qsub -l hostname='compute-0-%d' -cwd -V -N snp%dr%df -t 1-%d -e %s/SGE-output -o %s/SGE-output\
                    qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
                    %( 
                       random.randint(15,24), #random node compute-0-N, with N :  15 <= N <= 24
-                      repeat_idx, args.num_folds,
+                      args.num_features, repeat_idx, args.num_folds, args.resu_dir, args.resu_dir,
                       args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
                       args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
 
         else : 
-            cmd = "qsub -cwd -V -N r%df -t 1-%d \
+            cmd = "qsub -cwd -V --N snp%dr%df -t 1-%d -e %s/SGE-output -o %s/SGE-output\
                qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
                %( 
-                  repeat_idx, args.num_folds,
+                  args.num_features, repeat_idx, args.num_folds, args.resu_dir, args.resu_dir,
                   args.num_tasks, args.num_features, args.num_samples, args.num_repeats, args.num_folds, args.num_subsamples,
                   args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
 
