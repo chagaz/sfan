@@ -61,7 +61,7 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
 
 * python-dev
 # Installation
-```
+```bash
 cd code
 ./__build_gt_maxflow.sh
 ```
@@ -72,9 +72,15 @@ Modifications to ```__build_gt_maxflow.sh```:
 * On some architectures, or if you have an older version of gcc, you will need to add the flag ```-D__USE_XOPEN2K8``` to the ```g++``` line. This is linked to gcc's fixinclude mechanism, and usually manifests itself as errors regarding the type name ```__locale_t```.
 * If you're getting ```undefined reference to 'clock_gettime' and 'clock_settime'``` errors, you might need to add the flag ```-lrt``` to the ```g++``` line.
 
+On the CBIO SGE cluster, use `./__build_gt_maxflow_cluster.sh`:
+```bash
+cd code
+./__build_gt_maxflow_cluster.sh
+```
+
 # Testing
 For testing (doctest) the core optimization module run by `code/multitask_sfan.py`:
-```
+```bash
 cd code
 python multitask_sfan.py -t -v
 ```
@@ -84,20 +90,20 @@ python multitask_sfan.py -t -v
 The core optimization (for given regularization parameters) is run by `code/multitask_sfan.py`. See `code/test_multitask_sfan.sh` for usage.
 
 Single task example:
-```
+```bash
  python multitask_sfan.py --num_tasks 1 --networks ../data/simu_01/simu_01.network.dimacs \
        --node_weights ../data/simu_01/simu_01.scores_0.txt -l 0.001 -e 0.02 --output runtime.txt
 ```
 
 Multitask example:
-```
+```bash
  python multitask_sfan.py --num_tasks 2 --networks ../data/simu_01/simu_01.network.dimacs \
        --node_weights ../data/simu_01/simu_01.scores_0.txt ../data/simu_01/simu_01.scores_1.txt \
        --covariance_matrix ../data/simu_01/simu_01.task_similarities.txt -l 0.001 -e 0.02 -m 0.01
 ```
 The user can either provide a covariance or a precision matrix between tasks. The covariance matrix encodes a notion of similarity between the tasks. The precision matrix is its inverse, and its off-diagonal entries can be interpreted as the normalized opposite of the partial correlation between the corresponding tasks. The methods only makes it possible to account for positive or non-existant partial correlations, meaning that positive off-diagonal entries of the precision matrix, if any, will be thresholded to 0.
 
-If no covariance nor precision matrix is given, a precision matrix with (<number of tasks>-1+epsilon) on the diagonal and -1 off the diagonal is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
+If no covariance nor precision matrix is given, a precision matrix with (`<number of tasks>-1+epsilon`) on the diagonal and -1 off the diagonal is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
 
 ## Data generation
 `code/generate_data.py` generates synthetic data for experiments:
@@ -109,7 +115,7 @@ Omega (inverse of the precision matrix);
 * the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
 
 Example:
-```
+```bash
 cd code
 python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbose
 ```
@@ -128,7 +134,7 @@ python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbo
 - Boxplot results
 
 Example : 
-```
+```bash
 cd code
 python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
              ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
@@ -137,12 +143,12 @@ python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
 ```
 
 ### Usage on SGE cluster 
-Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of ```synthetic_data_experiment.py``` is ```False```. Moreover, ensure ```SEQ_MODE``` flag is ```False```.
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of `synthetic_data_experiment.py` is `False`. Moreover, ensure `SEQ_MODE` flag is `False`.
 
-```synthetic_data_experiment.py``` will use a qsub job for each fold. 
+`synthetic_data_experiment.py` will use a qsub job for each fold. 
 
 #### Runtime performances (on SGE cluster only) 
-Ensure TIME_EXP flag at the begining of ```synthetic_data_experiment.py``` is True. This qsub job on node 15-24 which have the same spec.
+Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True. This qsub job on node 15-24 which have the same spec.
 
 
 
@@ -182,15 +188,15 @@ Example: `data/simu_multitask_01.task_similarities.txt`.
 Commented lines give the parameter values.
 Then each line corresponds to one tasks, and is a space-separated list of node indices, __starting at 1__.
 
-## Output of 'code/synthetic_data_experiments.py'
+## Output of `code/synthetic_data_experiments.py`
 
 
-### For each algo ('sfan', 'msfan_np', 'msfan'):
-* <simu_id>.<algo>.maxRSS : 
+### For each algo (`sfan`, `msfan_np`, `msfan`):
+* `<resu_dir>/<simu_id>.<algo>.maxRSS` : 
   maxRSS used during feature selection using all training set and optimal parameters.
   One value per line, one line per fold, all repeats mixed.
 
-* <simu_id>.<algo>.timing : 
+* `<resu_dir>/<simu_id>.<algo>.timing` : 
   Timing infos when runing feature selection using all training set and optimal paramters :
   ```
   Task (<task_idx>) computation time : <value>
@@ -206,58 +212,58 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
 #### For each repeat : 
 
 ##### For each fold : 
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters` : 
 list of optimal parameters retain for the fold
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features` : 
 space separated list of features
 one line per task 
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS` : 
 One value of max RSS per line, one line per subsample
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time` : 
 One value of max RSS per line, one line per subsample
 
 
 ###### For each measure (pvv, tpr) :
-<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure> : 
+`<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure>` : 
 space-separated list of value measure
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv`
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr`
   
 
 
 
 
-## Output of 'code/handle-output.py'
+## Output of `code/handle-output.py`
 
 ### Results are saved in following files : 
-* <simu_id>.results :
+* `<resu_dir>/<simu_id>.results` :
   Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
 
 
 
-#### For each algo ('sfan', 'msfan_np', 'msfan'):
+#### For each algo (`sfan`, `msfan_np`, `msfan`):
 
-* <simu_id>.<algo>.rmse : 
+* `<resu_dir>/<simu_id>.<algo>.rmse` : 
   List of final RMSEs 
   one line per repeat
   for each repeat, one value per task
-* <simu_id>.<algo>.consistency : 
+* `<resu_dir>/<simu_id>.<algo>.consistency` : 
   List of final Consistency Indices 
   one line per repeat
   for each repeat, one value per task
 
 #### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
-a file named <simu_id>.<algo>.<measure> :
+a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
 Space-separated lists of PPVs (one value per task and per fold),
 each line corresponds to one repeat. 
-* <simu_id>.<algo>.acc
-* <simu_id>.<algo>.mcc
-* <simu_id>.<algo>.ppv
-* <simu_id>.<algo>.tpr 
+* `<resu_dir>/<simu_id>.<algo>.acc`
+* `<resu_dir>/<simu_id>.<algo>.mcc`
+* `<resu_dir>/<simu_id>.<algo>.ppv`
+* `<resu_dir>/<simu_id>.<algo>.tpr `
 
 
 #### For each repeat, fold and task : 
-* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted` : 
 phenotype prediction of the test set using a ridge-regression trained with the selected features only.
 One value per line, one line per sample
 
@@ -266,12 +272,12 @@ One value per line, one line per sample
     
 ### Charts :
 For each measure (ci, mcc, ppv, tpr, rmse, acc), a chart named <simu_id>.<measure>.png : one boxplot per algorithm, grouped per task, with error bars. 
-* <simu_id>.ci.png
-* <simu_id>.rmse.png
-* <simu_id>.acc.png
-* <simu_id>.mcc.png
-* <simu_id>.ppv.png
-* <simu_id>.tpr.png
+* `<resu_dir>/<simu_id>.ci.png`
+* `<resu_dir>/<simu_id>.rmse.png`
+* `<resu_dir>/<simu_id>.acc.png`
+* `<resu_dir>/<simu_id>.mcc.png`
+* `<resu_dir>/<simu_id>.ppv.png`
+* `<resu_dir>/<simu_id>.tpr.png`
 
 
 # References
