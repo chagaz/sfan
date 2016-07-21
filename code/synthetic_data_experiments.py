@@ -190,9 +190,9 @@ def get_analysis_files_names(resu_dir, simu_id):
     ppv_np_fname = '%s/%s.msfan_np.ppv' % (resu_dir, simu_id)
     ppv_fname = '%s/%s.msfan.ppv' % (resu_dir, simu_id)
     # - to hold sensitivity = TPR values
-    tpr_st_fname = '%s/%s.sfan.sensitivity' % (resu_dir, simu_id)    
-    tpr_np_fname = '%s/%s.msfan_np.sensitivity' % (resu_dir, simu_id)
-    tpr_fname = '%s/%s.msfan.sensitivity' % (resu_dir, simu_id)
+    tpr_st_fname = '%s/%s.sfan.tpr' % (resu_dir, simu_id)    
+    tpr_np_fname = '%s/%s.msfan_np.tpr' % (resu_dir, simu_id)
+    tpr_fname = '%s/%s.msfan.tpr' % (resu_dir, simu_id)
     # - to hold consistency values
     ci_st_fname = '%s/%s.sfan.consistency' % (resu_dir, simu_id)
     ci_np_fname = '%s/%s.msfan_np.consistency' % (resu_dir, simu_id)
@@ -1269,7 +1269,7 @@ def main():
             <simu_id>.<algo>.ppv
                 Space-separated lists of PPVs per task, per fold,
                 each line corresponds to one repeat. 
-            <simu_id>.<algo>.sensitivity
+            <simu_id>.<algo>.tpr
                 Space-separated lists of sensitivities per task, per fold,
                 each line corresponds to one repeat. 
             <simu_id>.results
