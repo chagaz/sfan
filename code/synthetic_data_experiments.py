@@ -12,6 +12,11 @@ SEQ_MODE = True
 NUM_VALUES=3 #range param
 
 
+tmp_dir= "/tmp"
+#tmp_dir = "/share/data40T/athenais/tmp"
+
+
+
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
 import multitask_sfan
@@ -362,7 +367,7 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
 
                 # Save to temporary file tmp_weights_f_list[task_idx]
                 # Create temporary file of name tmp_fname (use tempfile)
-                fd, tmp_fname = tempfile.mkstemp(dir = tempfile.gettempdir())
+                fd, tmp_fname = tempfile.mkstemp(dir = tmp_dir) #TODO : use arg.tmpdir / change TMP TMPDIR TEMP
                 # /!\ tmp_fname is open, fd is the file object
                 #-> close it to avoid 'Too many open files' error
                 os.close(fd)
