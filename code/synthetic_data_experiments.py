@@ -1319,6 +1319,10 @@ def main():
     #    if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
     #       raise
     create_dir_if_not_exists(args.resu_dir)
+
+    if not SEQ_MODE: 
+        # Create SGE-outputs dir if it does not xist
+        create_dir_if_not_exists('%s/SGE-outputs' % args.resu_dir)
     #-------------------------------------------------------------------------
 
 
