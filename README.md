@@ -75,7 +75,8 @@ Modifications to ```__build_gt_maxflow.sh```:
 On the CBIO SGE cluster, use `./__build_gt_maxflow_cluster.sh`:
 ```bash
 cd code
-./__build_gt_maxflow_cluster.sh```
+./__build_gt_maxflow_cluster.sh
+```
 
 # Testing
 For testing (doctest) the core optimization module run by `code/multitask_sfan.py`:
