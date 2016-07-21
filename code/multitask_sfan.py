@@ -396,6 +396,9 @@ class Sfan(object):
 
         for eta in eta_values:
             #print "eta ", eta
+            
+            eta_to_reject_list = list() 
+            
             amax = 0
             amin = np.inf
             for current_task in range(self.num_tasks):
@@ -405,10 +408,18 @@ class Sfan(object):
                     amax = max(amax, np.max(avec))
                     amin = min(amin, np.min(avec))
                     if amin < 1e-10:
-                        logging.error("!amin too small!", amin, eta)
-                        sys.exit(-1)
+                        logging.error("!amin too small! amin = %f eta = %f", amin, eta)
+                        #sys.exit(-1)
+                        # if cvec -eta next to 0, it is as nodes were not connected
+                        # -> trivial solution -> we don't want this kind of value
+                        eta_to_reject_list.append(eta)
                     amed = np.median(avec)
                     f.close()
+        
+        for eta_to_reject in eta_to_reject_list : 
+            eta_values.remove(eta_to_reject) 
+
+        for eta in eta_values:
 
             Wmax = 0
             Wmin = np.inf
@@ -459,7 +470,7 @@ class Sfan(object):
                 
 
     def compute_hyperparameters_range(self, num_values=5):
-        """ Compute a reasonable range of hyperparameters for a SFAN problem.
+        """ Compute a reasonable range of hyperparameters for a SFAN problem & MSFANnp.
 
         See paper/tech_note for details.
 
@@ -517,7 +528,7 @@ class Sfan(object):
                         amax = max(amax, np.max(avec))
                         amin = min(amin, np.min(avec))
                         if amin < 1e-10:
-                            logging.error("!amin too small!\n", amin, mu, eta)
+                            logging.error("!amin too small! amin = %f mu = %f eta = %f\n", amin, mu, eta)
                             sys.exit(-1)
                         amed = np.median(avec)
                         f.close()
@@ -594,21 +605,22 @@ class Sfan(object):
                                             + int(ls[1]))
                             neighbour_node = ((self.num_nodes_each_network * current_task) \
                                               + int(ls[2]))
-                        except IndexError:
-                            logging.error("Some nodes are disconnected and do not apear in " + \
-                                          self.networks_f)
-                            logging.error("This is not supported.\n")
+                            # Connect nodes within the same task
+                            while int(ls[1]) == node_idx + 1:
+                                self.dimacs_graph += ("a %d %d %f\n" % \
+                                                      (current_node, neighbour_node,
+                                                       (float(ls[3])) * self.lbd))
+                                ls = f_nt.readline().split()
+                                if len(ls) == 0:
+                                    break
+                                neighbour_node = ((self.num_nodes_each_network * \
+                                                   current_task) + int(ls[2]))
 
-                        # Connect nodes within the same task
-                        while int(ls[1]) == node_idx + 1:
-                            self.dimacs_graph += ("a %d %d %f\n" % \
-                                                  (current_node, neighbour_node,
-                                                   (float(ls[3])) * self.lbd))
-                            ls = f_nt.readline().split()
-                            if len(ls) == 0:
-                                break
-                            neighbour_node = ((self.num_nodes_each_network * \
-                                               current_task) + int(ls[2]))
+                        except IndexError:
+                            # Some nodes (with indices greater than the last one in networks_f)
+                            # are disconnected from the rest of the network.
+                            current_node = ((self.num_nodes_each_network * current_task) \
+                                            + int(node_idx) + 1)
 
                         # Connect corresponding nodes across tasks
                         if self.num_tasks > 1:
@@ -860,7 +872,7 @@ def main() :
             output_file.write(runtime_str)
             output_file.close()
     else:
-        logging.info("%s" % runtime_str)
+        print("%s" % runtime_str)
                 
         
 if __name__ == "__main__":

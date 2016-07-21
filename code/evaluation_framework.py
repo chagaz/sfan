@@ -5,8 +5,9 @@ import sklearn
 import sklearn.linear_model as lm
 import sklearn.cross_validation as cv
 import tables as tb
-import subprocess 
-
+import subprocess
+import shlex
+import math
 
 
 def consistency_index(sel1, sel2, num_features):
@@ -34,7 +35,7 @@ def consistency_index(sel1, sel2, num_features):
     observed = float(len(sel1.intersection(sel2)))
     expected = len(sel1) * len(sel2) / float(num_features)
     maxposbl = float(min(len(sel1), len(sel2)))
-    cidx = 0.
+    cidx = -1.
     # It's 0 and not 1 as expected if num_features == len(sel1) == len(sel2) => observed = n
     # Because "take everything" and "take nothing" are trivial solutions we don't want to select
     if expected != maxposbl:
@@ -159,26 +160,39 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
 
     # But because cython output to screen is NOT caught by sys.stdout, 
     # we need to run this externally
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '--format=%M', 
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(params.split())
     argum.extend(['-m', '0'])
+    print '+++'
+    print argum
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # stdout=subprocess.PIPE -> something should read the output while the process is still running
+    # stderr=subprocess.STDOUT : To also capture standard error in the result
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-    p_out = p.communicate()[0].split("\n")[2:2+num_tasks]
-
-    # Process the output to get lists of selected
-    # features
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
+    print p_com
+    # Process the output to get lists of selected features
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
     if not sel_list :
         print "returned sel_list empty !! algo = st ; param = ", params
         #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
         sel_list = [[] for i in xrange(num_tasks)]
-    return sel_list
+
+    # Process the standart output to get timing info 
+    timing = '\n'.join(p_out[2+num_tasks:])
+
+    # Process the standart error to get maxRSS info : 
+    maxRSS = p_err[-2]
+
+    return sel_list, timing, maxRSS
                  
 
 def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
@@ -201,27 +215,37 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
         For each task, a list of selected features, as indices,
         STARTING AT 0.
     """
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '-f', '%M',
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(params.split())
+    print '+++'
+    print argum
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-
-    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
-
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
+    print p_com
     # Process the output to get lists of selected features
     
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
     if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
         print "PB : returned sel_list empty !! algo = np ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
         #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
-    return sel_list
+    # Process the output to get timing info 
+    timing = '\n'.join(p_out[3+num_tasks:])
+
+    # Process the outut to get maxRSS info : 
+    maxRSS = p_err[-2]
+
+    return sel_list, timing, maxRSS
                  
 
 def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params):
@@ -246,30 +270,40 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
         For each task, a list of selected features, as indices,
         STARTING AT 0.
     """
-    argum = ['python', 'multitask_sfan.py',
+    argum = ['/usr/bin/time', '-f', '%M',
+             'python', 'multitask_sfan.py',
              '--num_tasks', str(num_tasks),
              '--networks', network_fname,
              '--node_weights']
     argum.extend(weights_fnames)
     argum.extend(['--covariance_matrix', covariance_fname])
     argum.extend(params.split())
+    print '+++'
+    print argum
+    p = subprocess.Popen(argum, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    p = subprocess.Popen(argum, stdout=subprocess.PIPE)
-
-    p_out = p.communicate()[0].split("\n")[3:3+num_tasks]
-
+    p_com = p.communicate()
+    p_out = p_com[0].split("\n")
+    p_err = p_com[1].split("\n")
+    print p_com
     # Process the output to get lists of selected features
-    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out]
+    sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
     if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
         print "returned sel_list empty !! algo = msfan ; param = ", params
         #import pdb ; pdb.set_trace() #DEBUG
         sel_list = [[] for i in xrange(num_tasks)]
-    return sel_list
+
+    # Process the output to get timing info 
+    timing = '\n'.join(p_out[3+num_tasks:])
+
+    # Process the outut to get maxRSS info : 
+    maxRSS = p_err[-2]
+
+    return sel_list, timing, maxRSS
                  
 
-def get_optimal_parameters_from_dict(selected_dict, num_features):
-    #TODO : return params leading to the best mean of ci for all tasks. 
+def get_optimal_parameters_from_dict(selected_dict, num_features): 
     """ Find optimal parameters from dictionary of selected features
 
     Arguments
@@ -285,17 +319,21 @@ def get_optimal_parameters_from_dict(selected_dict, num_features):
     Returns
     -------
     opt_params: string
-        Optimal parameters, leading to highest consistency index ???between features selected for each subsample???.
-        XXX??? Why it is not params leading to highest ci mean per task ? ???
+        Optimal parameters, leading to highest consistency index mean
+        of features selected for each subsample for each task
+        => params leading to the best ci mean.
     """
     opt_params = ''
-    opt_cindex = 0
+    opt_ci_mean = -1 # set to -1 because it is the worst case ci value 
     for (params, selected_dict_p) in selected_dict.iteritems():
+        ci_list = [] #list of ci, one per task, computed with current params
         for (task_idx, sel_list) in selected_dict_p.iteritems():
-            cidx = consistency_index_k(sel_list, num_features)
-            if cidx > opt_cindex:
-                opt_cindex = cidx
-                opt_params = params
+            ci_of_current_task = consistency_index_k(sel_list, num_features)
+            ci_list.append(ci_of_current_task) 
+        ci_mean = np.mean(ci_list)
+        if ci_mean >= opt_ci_mean:
+            opt_ci_mean = ci_mean
+            opt_params = params
     return opt_params
 
 
@@ -342,7 +380,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
         # Avoid not allowed empty selections
         #import pdb; pdb.set_trace() 
         ### XXX ??? 
-        preds = np.array([np.nan ] * len(tr_indices) )
+        preds = np.array([np.nan ] * len(te_indices) )
     else :
         # read genotypes : 
         with tb.open_file(genotype_fname, 'r') as h5f:
@@ -408,20 +446,22 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
     """
     rmse_list = []
     for task_idx in range(num_tasks):
+        #print "\n\n\n\n==== tache num %d" %task_idx
         # For n inds :
         # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
         # read all_y_true :
+        #print '\ni read phenotype_fname[task_idx = %d] = %s' %(task_idx, phenotype_fname[task_idx]) 
         with open(phenotype_fname[task_idx], 'r') as f_true:
             all_y_true = [float(y) for y in f_true.read().split()]
-
+        #print "\nall_y_true = "
+        #print all_y_true
         # read all_y_pred :
         # predictions were made one by one, in order : [fold['teIndices'] for fold in xp_indices]
         # we open each file (one per fold) and append predicted phenotypes
         # then when sort them using all_y_pred_indices so the order will be 0,1,...,n
 
         all_y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
-
         all_y_pred = list()
 
         for fold_idx in xrange(len(xp_indices)) : #TODO : add arg : arg.num_fold ?? 
@@ -430,7 +470,8 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
                 all_y_pred.extend(float(y) for y in content)
          
         all_y_pred_sorted = [all_y_pred[i] for i in all_y_pred_indices]
-
+        #print "\n all_y_pred_sorted = "
+        #print all_y_pred_sorted
         # compute rmse using metrics : 
         # wanted to use : rmse = sklearn.metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
         # be if all_y_pred_sorted have NaN, there is a problem
@@ -445,11 +486,82 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         else : 
             not_NaN_y_true =  [all_y_true[i] for i in not_NaN_idx]
             not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
-            rmse = sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) 
+            rmse = math.sqrt (sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
+
+        #print "rmse = %f" % rmse
         rmse_list.append(rmse)
 
     # return :
     return rmse_list
+
+
+def evaluate_classification(causal_features, selected_features, num_features):
+    """ Compute metrics scoring classification, for all tasks.
+
+    Arguments
+    ---------
+    causal_features:  list of lists
+        List of lists of real causal features (one list per task).
+    selected_features: list of lists
+        List of lists of selected features (one list per task).
+    num_features : int
+        Total number of features
+
+    Returns
+    -------
+                # accuracy_score
+                # matthews_corrcoef
+                # precision_score
+                # recall_score
+    acc_list: list
+        List of Accuracy, task per task.
+        fraction of correct predictions = predictions matching observations.
+    mcc_list: list
+        List of Matthews correlation coefficient task per task.
+        Better than Accuracy because classes are of very different sizes.
+    pre_list: list
+        List of Positive Precision = Predicted Values (PPV), task per task.
+        = TP / (TP + FP)
+    spe_list: list
+        List of Recall = Sensitivity =  True Positive Rate (TPR), task per task.
+        = TP / (TP + FN)
+    """
+    acc_list = []
+    mcc_list = []
+    pre_list = []
+    spe_list = []
+    
+    
+    # For each task, 
+    for task_idx in xrange(len(causal_features)):
+
+        # at the beginning, we consider that the features are 
+        # neither causal...
+        y_true = [False]*num_features
+        # ... nor predicted as such.
+        y_pred = [False]*num_features
+
+        # Then we change the status of the causal ones 
+        # (these are y_true True),
+        for y_true_idx in causal_features[task_idx] :
+            y_true[y_true_idx] = True
+        # and of those that have been predicted as such 
+        # (these are y_pred True). 
+        for y_pred_idx in selected_features[task_idx] :
+            y_pred[y_pred_idx] = True
+
+        # and we compute 
+        #   - accuracy_score
+        #   - matthews_corrcoef
+        #   - precision_score
+        #   - recall_score
+        # based on these 2 sets : 
+        acc_list.append( sklearn.metrics.accuracy_score    (y_true, y_pred) )
+        mcc_list.append( sklearn.metrics.matthews_corrcoef (y_true, y_pred) )
+        pre_list.append( sklearn.metrics.precision_score   (y_true, y_pred) )
+        spe_list.append( sklearn.metrics.recall_score      (y_true, y_pred) )
+
+    return acc_list, mcc_list, pre_list, spe_list
 
 
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
@@ -566,8 +678,9 @@ def extract_res_from_files(f_names, num_tasks, num_repeat, num_folds = None):
                 for j, line in enumerate(f) : 
                     content_task = [float (item) for item in line.split()]
                     val_ci[j] = content_task
-            means[algo] = np.mean(val_ci, axis=0) # give the means for each col in the file = per task
-            std[algo]= np.std (val_ci, axis = 0)
+            #use nanmean and nanstd so don't return nan if one of the number is nan
+            means[algo] = np.nanmean(val_ci, axis=0) # give the means for each col in the file = per task
+            std[algo]= np.nanstd (val_ci, axis = 0)
 
     return means, std
 
@@ -629,16 +742,16 @@ class Framework(object):
             }
         """
         # use sklearn.cross_validation
-        
-        kf = cv.KFold(self.num_samples, n_folds=self.num_folds)# ??? Add shuffle ??? XXX
-        for i, (train_index, test_index) in enumerate(kf):
+        kf = cv.KFold(self.num_samples, n_folds=self.num_folds, shuffle = True, random_state=seed)
+        for fold_idx, (train_indices_f, test_indices_f) in enumerate(kf):
+            #print fold_idx, train_indices_f, test_indices_f
             # Generate cross-validation indices
-            self.xp_indices[i]['trIndices'] = train_index.tolist()
-            self.xp_indices[i]['teIndices'] = test_index.tolist()
-            # For each train set, generate self.num_subsamples subsample sets of indices
-            ss = cv.KFold(n=self.num_samples, n_folds=self.num_subsamples, shuffle=True, random_state=seed)
-            for train_index, test_index in ss:
-                self.xp_indices[i]['ssIndices'].append(train_index.tolist())
+            self.xp_indices[fold_idx]['trIndices'] = train_indices_f.tolist()
+            self.xp_indices[fold_idx]['teIndices'] = test_indices_f.tolist()
+            # For each train set, generate self.num_subsamples subsample sets of indices (90% of the train_set_f)
+            for i_ss in xrange(self.num_subsamples) : 
+                train_indices_ss, test_indices_ss = cv.train_test_split(train_indices_f, train_size=0.9)
+                self.xp_indices[fold_idx]['ssIndices'].append( train_indices_ss.tolist() ) 
 
         
     def save_indices(self, data_dir, simu_id):

@@ -35,9 +35,30 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
 * Python2.7
 * Python header files (libpython-dev)
 * Python libraries/packages/ecosystems:
+  
   * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
   * [PyTables](http://www.pytables.org/), at least for data generation.
+  * [scikit-learn](http://scikit-learn.org/stable)
+  * [Matplotlib](http://matplotlib.org/)
+    
+  From standard : 
+  * [argparse](https://docs.python.org/2/library/argparse.html)
+  * [doctest](https://docs.python.org/2/library/doctest.html)
+  * [glob](https://docs.python.org/2.7/library/glob.html)
+  * [logging](https://docs.python.org/2.7/library/logging.html)
+  * [math](https://docs.python.org/2.7/library/math.html)
+  * [operator](https://docs.python.org/2.7/library/operator.html)
+  * [os](https://docs.python.org/2.7/library/os.html)
+  * [random](https://docs.python.org/2.7/library/random.html)
+  * [shlex](https://docs.python.org/2.7/library/shlex.html)
+  * [shutil](https://docs.python.org/2.7/library/shutil.html)
+  * [subprocess](https://docs.python.org/2.7/library/subprocess.html)
+  * [sys](https://docs.python.org/2.7/library/sys.html)
+  * [tempfile](https://docs.python.org/2.7/library/tempfile.html)
+  * [time](https://docs.python.org/2.7/library/time.html)
+
+
 * python-dev
 # Installation
 ```
@@ -98,6 +119,32 @@ python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbo
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
 
+`code/handle-output.py` uses output of `code/synthetic_data_experiment.py` to produce results 
+- For each fold : 
+    - Fit a ridge regression model between finally selected features genotype of train set and their phenotype
+    - Predict phenotype of test set using  this model with finally selected features genotype of test set
+- Output values of each criterion for each fold of each plot 
+- Output summary 
+- Boxplot results
+
+Example : 
+```
+cd code
+python synthetic_data_experiments.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+```
+
+### Usage on SGE cluster 
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of ```synthetic_data_experiment.py``` is ```False```. Moreover, ensure ```SEQ_MODE``` flag is ```False```.
+
+```synthetic_data_experiment.py``` will use a qsub job for each fold. 
+
+#### Runtime performances (on SGE cluster only) 
+Ensure TIME_EXP flag at the begining of ```synthetic_data_experiment.py``` is True. This qsub job on node 15-24 which have the same spec.
+
+
 
 # File formats
 ## Relevance scores
@@ -134,6 +181,98 @@ Example: `data/simu_multitask_01.task_similarities.txt`.
 ## Output of `code/multitask_sfan.py`
 Commented lines give the parameter values.
 Then each line corresponds to one tasks, and is a space-separated list of node indices, __starting at 1__.
+
+## Output of 'code/synthetic_data_experiments.py'
+
+
+### For each algo ('sfan', 'msfan_np', 'msfan'):
+* <simu_id>.<algo>.maxRSS : 
+  maxRSS used during feature selection using all training set and optimal parameters.
+  One value per line, one line per fold, all repeats mixed.
+
+* <simu_id>.<algo>.timing : 
+  Timing infos when runing feature selection using all training set and optimal paramters :
+  ```
+  Task (<task_idx>) computation time : <value>
+  Task average computation time: <value>
+  Standard deviation computation time: <value>
+  Network building time: <value>
+  gt_maxflow computation time: <value>
+  ```
+  for each fold. 
+
+
+
+#### For each repeat : 
+
+##### For each fold : 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters : 
+list of optimal parameters retain for the fold
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features : 
+space separated list of features
+one line per task 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS : 
+One value of max RSS per line, one line per subsample
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time : 
+One value of max RSS per line, one line per subsample
+
+
+###### For each measure (pvv, tpr) :
+<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure> : 
+space-separated list of value measure
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr
+  
+
+
+
+
+## Output of 'code/handle-output.py'
+
+### Results are saved in following files : 
+* <simu_id>.results :
+  Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
+
+
+
+#### For each algo ('sfan', 'msfan_np', 'msfan'):
+
+* <simu_id>.<algo>.rmse : 
+  List of final RMSEs 
+  one line per repeat
+  for each repeat, one value per task
+* <simu_id>.<algo>.consistency : 
+  List of final Consistency Indices 
+  one line per repeat
+  for each repeat, one value per task
+
+#### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+a file named <simu_id>.<algo>.<measure> :
+Space-separated lists of PPVs (one value per task and per fold),
+each line corresponds to one repeat. 
+* <simu_id>.<algo>.acc
+* <simu_id>.<algo>.mcc
+* <simu_id>.<algo>.ppv
+* <simu_id>.<algo>.tpr 
+
+
+#### For each repeat, fold and task : 
+* <repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+phenotype prediction of the test set using a ridge-regression trained with the selected features only.
+One value per line, one line per sample
+
+    
+    
+    
+### Charts :
+For each measure (ci, mcc, ppv, tpr, rmse, acc), a chart named <simu_id>.<measure>.png : one boxplot per algorithm, grouped per task, with error bars. 
+* <simu_id>.ci.png
+* <simu_id>.rmse.png
+* <simu_id>.acc.png
+* <simu_id>.mcc.png
+* <simu_id>.ppv.png
+* <simu_id>.tpr.png
+
 
 # References
 Azencott, C.-A., Grimm, D., Sugiyama, M., Kawahara, Y., and Borgwardt, K.M. (2013). Efficient network-guided multi-locus association mapping with graph cuts. Bioinformatics 29, i171–i179.
