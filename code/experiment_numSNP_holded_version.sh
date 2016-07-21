@@ -2,9 +2,11 @@
 # inspired of http://ccn.ucla.edu/wiki/index.php/How_to_have_a_script_wait_for_jobs_before_proceeding
 
 
-num_tasks=900 # seconds; don't make this too short! don't want to tax system with excessive qstat calls
+sleep_time=900 # seconds; don't make this too short! don't want to tax system with excessive qstat calls
 # 900 seconds = 15 mins
 
+
+num_tasks=3
 #num_features #range
 num_samples=1000
 num_repeats=10
