@@ -192,11 +192,11 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
 
 
 ### For each algo (`sfan`, `msfan_np`, `msfan`):
-* `<simu_id>.<algo>.maxRSS` : 
+* `<resu_dir>/<simu_id>.<algo>.maxRSS` : 
   maxRSS used during feature selection using all training set and optimal parameters.
   One value per line, one line per fold, all repeats mixed.
 
-* `<simu_id>.<algo>.timing` : 
+* `<resu_dir>/<simu_id>.<algo>.timing` : 
   Timing infos when runing feature selection using all training set and optimal paramters :
   ```
   Task (<task_idx>) computation time : <value>
@@ -212,22 +212,22 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
 #### For each repeat : 
 
 ##### For each fold : 
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters` : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.parameters` : 
 list of optimal parameters retain for the fold
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features` : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.selected_features` : 
 space separated list of features
 one line per task 
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS` : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.maxRSS` : 
 One value of max RSS per line, one line per subsample
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time` : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ss.process_time` : 
 One value of max RSS per line, one line per subsample
 
 
 ###### For each measure (pvv, tpr) :
-`<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure>` : 
+`<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.<measure>` : 
 space-separated list of value measure
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv`
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr`
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.ppv`
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.tpr`
   
 
 
@@ -236,34 +236,34 @@ space-separated list of value measure
 ## Output of `code/handle-output.py`
 
 ### Results are saved in following files : 
-* `<simu_id>.results` :
+* `<resu_dir>/<simu_id>.results` :
   Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
 
 
 
 #### For each algo (`sfan`, `msfan_np`, `msfan`):
 
-* `<simu_id>.<algo>.rmse` : 
+* `<resu_dir>/<simu_id>.<algo>.rmse` : 
   List of final RMSEs 
   one line per repeat
   for each repeat, one value per task
-* `<simu_id>.<algo>.consistency` : 
+* `<resu_dir>/<simu_id>.<algo>.consistency` : 
   List of final Consistency Indices 
   one line per repeat
   for each repeat, one value per task
 
 #### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
-a file named `<simu_id>.<algo>.<measure>` :
+a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
 Space-separated lists of PPVs (one value per task and per fold),
 each line corresponds to one repeat. 
-* `<simu_id>.<algo>.acc`
-* `<simu_id>.<algo>.mcc`
-* `<simu_id>.<algo>.ppv`
-* `<simu_id>.<algo>.tpr `
+* `<resu_dir>/<simu_id>.<algo>.acc`
+* `<resu_dir>/<simu_id>.<algo>.mcc`
+* `<resu_dir>/<simu_id>.<algo>.ppv`
+* `<resu_dir>/<simu_id>.<algo>.tpr `
 
 
 #### For each repeat, fold and task : 
-* `<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted` : 
+* `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted` : 
 phenotype prediction of the test set using a ridge-regression trained with the selected features only.
 One value per line, one line per sample
 
@@ -272,12 +272,12 @@ One value per line, one line per sample
     
 ### Charts :
 For each measure (ci, mcc, ppv, tpr, rmse, acc), a chart named <simu_id>.<measure>.png : one boxplot per algorithm, grouped per task, with error bars. 
-* `<simu_id>.ci.png`
-* `<simu_id>.rmse.png`
-* `<simu_id>.acc.png`
-* `<simu_id>.mcc.png`
-* `<simu_id>.ppv.png`
-* `<simu_id>.tpr.png`
+* `<resu_dir>/<simu_id>.ci.png`
+* `<resu_dir>/<simu_id>.rmse.png`
+* `<resu_dir>/<simu_id>.acc.png`
+* `<resu_dir>/<simu_id>.mcc.png`
+* `<resu_dir>/<simu_id>.ppv.png`
+* `<resu_dir>/<simu_id>.tpr.png`
 
 
 # References
