@@ -793,7 +793,7 @@ def run_repeat(repeat_idx, args, analysis_files):
                       args.data_dir, args.resu_dir, args.simu_id, hyperparam_fname_np, hyperparam_fname, repeat_idx)
 
         else : 
-            cmd = "qsub -cwd -V --N snp%dr%df -t 1-%d -e %s/SGE-output -o %s/SGE-output\
+            cmd = "qsub -cwd -V -N snp%dr%df -t 1-%d -e %s/SGE-output -o %s/SGE-output\
                qsub_run-fold.sh  %d %d %d %d %d %d %s %s %s %s %s %d" \
                %( 
                   args.num_features, repeat_idx, args.num_folds, args.resu_dir, args.resu_dir,
