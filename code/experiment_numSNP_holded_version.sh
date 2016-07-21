@@ -18,9 +18,6 @@ num_subsamples=20
 path="/share/data40T/athenais/exp_numSNP_30juin" # Version Cluster 
 
 
-alias running_qstat='qstat | grep " r "'
-
-
 for num_features in 200 1000 10000 20000 50000
 do
     echo $num_features
@@ -29,11 +26,11 @@ do
     resu_dir=$path"/results/"$simu_id
 
     # hold before running another python script...
-    counter=`running_qstat|wc -l` # check to see if job is running
-    until [ $counter -ge 100 ] # while $status not <= 100
+    counter=`qstat | grep " r "|wc -l` # how many jobs are currently running
+    until [ $counter -ge 100 ] # while number of running job not <= 100
     do
 	    sleep $sleep_time
-	    status=`running_qstat | grep $id`
+	    counter=`qstat | grep " r "|wc -l`
     done
 	
 	python synthetic_data_experiments.py \
