@@ -72,6 +72,10 @@ Modifications to ```__build_gt_maxflow.sh```:
 * On some architectures, or if you have an older version of gcc, you will need to add the flag ```-D__USE_XOPEN2K8``` to the ```g++``` line. This is linked to gcc's fixinclude mechanism, and usually manifests itself as errors regarding the type name ```__locale_t```.
 * If you're getting ```undefined reference to 'clock_gettime' and 'clock_settime'``` errors, you might need to add the flag ```-lrt``` to the ```g++``` line.
 
+On the CBIO SGE cluster, use :
+```cd code
+./__build_gt_maxflow_cluster.sh```
+
 # Testing
 For testing (doctest) the core optimization module run by `code/multitask_sfan.py`:
 ```
