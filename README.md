@@ -240,6 +240,20 @@ chmod u+x experiment_numSNP_holded_version.sh
 ./experiment_numSNP.sh
 ```
 
+
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation. For this purpose, you can use `code/experiment_numSNP_genedat.sh`. 
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bashcd code
+chmod u+x experiment_numSNP_genedat.sh
+./experiment_numSNP_genedat.sh
+```
+
+
 # File formats
 ## Relevance scores
 Each line is the (floating point) relevance score of the corresponding node (in the same order as for the network file).
