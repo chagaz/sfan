@@ -209,7 +209,11 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
   ```
   for each fold. 
 
+### If using SGE cluster : 
 
+* `<resu_dir>/SGE-output/<num_SNP>r<repeat_idx>f<fold_idx>.o`:
+  Hold prints.
+  > TODO : Find a way to output log and stderr as well  
 
 #### For each repeat : 
 
