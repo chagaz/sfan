@@ -145,6 +145,7 @@ python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
 ### Usage on SGE cluster 
 
 Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of `synthetic_data_experiment.py` is `False`. Moreover, ensure `SEQ_MODE` flag is `False` and set a `tmp_dir` .
+> TODO : Find a way to get tmp_dir automatically.
 
 `synthetic_data_experiment.py` will use a qsub job for each fold. 
 
