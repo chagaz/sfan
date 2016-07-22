@@ -27,11 +27,11 @@ def main():
     
     #---------------------------------------------------------------------------
     parser = argparse.ArgumentParser(description='Create SNPs network')
-    parser.add_argument('acsn', help='gene network')
-    parser.add_argument('map', help='SNPs positions')
-    parser.add_argument('hugo', help='gene positions')
+    parser.add_argument('hugo_ppi', help='gene network in .SIF format')
+    parser.add_argument('snp_list', help='SNPs positions in .MAP format')
+    parser.add_argument('genes_list', help='gene positions, fields are : <Chromosome Name>	<Gene Start (bp)>	<Gene End (bp)>	<HGNC symbol>')
     parser.add_argument('window', help='window for SNP-gene association', type = int)
-    parser.add_argument('output', help='output file')
+    parser.add_argument('output', help='output file : snp network in .DIMACS format')
     args = parser.parse_args()
     #---------------------------------------------------------------------------
     
@@ -40,7 +40,7 @@ def main():
     print 'Creation of the list of SNPS positions : ',
     Start = time.time()
     SNPs = list()
-    with open(args.map, 'r') as fdMap:
+    with open(args.snps_list, 'r') as fdMap:
         # Map file structure description : http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml#map
         for (line_idx, line) in enumerate(fdMap):
             if line_idx > 0: # avoid header of map file
@@ -115,7 +115,7 @@ def main():
     # /!\ 'genes duplicates' =/= occurence of HUGO gene symbol in hugo file
 
 
-    with open(args.hugo, 'r') as fdHugo:
+    with open(args.genes_list, 'r') as fdHugo:
         # each line : num chromo \t start pos \t end pos \t HUGO gene symbol
         # /!\ no header ! should be removed before
         
@@ -210,7 +210,7 @@ def main():
     # connect the SNPs of gene A to the SNPs of gene B
     print 'Connect each SNP of Hgs A to each SNP of Hgs B : ',
     Start = time.time()
-    with open(args.acsn, 'r') as fdAcsn:
+    with open(args.hugo_ppi, 'r') as fdAcsn:
         # each line : <hgsA> <name of relationship> <hgsB>
         for line in fdAcsn:
             line_split = line.split()
