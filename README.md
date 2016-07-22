@@ -254,6 +254,26 @@ chmod u+x experiment_numSNP_genedat.sh
 ```
 
 
+
+
+
+#### numTask experiment
+
+`code/experiment_numTask.sh` generate data and launches `synthetic_data_experiments.py` with different values of `num_tasks`, but with 
+`num_features` , `num_samples`, `num_repeats`, `num_folds`, and `num_subsamples` fixed.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bashcd code
+chmod u+x experiment_numTask.sh
+./experiment_numTask.sh
+```
+
+
+
 # File formats
 ## Relevance scores
 Each line is the (floating point) relevance score of the corresponding node (in the same order as for the network file).
