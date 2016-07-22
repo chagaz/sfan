@@ -79,6 +79,9 @@ The user can either provide a covariance or a precision matrix between tasks. Th
 If no covariance nor precision matrix is given, a precision matrix with (<number of tasks>-1+epsilon) on the diagonal and -1 off the diagonal is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
 
 ## Data generation
+
+### Simulate simple data : 
+
 `code/generate_data.py` generates synthetic data for experiments:
 * a modular network (modules are fully connected) over the features;
 * a genotype (SNP) matrix X of random integers between 0 and 2;
@@ -92,6 +95,57 @@ Example:
 cd code
 python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbose
 ```
+
+### Simulate gwas : 
+
+#### Network generation : 
+
+`code/snp_network_from_gene_network.py` generate the SNPs network using a `.map` file (Example : `data/synthetic_gwas/icogs_snp_list.map`), a `.sif` file (Example : `data/synthetic_gwas/hugo_ppi.sif`), a list of gene (Example : `data/synthetic_gwas/mart_export.txt`) and a window value.
+Example : 
+'''
+python code/snp_network_from_gnee_network.py data/synthetic_gwas/hugo_ppi.sif data/synthetic_gwas/icogs_snp_list.map data/synthetic_gwas/mart_export.txt 10 snp_network.dimacs
+'''
+   
+
+* `data/synthetic_gwas/acsn_names.gmt`
+* `data/synthetic_gwas/acsn_ppi_ver2.txt`
+* and `data/synthetic_gwas/icogs_snplist.csv`
+are initial files downloaded from the Internet. They are described in `data/synthetic_gwas/README.txt`.
+
+In order to have the files in the right format from these initial files to use `code/snp_network_from_gene_network.py`, we provide some scripts : 
+* `code/txt2sif.py` : 
+   - Input : 
+      + `.txt` file
+   - Output : 
+      + `.sif` file
+   - Example : 
+    ```
+    python code/txt2sif.py data/synthetic_gwas/acsn_ppi_ver2.txt data/synthetic_gwas/acsn_ppi_ver2.sif
+    ```
+
+
+* `code/acsn2hugo.py` :
+   - Inputs : 
+      + `.sif` file
+      + `.gmt` file (Example : `data/synthetic_gwas/acsn_names.gmt`)
+   - Output : 
+      + `.sif` file
+   - Example : 
+    ```
+    python code/acsn2hugo.py data/synthetic_gwas/acsn_ppi_ver2.sif data/synthetic_gwas/acsn_names.gmt data/synthetic_gwas/hugo_ppi.sif
+    ```   
+
+* `code/csv2map.py` : 
+   - Input: 
+      + `.csv` file 
+   - Output : 
+      + `.map` file
+   - Example : 
+    ```
+    python code/txt2ppi.py data/synthetic_gwas/icogs_snp_list.csv data/synthetic_gwas/icogs_snp_list.map
+    ```
+
+For a visualisation about the workflow, see `data/synthetic_gwas/workflow_snp-network-from-real-dat.svg` 
 
 ## Synthetic data experiments -- TO BE COMPLETED
 `code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
