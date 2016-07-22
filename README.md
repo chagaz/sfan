@@ -179,6 +179,20 @@ For a visualisation about the workflow, see `data/synthetic_gwas/workflow_snp-ne
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
 
+`code/plot.py` contains methods needed for plot. To have an overview of what is possible to do with this script, just run : 
+
+```bash
+cd code
+python plot.py
+```
+
+It will output : 
+* horizontal_boxplot.png
+* vertical_boxplot.png
+* vertical_barplot.png
+
+
+
 `code/handle-output.py` uses output of `code/synthetic_data_experiment.py` to produce results 
 - For each fold : 
     - Fit a ridge regression model between finally selected features genotype of train set and their phenotype
