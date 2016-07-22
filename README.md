@@ -208,6 +208,38 @@ Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True. 
 
 
 
+
+
+#### numSNP experiment
+
+`code/experiment_numSNP.sh` launches `synthetic_data_experiments.py` with different values of `num_features`, but with 
+`num_tasks` , `num_samples`, `num_repeats`, `num_folds`, and `num_subsamples` fixed.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bashcd code
+chmod u+x experiment_numSNP.sh
+./experiment_numSNP.sh
+```
+##### Usage on SGE cluster
+
+There are several user of the cluster. Thus, it is important to not launch to much as the same time. 
+
+`code/experiment_numSNP_holded_version.sh` waits for your number of running jobs to be lesser than 100 before running another `synthetic_data_experiments.py`.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bashcd code
+chmod u+x experiment_numSNP_holded_version.sh
+./experiment_numSNP.sh
+```
+
 # File formats
 ## Relevance scores
 Each line is the (floating point) relevance score of the corresponding node (in the same order as for the network file).
