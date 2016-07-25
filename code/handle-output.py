@@ -124,6 +124,97 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
 #####################################################################################################
 #####################################################################################################
 if __name__ == "__main__":
+    """ Handle synthetic_data_experiments.py outputs
+
+    Arguments
+    ---------
+    args.num_tasks: int
+        Number of tasks.
+    args.num_features: int
+        Number of features.
+    args.num_samples: int
+        Number of samples
+    args.num_repeats: int
+        Number of repeats.
+    args.num_folds: int
+        Number of cross-validation folds.
+    args.num_subsamples: int
+        Number of subsamples (for stability evaluation).
+    args.data_dir: filename
+        Path of the directory in which to save the simulated data.
+    args.resu_dir: filename
+        Path of the directory in which to save the simulated data.
+    args.simu_id: string
+        Name of the simulation, to be used to name files within args.root_dir.
+    args.verbose: boolean
+        If true, turn on detailed information logging.
+
+    Generated files
+    ---------------
+
+
+
+    1. Results are saved in following files : 
+
+        <resu_dir>/<simu_id>.table.acc.tex
+        <resu_dir>/<simu_id>.table.mcc.tex
+        <resu_dir>/<simu_id>.table.ppv.tex
+        <resu_dir>/<simu_id>.table.tpr.tex
+        <resu_dir>/<simu_id>.table.rmse.tex
+        <resu_dir>/<simu_id>.table.ci.tex
+            Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
+
+
+
+    For each algo in (`sfan`, `msfan_np`, `msfan`):
+
+        <resu_dir>/<simu_id>.<algo>.rmse : 
+          List of final RMSEs 
+          one line per repeat
+          for each repeat, one value per task
+        <resu_dir>/<simu_id>.<algo>.consistency : 
+          List of final Consistency Indices 
+          one line per repeat
+          for each repeat, one value per task
+
+        For each classification measure 
+        (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+        a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
+        <args.resu_dir>/<simu_id>.<algo>.acc
+        <args.resu_dir>/<simu_id>.<algo>.mcc
+        <args.resu_dir>/<simu_id>.<algo>.ppv
+        <args.resu_dir>/<simu_id>.<algo>.tpr 
+            Space-separated lists of PPVs (one value per task and per fold),
+            each line corresponds to one repeat. 
+
+
+        #### For each repeat, fold and task : 
+        <resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+            phenotype prediction of the test set using a ridge-regression trained with the selected features only.
+            One value per line, one line per sample
+    
+    2. Charts :
+        For each measure (ci, mcc, ppv, tpr, rmse, acc), 
+        a chart named <simu_id>.<measure>.png : one boxplot per algorithm, 
+        grouped per task, with error bars. 
+        <args.resu_dir>/<simu_id>.ci.png
+        <args.resu_dir>/<simu_id>.rmse.png
+        <args.resu_dir>/<simu_id>.acc.png
+        <args.resu_dir>/<simu_id>.mcc.png
+        <args.resu_dir>/<simu_id>.ppv.png
+        <args.resu_dir>/<simu_id>.tpr.png
+
+
+    For file format specifications, see README.md
+
+
+    Example
+    -------
+    $ python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+
+
+    """
     args = sde.get_integrous_arguments_values()
 
     for repeat_idx in xrange(args.num_repeats) : 

@@ -41,8 +41,8 @@ import random
 def get_arguments_values(): 
     """ Use argparse module to get arguments values.
 
-    Returns
-    -------
+    Return
+    ------
     args : Namespace object
         Namespace object populated with arguments converted from strings to objects 
         and assigned as attributes of the namespace object.
@@ -72,15 +72,15 @@ def get_arguments_values():
 def check_arguments_integrity(args): 
     """ Check integrity of arguments pass through the command line. 
 
-    Parameters
-    ----------
+    Parameter
+    ---------
     args : namespace object
         Its attributes are arguments names 
         and contain arguments values. 
 
-    Side effects
-    ------------
-    Exit the script printing why if one arg is not integrous. 
+    Side effect
+    -----------
+    If one arg is not integrous, exit the script printing why. 
     """
     try:
         assert(args.num_tasks >= 1)
@@ -136,8 +136,9 @@ def check_arguments_integrity(args):
 
 def get_integrous_arguments_values(): 
     """ Get arguments passed through command line and check their integrity.
-    Returns
-    -------
+
+    Return
+    ------
     args : namespace object
         Its attributes are arguments names 
         and contain arguments values (str or int according to code specifications). 
@@ -149,13 +150,13 @@ def get_integrous_arguments_values():
 def create_dir_if_not_exists(dir_name): 
     """ Create a dir named <dir_name> if it does not already exists. 
 
-    Parameters
-    ----------
+    Parameter
+    ---------
     dir_name : str
         Path of the wanted new dir. 
 
-    Side effects
-    ------------
+    Side effect
+    -----------
     Create a dir named <dir_name> if it does not already exists.
     """
     if not os.path.isdir(dir_name):
@@ -179,8 +180,7 @@ def get_analysis_files_names(resu_dir, simu_id):
     Returns
     -------
     analysis_files : dictionary
-        key : <measure>_<algo> 
-        value : filename
+        analysis_files[<measure abbreviation>_<algo>] = filename
     """
     # - to hold accuracy values  
     acc_st_fname = '%s/%s.sfan.acc' % (resu_dir, simu_id) 
@@ -428,8 +428,66 @@ def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) :
         tmp_weights_fnames = [line.split() for line in f.readlines()]
     return tmp_weights_fnames
 
-def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, covariance_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
-    """TODO
+def run_fold(   fold_idx, 
+                args, 
+                lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
+                indices, 
+                genotype_fname, network_fname , 
+                tmp_weights_fnames, 
+                covariance_fname, causal_fname, phenotype_fnames, scores_fnames, 
+                resu_dir
+            ):
+    """ Run the fold n° <fold_idx> of a repeat
+
+    Parameters
+    ----------
+    fold_idx : int 
+        Index of the current fold. 
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
+    lbd_eta_values : list of strings
+        Values of hyperparameters for sfan, in the format:
+        "-l <lambda -e <eta>".
+    lbd_eta_mu_values_np : list of strings
+        Values of hyperparameters for msfannp, in the format:
+        "-l <lambda -e <eta> -m <mu>".
+    lbd_eta_mu_values : list of strings
+        Values of hyperparameters for msfan, in the format:
+        "-l <lambda -e <eta> -m <mu>".
+    indices : list of dictionaries
+        fold_idx
+        {
+            'trIndices': list of train indices,
+            'teIndices': list of test indices,
+            'ssIndices': list of list of subsample indices
+        }
+    genotype_fname : filename
+        Path to genotype data.
+    network_fname  : filename
+        Path to the network file.
+
+    tmp_weights_fnames : list of list of strings
+        [subsample_idx][task_idx] = tmp filename
+
+    covariance_fname : filename
+        Path to the covariance matrix file.
+
+    causal_fname : filename
+        Path to the causal weights file.
+
+    phenotype_fnames : filename
+        Path to the phenotype data file.
+
+    scores_fnames : filename
+        Path to the observed scores file.
+    resu_dir : dirname
+        Path to the <args.resu_dir>/repeat_<repeat_idx> directory.
+
+    Side effect 
+    -----------
+    If SEQ_MODE = False, launch qsub job arrays.
+
     """
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
@@ -814,7 +872,7 @@ def run_repeat(repeat_idx, args, analysis_files):
 
 
 def main():
-    """ Sequentially run validation experiments on synthetic data.
+    """ Run validation experiments on synthetic data .
 
     Arguments
     ---------
@@ -842,7 +900,7 @@ def main():
     Generated files
     ---------------
     1. Simulated data
-    For each repeat, under <data_dir>/repeat_<repeat_id>:
+    For each repeat, under <args.data_dir>/repeat_<repeat_id>:
         <simu_id>.readme:
             README file describing the simulation paramters
         <simu_id>.task_similarities.txt:
@@ -864,6 +922,9 @@ def main():
                 Node weights (of size args.num_features) for task <task_id>.
                 Computed as Pearson correlation.
 
+    2. Results
+    For each repeat, under <args.resu_dir>/repeat_<repeat_idx>:
+
         For each fold_idx:
             <simu_id>.<fold_idx>.trIndices
                 Space-separated list of training indices.
@@ -873,10 +934,7 @@ def main():
                 <data_dir>/<simu_id>.<fold_idx>.<ss_idx>.ssIndices
                     Space-separated lists of subsample indices,
                     one line per list / subsample.
-
-    2. Results
-    For each repeat, under <resu_dir>/repeat_<repeat_idx>:
-        For each fold_idx:
+        
             For each algo in ('sfan', 'msfan_np', 'msfan'):
                 <simu_id>.<algo>.fold_<fold_idx>.parameters
                      Optimal parameters.
@@ -889,29 +947,8 @@ def main():
                 <simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted
                     Predictions, on the test set, of a ridge regression
                     trained only on the selected features.
-    
-    Under <resu_dir>:
-        For each algo in ('sfan', 'msfan_np', 'msfan'):
-            <simu_id>.<algo>.rmse:
-                Space-separated lists of RMSEs (one per task)
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.consistency:
-                Space-separated lists of consistency index (one per task)
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.ppv
-                Space-separated lists of PPVs per task, per fold,
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.tpr
-                Space-separated lists of sensitivities per task, per fold,
-                each line corresponds to one repeat. 
-            <simu_id>.results
-                Average/standard deviation values for: consistency index, RMSE,
-                PPV and sensitivity.
-            TODO: Plot files.
-    
+        
     For file format specifications, see README.md
-
-
     
     Example
     -------

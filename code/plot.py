@@ -53,6 +53,12 @@ def gene_fake_data (num_tasks) :
 
 
 def add_hlines(axe) : 
+    """ Add light horizontal lines to the plot to increasy the readability
+
+    Argument
+    --------
+    axe : pyplot axis objects
+    """
     # Add a horizontal grid to the plot, but make it very light in color
     # so we can use it for reading data values but not be distracting
     axe.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
@@ -61,6 +67,13 @@ def add_hlines(axe) :
     axe.set_axisbelow(True)
 
 def add_vlines(axe) : 
+    """ Add light vertical lines to the plot to increasy the readability
+
+    Argument
+    --------
+    axe : pyplot axis objects
+    """
+
     # Add a vertical grid to the plot, but make it very light in color
     # so we can use it for reading data values but not be distracting
     axe.xaxis.grid(True, linestyle='-', which='major', color='lightgrey',
@@ -71,6 +84,19 @@ def add_vlines(axe) :
 
 
 def vertical_boxplots(data, name) : 
+    """ Boxplot data vertically 
+
+    Arguments 
+    ---------
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    name : string 
+        name of the plot
+    """
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
@@ -107,6 +133,20 @@ def vertical_boxplots(data, name) :
 
 
 def horizontal_boxplots(data,name) : 
+    """Boxplot data horizontally 
+
+    Arguments 
+    ---------
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    name : string 
+        name of the plot
+
+    """
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(num_tasks, 1, sharex=True)
@@ -145,6 +185,19 @@ def horizontal_boxplots(data,name) :
 
 
 def vertical_barplots(data, name) : 
+    """Barplot data vertically 
+
+    Arguments 
+    ---------
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    name : string 
+        name of the plot
+    """
     num_tasks = len(data['MSConES'] ) 
 
     fig, axes = plt.subplots(ncols=num_tasks, sharey=True)
@@ -169,18 +222,23 @@ def vertical_barplots(data, name) :
 
 
 def make_lined_legend():
-    # draw temporary red and blue lines and use them to create a legend
+    """ Add legend using lines
+    """
+    # draw temporary colored lines 
     hM, = plt.plot([1,1],'m-') #magenta
     hB, = plt.plot([1,1],'b-') #blue
     hK, = plt.plot([1,1],'k-') #black
+    # and use them to create a legend
     plt.legend((hM, hB, hK),algos_names)
-    # on ne veut pas vraiment les dessiner : 
+    # but we don't want the lines to be visibles :  
     hO.set_visible(False) 
     hP.set_visible(False)
     hB.set_visible(False)
 
 
 def make_filled_legend():
+    """ Add legend using little colored rectangle
+    """
     plt.figtext(0.80, 0.18,  algos_names[0],
                 backgroundcolor=colors[0], color='black', weight='roman',
                 size='x-small')

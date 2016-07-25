@@ -80,7 +80,6 @@ def consistency_index_k(sel_list, num_features):
 def consistency_index_task(selection_fname, num_folds, num_tasks, num_features):
     """ Compute consistency indices between the features selected for each fold at each task
 
-    selection_fname, num_folds, num_tasks, num_features
     Arguments
     ---------
     selection_fname : filename
@@ -509,10 +508,6 @@ def evaluate_classification(causal_features, selected_features, num_features):
 
     Returns
     -------
-                # accuracy_score
-                # matthews_corrcoef
-                # precision_score
-                # recall_score
     acc_list: list
         List of Accuracy, task per task.
         fraction of correct predictions = predictions matching observations.
