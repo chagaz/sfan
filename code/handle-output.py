@@ -415,42 +415,42 @@ if __name__ == "__main__":
         [analysis_files['acc_st'], analysis_files['acc_msfan_np'], analysis_files['acc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("accuracy", data, "%s/accuracy.tex"% args.resu_dir)
+    print_and_save_measure_table("accuracy", data, "%s/%s.table.accuracy.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'accuracy')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['mcc_st'], analysis_files['mcc_msfan_np'], analysis_files['mcc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("mcc", data, "%s/mcc.tex"% args.resu_dir)
+    print_and_save_measure_table("mcc", data, "%s/%s.table.mcc.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'mcc')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ppv_st'], analysis_files['ppv_msfan_np'], analysis_files['ppv_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("ppv", data, "%s/ppv.tex"% args.resu_dir)
+    print_and_save_measure_table("ppv", data, "%s/%s.table.ppv.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'ppv')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['tpr_st'], analysis_files['tpr_msfan_np'], analysis_files['tpr_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("tpr", data, "%s/tpr.tex"% args.resu_dir)
+    print_and_save_measure_table("tpr", data, "%s/%s.table.tpr.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'tpr')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['rmse_st'], analysis_files['rmse_msfan_np'], analysis_files['rmse_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("rmse", data, "%s/rmse.tex"% args.resu_dir)
+    print_and_save_measure_table("rmse", data, "%s/%s.table.rmse.tex" %(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'rmse')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ci_st'], analysis_files['ci_msfan_np'], analysis_files['ci_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
-    print_and_save_measure_table("ci", data,  "%s/ci.tex"% args.resu_dir)
+    print_and_save_measure_table("ci", data,  "%s/%s.table.ci.tex" %(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'ci')
 
 

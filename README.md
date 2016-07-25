@@ -376,7 +376,7 @@ space-separated list of value measure
 ## Output of `code/handle-output.py`
 
 ### Results are saved in following files : 
-* `<resu_dir>/<simu_id>.results` :
+* `<resu_dir>/<simu_id>.table.<measure>.tex` :
   Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
 
 
