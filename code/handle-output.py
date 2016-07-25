@@ -5,6 +5,63 @@ import plot
 import numpy as np
 
 
+
+def print_and_save_measure_table(measure_name, data, out_fname): 
+    """ Print measures tables and save them (in LaTeX table format) in file
+
+    Parameters
+    ----------
+    measure_name : string 
+        measure name
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    out_fname : filename
+        Path to the output file were LaTeX table has to be printed
+
+    Side effects
+    ------------
+    Create a file named <out_fname> holding the table in LaTeX format.
+
+    """
+
+    header_print = (
+            "-----------------------------------------------------------------------\n"
+            "                      %s\n"
+            "       +--------------------------------------------------------------+\n"
+            "       |                              algo                            |\n"
+            "  task |         SConES     |    MSConESnp       |        MSConES     |\n"
+            "=======+====================+====================+====================+\n"
+    )
+    header_save = "task & sfan &np &msfan \\\\\\hline\n"
+    algos_names = ('SConES', 'MSConESnp', 'MSConES')
+    
+    to_print = ''
+    to_save = ''
+
+    for task_idx in xrange (len (data[algos_names[0]] ) ) : 
+        to_print += '{:^7d}|'.format(task_idx) 
+        to_save += '{:^7d}&'.format(task_idx) 
+        for algo in algos_names : 
+            mean_task_algo = np.mean(data[algo][task_idx])
+            std_task_algo = np.std(data[algo][task_idx])
+            to_print += '{:9.3f} ±{:9.3f}|'.format(mean_task_algo, std_task_algo) 
+            to_save += '{:9.3f} ±{:9.3f}&'.format(mean_task_algo, std_task_algo) 
+        to_save = to_save[:-1] #don't want the last '&'
+        to_save += "\\\\\n" # two step and not to_save[-1] = "\\\\\n" because python strings are immuable
+        to_print+="\n"
+        
+    print  header_print  %measure_name + to_print
+
+    with open(out_fname, 'w') as f : 
+        f.write(header_save+to_save)
+
+
+
+
 def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, num_folds):
     """ Extract plotable data from analsis files 
 
@@ -358,36 +415,42 @@ if __name__ == "__main__":
         [analysis_files['acc_st'], analysis_files['acc_msfan_np'], analysis_files['acc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("accuracy", data, "%s/accuracy.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'accuracy')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['mcc_st'], analysis_files['mcc_msfan_np'], analysis_files['mcc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("mcc", data, "%s/mcc.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'mcc')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ppv_st'], analysis_files['ppv_msfan_np'], analysis_files['ppv_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("ppv", data, "%s/ppv.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'ppv')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['tpr_st'], analysis_files['tpr_msfan_np'], analysis_files['tpr_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("tpr", data, "%s/tpr.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'tpr')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['rmse_st'], analysis_files['rmse_msfan_np'], analysis_files['rmse_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("rmse", data, "%s/rmse.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'rmse')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ci_st'], analysis_files['ci_msfan_np'], analysis_files['ci_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("ci", data,  "%s/ci.tex"% args.resu_dir)
     plot.horizontal_boxplots(data, template_name%'ci')
 
 
