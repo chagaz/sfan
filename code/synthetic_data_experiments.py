@@ -904,7 +904,7 @@ def main():
         <simu_id>.readme:
             README file describing the simulation paramters
         <simu_id>.task_similarities.txt:
-            Matrix of precision between tasks
+            Matrix of covariance between tasks
         <simu_id>.causal_features:
             Lists of causal features.
             One list per task. Indices start at 0.
