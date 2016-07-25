@@ -21,11 +21,26 @@ colors = ['darkkhaki', 'royalblue', 'white']
 
 
 def gene_fake_data (num_tasks) : 
-    # Generate data
+    """ Generate fake data
+
+    Parameters
+    ----------
+    num_tasks : int 
+        Number of tasks. 
+
+    Return
+    -------
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    """
     data = {}
     for key in algos_names : 
         data[key] = []
-    n = 5
+    n = 5 # Influence num_samples -----------------------------------v
     for task_id in xrange(num_tasks) :
         upper = random.randint(0, 1000)  
         data[algos_names[0]].append(np.random.uniform(0, upper, size=n))
