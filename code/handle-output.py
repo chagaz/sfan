@@ -344,7 +344,11 @@ if __name__ == "__main__":
     
     
     #----------------------------------------------------------------------------
-    # Plots : 
+    # For each measures :
+    #  - extract data of measures from analysis_files, 
+    #  - print tables, 
+    #  - save tables in Latex format, 
+    #  - and Plots
     
     template_name =  args.resu_dir+'/'+args.simu_id+'.%s.png'
     
