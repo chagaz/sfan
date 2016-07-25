@@ -27,7 +27,12 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
 
     Return
     -------
-
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
     """
     data = {}
     algos = ('SConES', 'MSConESnp', 'MSConES')
