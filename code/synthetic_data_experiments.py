@@ -491,6 +491,8 @@ def run_fold(   fold_idx,
     """
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
+    # If real TIME_EXP (no DEBUG_MODE) : 
+    #   Do not search for opt_param but take those found before
     if not DEBUG_MODE and TIME_EXP :
 
         # For each algorithm, get optimal parameters saved in file
