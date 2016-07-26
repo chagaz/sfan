@@ -494,18 +494,17 @@ def run_fold(   fold_idx,
     if not DEBUG_MODE and TIME_EXP :
 
         # For each algorithm, get optimal parameters saved in file
-        path = "/share/data40T/athenais/exp_changeNbSNP/opt_param/numSNP_%d/repeat_%d"  %(args.num_features, resu_dir[-1]) #on cluster
 
         # Single task
-        fname = '%s/%s.sfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
             opt_params_st = f.read()
         # Multitask (no precision)
-        fname = '%s/%s.msfan_np.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
             opt_params_np = f.read()[-1] # to remove \n
         # Multitask (precision)
-        fname = '%s/%s.msfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
             opt_params = f.read()[-1] # to remove \n
 
