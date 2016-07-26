@@ -418,13 +418,14 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fname, y_pred_template, xp_indices, num_tasks):
+def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices, num_tasks):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
     ---------
-    y_true_fname: filename
-        Path to phenotype data.
+    phenotype_fnames: aray of filename
+        Path to phenotype datas.
+        (one path per task)
     y_pred_template: string
         Template of path where were write list of predictions on the test set
     xp_indices: list of dictionaries
@@ -450,8 +451,8 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_template, xp_indices, nu
         # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
         # read all_y_true :
-        #print '\ni read phenotype_fname[task_idx = %d] = %s' %(task_idx, phenotype_fname[task_idx]) 
-        with open(phenotype_fname[task_idx], 'r') as f_true:
+        #print '\ni read phenotype_fnames[task_idx = %d] = %s' %(task_idx, phenotype_fnames[task_idx]) 
+        with open(phenotype_fnames[task_idx], 'r') as f_true:
             all_y_true = [float(y) for y in f_true.read().split()]
         #print "\nall_y_true = "
         #print all_y_true
