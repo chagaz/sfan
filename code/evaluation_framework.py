@@ -418,7 +418,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices, num_tasks):
+def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
@@ -435,8 +435,6 @@ def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices, n
             'teIndices': list of test indices,
             'ssIndices': list of list of subsample indices
         }
-    num_tasks : int
-        Number of tasks.
     
 
     Return
@@ -445,14 +443,14 @@ def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices, n
         List of rmse task per task.
     """
     rmse_list = []
-    for task_idx in range(num_tasks):
+    for task_idx, phenotype_fname in enumerate( phenotype_fnames ) :
         #print "\n\n\n\n==== tache num %d" %task_idx
         # For n inds :
         # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
         # read all_y_true :
         #print '\ni read phenotype_fnames[task_idx = %d] = %s' %(task_idx, phenotype_fnames[task_idx]) 
-        with open(phenotype_fnames[task_idx], 'r') as f_true:
+        with open(phenotype_fname, 'r') as f_true:
             all_y_true = [float(y) for y in f_true.read().split()]
         #print "\nall_y_true = "
         #print all_y_true
