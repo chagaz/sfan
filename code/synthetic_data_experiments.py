@@ -496,19 +496,19 @@ def run_fold(   fold_idx,
     if not DEBUG_MODE and TIME_EXP :
 
         # For each algorithm, get optimal parameters saved in file
-
+        # use rstrinp in case there is \n
         # Single task
         fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params_st = f.read() # due to how opt_params for sfan are saved, there is no \n to remove
+            opt_params_st = f.read().rstrip() 
         # Multitask (no precision)
         fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params_np = f.read()[-1] # to remove \n
+            opt_params_np = f.read().rstrip() 
         # Multitask (precision)
         fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params = f.read()[-1] # to remove \n
+            opt_params = f.read().rstrip()
 
     elif not DEBUG_MODE and not TIME_EXP: 
         logging.info ("======== Feature selection :")
