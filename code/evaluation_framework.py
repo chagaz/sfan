@@ -462,7 +462,8 @@ def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices):
         all_y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
         all_y_pred = list()
 
-        for fold_idx in xrange(len(xp_indices)) : #TODO : add arg : arg.num_fold ?? 
+        num_folds = len(xp_indices)
+        for fold_idx in xrange(num_folds) : #TODO : add arg : arg.num_fold ?? 
             with open(y_pred_template%(fold_idx, task_idx), 'r') as f_pred:
                 content = f_pred.read().split()
                 all_y_pred.extend(float(y) for y in content)
