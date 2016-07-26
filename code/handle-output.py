@@ -409,21 +409,21 @@ if __name__ == "__main__":
         print predicted_phenotypes_fname
         print xp_indices
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)
+                                        xp_indices)
         print rmse_list
         with open(analysis_files['rmse_st'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
         # Multitask (no precision)
         predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)
+                                        xp_indices)
         print rmse_list
         with open(analysis_files['rmse_msfan_np'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
         # Multitask (precision)
         predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)       
+                                        xp_indices)       
         print rmse_list      
         with open(analysis_files['rmse_msfan'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
