@@ -418,14 +418,14 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_tasks):
+def compute_ridge_selected_RMSE(phenotype_fname, y_pred_template, xp_indices, num_tasks):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
     ---------
     y_true_fname: filename
         Path to phenotype data.
-    y_pred_fname: string
+    y_pred_template: string
         Template of path where were write list of predictions on the test set
     xp_indices: list of dictionaries
         fold_idx
@@ -464,7 +464,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         all_y_pred = list()
 
         for fold_idx in xrange(len(xp_indices)) : #TODO : add arg : arg.num_fold ?? 
-            with open(y_pred_fname%(fold_idx, task_idx), 'r') as f_pred:
+            with open(y_pred_template%(fold_idx, task_idx), 'r') as f_pred:
                 content = f_pred.read().split()
                 all_y_pred.extend(float(y) for y in content)
          
