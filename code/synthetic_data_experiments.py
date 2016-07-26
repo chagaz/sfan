@@ -500,7 +500,7 @@ def run_fold(   fold_idx,
         # Single task
         fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params_st = f.read()
+            opt_params_st = f.read() # due to how opt_params for sfan are saved, there is no \n to remove
         # Multitask (no precision)
         fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
