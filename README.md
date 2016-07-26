@@ -217,11 +217,17 @@ Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate d
 
 `synthetic_data_experiment.py` will use a qsub job for each fold. 
 
-#### Runtime performances (on SGE cluster only) 
-Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True. This qsub job on node 15-24 which have the same spec.
+#### Runtime experiment (on SGE cluster only) 
 
+Once `synthetic_data_experiment.py`, optimal parameters are chosen for each algo at each fold. 
+Then, a runtime experiement can be run. 
+Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True 
+and run `synthetic_data_experiment.py`. 
 
+The script won't search for optimal parameters, but take those chosen previously.
 
+Qsub jobs concerning features selection using all the training set of the fold and opt param 
+are run on nodes from 15 to 24 which have the same spec. So timing can be compared. 
 
 
 #### numSNP experiment
