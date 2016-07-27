@@ -404,7 +404,11 @@ space-separated list of value measure
   one line per repeat
   for each repeat, one value per task
 
-#### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+#### Analysis files : 
+
+To see what these files look like, see `results/analysis-files.svg`.
+
+##### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
 a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
 Space-separated lists of PPVs (one value per task and per fold),
 each line corresponds to one repeat. 
@@ -414,7 +418,8 @@ each line corresponds to one repeat.
 * `<resu_dir>/<simu_id>.<algo>.tpr `
 
 
-#### For each repeat, fold and task : 
+
+##### For each repeat, fold and task : 
 * `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted` : 
 phenotype prediction of the test set using a ridge-regression trained with the selected features only.
 One value per line, one line per sample
