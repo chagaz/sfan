@@ -177,6 +177,10 @@ In order to have the files in the right format from these initial files to use `
 For a visualisation about the workflow, see `data/synthetic_gwas/workflow_snp-network-from-real-dat.svg` 
 
 ## Synthetic data experiments -- TO BE COMPLETED
+
+For a visualisation of the validation pipeline, see `code/validation-pipeline.svg`.
+
+
 `code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
