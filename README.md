@@ -132,7 +132,9 @@ Example :
 '''
 python code/snp_network_from_gnee_network.py data/synthetic_gwas/hugo_ppi.sif data/synthetic_gwas/icogs_snp_list.map data/synthetic_gwas/mart_export.txt 10 snp_network.dimacs
 '''
-   
+
+In, for some reasons, you want to modify `code/snp_network_from_gene_network.py`, we provide a bunch of file in `data/synthetic_gwas/tests_snp_network_from_gene_network` to test some situations describded in `data/synthetic_gwas/tests_snp_network_from_gene_network/tested_cases.svg`.
+
 
 * `data/synthetic_gwas/acsn_names.gmt`
 * `data/synthetic_gwas/acsn_ppi_ver2.txt`
