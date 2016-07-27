@@ -176,6 +176,19 @@ In order to have the files in the right format from these initial files to use `
 
 For a visualisation about the workflow, see `data/synthetic_gwas/workflow_snp-network-from-real-dat.svg` 
 
+
+## Data visualisation
+For a visualisation of dimacs networks (do not use to big networks), use : 
+`code\show-dimacs.R`. 
+
+Example : 
+```
+cd code
+Rscript show-dimacs.R ../data/simu_01/simu_01.network.dimacs
+```
+
+The script save the visualisation under `<path>.pdf`, so you can open it later. 
+
 ## Synthetic data experiments -- TO BE COMPLETED
 
 For a visualisation of the validation pipeline, see `code/validation-pipeline.svg`.
