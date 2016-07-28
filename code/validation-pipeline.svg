@@ -3763,7 +3763,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
      inkscape:cx="517.71666"
-     inkscape:cy="400.15283"
+     inkscape:cy="171.5814"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -6391,7 +6391,7 @@
          sodipodi:role="line"
          id="tspan4223"
          x="124.75384"
-         y="973.36469">predict_pheno (test fold, sel[task])</tspan></text>
+         y="973.36469">predict_pheno (genotype[test fold], sel[task])</tspan></text>
     <rect
        style="fill:#000000;fill-opacity:1;stroke:none"
        id="rect3996-5-9-0-6"
