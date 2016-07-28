@@ -66,9 +66,14 @@ results/*
 # exept : 
 !results/analysis-files.svg
 
-#Data that's not part of test/examples
-data/simu_02
-data/simu_synth_01
+#Data : 
+# ignore everything : 
+data/*
+# except that's part of test/examples : 
+!data/simu_01
+!data/simu_ms
+# and that is part of synthetic gwas : 
+!data/synthetic_gwas
 
 #Temporary files
 *~
