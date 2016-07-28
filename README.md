@@ -110,10 +110,10 @@ If no covariance nor precision matrix is given, a precision matrix with (`<numbe
 ### Simulate simple data : 
 
 `code/generate_data.py` generates synthetic data for experiments:
-* a modular network (modules are fully connected) over the features;
+* a modular network (modules of `MOD_SIZE` features fully connected) over the features;
 * a genotype (SNP) matrix X of random integers between 0 and 2;
 * a covariance matrix Omega of similarities between tasks;
-* causal features (SNPs), with corresponding weights, generated so as to respect the covariance structure given by
+* for each task, `NUM_CAUSAL_EACH` causal features (SNPs) randomly chosen among the first `NUM_CAUSAL_TOTAL` features, with corresponding weights, generated so as to respect the covariance structure given by
 Omega (inverse of the precision matrix);
 * the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
 
@@ -122,6 +122,10 @@ Example:
 cd code
 python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbose
 ```
+
+The number of nodes `MOD_SIZE = 15` in each module, the total number of features possibly causal `NUM_CAUSAL_TOTAL = 30` among which are chosen `NUM_CAUSAL_EACH = 20` causal features for each task 
+are hardcoded in `code/generate_data.py`.
+
 
 ### Simulate gwas : 
 
