@@ -77,3 +77,7 @@ data/*
 
 #Temporary files
 *~
+
+#old/ dir are trash-like, so ignore them (use ** wildcard to match any level of subdirectories): 
+**/old/*
+
