@@ -81,3 +81,6 @@ data/*
 #old/ dir are trash-like, so ignore them (use ** wildcard to match any level of subdirectories): 
 **/old/*
 
+# ignore pdf outputed by show-dimacs.R : <simu_id>.network.dimacs.pdf
+*.network.dimacs.pdf
+
