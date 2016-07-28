@@ -23,7 +23,7 @@ def main():
     chromo_num_correspondance['XY'] = 25
     chromo_num_correspondance['MT'] = 26
     # no unlocalized sequences, unplaced sequences, alternate loci
-    
+    # TODO : but they can be added here if needeed
     
     #---------------------------------------------------------------------------
     parser = argparse.ArgumentParser(description='Create SNPs network')
