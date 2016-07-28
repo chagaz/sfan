@@ -68,6 +68,14 @@ def main():
     # create a sparse matrix of size len(SNPs) x len(SNPs) to create the network
     print 'Creation of the matrix to save the network : ',
     net = sp.lil_matrix((len(SNPs), len(SNPs)))
+    # Before add net [snp1, snp2] = 1, always check that net [snp2, snp1] is not already 1.
+    # It can be the case for example if : 
+    # _______________|__________|___________________ genomique sequence
+    #           [  snp1        snp2             ]
+    #           <------------------------------>
+    #                   gene A
+    # because snp1 and snp2 are neighbor and they in the same gene
+    # Other example : neighbor, and belonging to different gene that interacting
     print '\033[92m' + 'DONE' + '\033[0m'
 
     #---------------------------------------------------------------------------
@@ -197,7 +205,7 @@ def main():
         # Attach each SNPs of a gene to each other :
         for SNP_idx1 in xrange(len(SNPs_in_Hgs)):
             for SNP_idx2 in xrange(SNP_idx1 + 1, len(SNPs_in_Hgs)):
-                if net[SNPs_in_Hgs[SNP_idx2], SNPs_in_Hgs[SNP_idx2]] != 1: #why ??? 
+                if net[SNPs_in_Hgs[SNP_idx2], SNPs_in_Hgs[SNP_idx2]] != 1:
                     net[SNPs_in_Hgs[SNP_idx1], SNPs_in_Hgs[SNP_idx2]] = 1
                 else : import pdb; pdb.set_trace() 
         print 'bim'
@@ -227,7 +235,7 @@ def main():
                     # Connect each SNP of hgsA to each SNP of hgsB : 
                     for SNPA in SNPs_of_A:
                         for SNPB in SNPs_of_B:
-                            if net[SNPB, SNPA] != 1: # why ???
+                            if net[SNPB, SNPA] != 1:
                                 net[ SNPA, SNPB] = 1
                             #else : import pdb; pdb.set_trace()
         fdAcsn.close()
