@@ -3762,8 +3762,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="460.57381"
-     inkscape:cy="628.72425"
+     inkscape:cx="517.71666"
+     inkscape:cy="400.15283"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -6287,7 +6287,7 @@
          sodipodi:role="line"
          id="tspan4167"
          x="105.05586"
-         y="750.77325">sel = feature selection (train du fold, opt_param)</tspan></text>
+         y="750.77325">sel = feature selection (train set of the fold, opt_param)</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
