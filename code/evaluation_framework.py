@@ -559,60 +559,6 @@ def evaluate_classification(causal_features, selected_features, num_features):
     return acc_list, mcc_list, pre_list, spe_list
 
 
-def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
-    """ Compute PPV (Positive Predicted Values) = Accuracy = Precision
-    and sensitivity (true positive rate) for all tasks.
-
-    Arguments
-    ---------
-    causal_fname: filename
-        File containing causal features (one line per task, space-separated).
-    selected_list: list of lists
-        List of lists of selected features (one list per task).
-    num_features : int
-        Total number of features
-
-    Returns
-    -------
-    ppv_list: list
-        List of Positive Predicted Values (PPV), task per task.
-        PPV = precision = TP / (TP + FP)
-    tpr_list: list
-        List of sensitivities (TPR), task per task.
-        sensitivities = recall = TP / (TP + FN)
-    """
-
-    ppv_list = []
-    tpr_list = []
-    
-    with open(causal_fname, 'r') as f:
-
-        # For each task, 
-        for line_idx, line in enumerate(f):
-
-            # at the beginning, we consider that the features are 
-            # neither causal...
-            y_true = [False]*num_features
-            # ... nor predicted as such.
-            y_pred = [False]*num_features
-
-            # Then we change the status of the causal ones 
-            # (these are y_true True),
-            y_true_indx_list = map(int, line.split())
-            for y_true_indx in y_true_indx_list :
-                y_true[y_true_indx] = True
-            # and of those that have been predicted as such 
-            # (these are y_pred True).
-            y_pred_indx_list = selected_list[line_idx]            
-            for y_pred_indx in y_pred_indx_list :
-                y_pred[y_pred_indx] = True
-
-            # and we compute ppv and tpr based on these 2 sets : 
-            ppv_list.append( sklearn.metrics.accuracy_score(y_true, y_pred) )
-            tpr_list.append( sklearn.metrics.recall_score(y_true, y_pred) )
-
-    return ppv_list, tpr_list
-
     
 class Framework(object):
     """ Setting up evaluation framework.
