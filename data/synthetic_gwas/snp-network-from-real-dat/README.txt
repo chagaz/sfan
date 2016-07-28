@@ -29,6 +29,7 @@ mart_export.txt
         Unique Results only : yes
 	<chromosome> <start position> <end position> <HUGO symbol>
 	columns are TAB separated
+	NOTA BENE : chromo numerotation begins to 1
 
 icogs_snp_list.csv
     From: http://ccge.medschl.cam.ac.uk/files/2014/03/icogs_snp_list.csv
