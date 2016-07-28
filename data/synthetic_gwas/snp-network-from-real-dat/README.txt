@@ -12,7 +12,7 @@ acsn_ppi_ver2.txt:
     PPI interactions (Tab-delimited text format)
     From: https://acsn.curie.fr/files/acsn_ppi_ver2.txt
 	Each line corresponds to one interaction (network edge)
-	<gene 1 name in ACSN> <name of relationship> <gene 2 name in ACSN> <semi-colon separated list of PubMedID >
+	<ACSN entity 1> <name of relationship> <ACSN entity 2> <semi-colon separated list of PubMedID >
 	columns are TAB separated
 	each colum can contain SPACES
 
