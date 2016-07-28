@@ -3762,10 +3762,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="460.57381"
+     inkscape:cx="403.43095"
      inkscape:cy="228.72425"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1366"
      inkscape:window-height="744"
@@ -4019,7 +4019,7 @@
        id="rect3379-92-7"
        width="369.92676"
        height="39.026768"
-       x="78.608055"
+       x="118.60806"
        y="1074.4202"
        rx="0"
        ry="20.017439" />
@@ -6397,34 +6397,34 @@
        id="rect3996-5-9-0-6"
        width="20.357143"
        height="111.5388"
-       x="54.108971"
-       y="1021.5076" />
+       x="73.394684"
+       y="1020.7933" />
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="-1106.9995"
-       y="67.245941"
+       x="-1096.9995"
+       y="87.245941"
        id="text4199-2"
        sodipodi:linespacing="125%"
        transform="matrix(0,-1,1,0,0,0)"><tspan
          sodipodi:role="line"
          id="tspan4201-6"
-         x="-1106.9995"
-         y="67.245941"
+         x="-1096.9995"
+         y="87.245941"
          style="fill:#ffffff">task</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="83.337585"
+       x="123.33759"
        y="1090.0984"
        id="text4264"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4266"
-         x="83.337585"
+         x="123.33759"
          y="1090.0984">Compute RMSE (predicted phenotypes VS real phenotypes)  </tspan><tspan
          sodipodi:role="line"
-         x="83.337585"
+         x="123.33759"
          y="1105.0984"
          id="tspan4268">Compute CI</tspan></text>
     <text
@@ -6569,5 +6569,12 @@
          y="131.84253"
          id="tspan4234"
          style="font-size:9px;text-align:center;text-anchor:middle;fill:#000000">combination</tspan></text>
+    <rect
+       style="fill:#00fbff;fill-opacity:1;stroke:none"
+       id="rect3996-5-9-2-8"
+       width="20.357143"
+       height="111.6244"
+       x="53.004463"
+       y="1022.1655" />
   </g>
 </svg>
