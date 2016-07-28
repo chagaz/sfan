@@ -20,7 +20,7 @@ def main():
     chromo_num_correspondance = {str(i): i for i in xrange(1, 23) } 
     chromo_num_correspondance['X'] = 23
     chromo_num_correspondance['Y'] = 24
-    chromo_num_correspondance['XY'] = 25
+    chromo_num_correspondance['XY'] = 25 # pseudo autosomal region'
     chromo_num_correspondance['MT'] = 26
     # no unlocalized sequences, unplaced sequences, alternate loci
     # TODO : but they can be added here if needeed
