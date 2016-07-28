@@ -38,7 +38,7 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
   
   * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
-  * [PyTables](http://www.pytables.org/), at least for data generation.
+  * [PyTables](http://www.pytables.org/)
   * [scikit-learn](http://scikit-learn.org/stable)
   * [Matplotlib](http://matplotlib.org/)
     
