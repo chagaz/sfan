@@ -182,7 +182,7 @@ def main():
     print ('Attach each SNPs of a gene to each other : ', end = "")
     Start = time.time()
     for Hgs in genes:
-
+        print('.', end = '')
         #----------
         # List SNPs belonging to a gene :
         SNPs_in_Hgs = list() 
