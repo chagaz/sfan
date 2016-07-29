@@ -28,7 +28,7 @@ def main():
     #---------------------------------------------------------------------------
     parser = argparse.ArgumentParser(description='Create SNPs network')
     parser.add_argument('hugo_ppi', help='gene network in .SIF format')
-    parser.add_argument('snp_list', help='SNPs positions in .MAP format')
+    parser.add_argument('snps_list', help='SNPs positions in .MAP format')
     parser.add_argument('genes_list', help='gene positions. tab separated fields are : <Chromosome Name>	<Gene Start (bp)>	<Gene End (bp)>	<HGNC symbol>')
     parser.add_argument('window', help='window for SNP-gene association', type = int)
     parser.add_argument('output', help='output file : snp network in .DIMACS format')
