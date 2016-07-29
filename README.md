@@ -152,7 +152,8 @@ In order to have the files in the right format from these initial files to use `
    - Output : 
       + `.sif` file
    - Example : 
-    ```
+  
+    ```bash
     python code/txt2sif.py data/synthetic_gwas/acsn_ppi_ver2.txt data/synthetic_gwas/acsn_ppi_ver2.sif
     ```
 
@@ -163,8 +164,9 @@ In order to have the files in the right format from these initial files to use `
       + `.gmt` file (Example : `data/synthetic_gwas/acsn_names.gmt`)
    - Output : 
       + `.sif` file
-   - Example : 
-    ```
+   - Example :
+   
+    ```bash
     python code/acsn2hugo.py data/synthetic_gwas/acsn_ppi_ver2.sif data/synthetic_gwas/acsn_names.gmt data/synthetic_gwas/hugo_ppi.sif
     ```   
 
@@ -174,7 +176,8 @@ In order to have the files in the right format from these initial files to use `
    - Output : 
       + `.map` file
    - Example : 
-    ```
+  
+    ```bash
     python code/txt2ppi.py data/synthetic_gwas/icogs_snp_list.csv data/synthetic_gwas/icogs_snp_list.map
     ```
 
@@ -186,7 +189,7 @@ For a visualisation of dimacs networks (do not use to big networks), use :
 `code\show-dimacs.R`. 
 
 Example : 
-```
+```bash
 cd code
 Rscript show-dimacs.R ../data/simu_01/simu_01.network.dimacs 0.00000000001
 ```
@@ -263,7 +266,8 @@ Usage :
 Open the script, change values of variables that are in `var to modify` section and run the script.
 
 Example : 
-```bashcd code
+```bash
+cd code
 chmod u+x experiment_numSNP.sh
 ./experiment_numSNP.sh
 ```
@@ -278,7 +282,8 @@ Usage :
 Open the script, change values of variables that are in `var to modify` section and run the script.
 
 Example : 
-```bashcd code
+```bash
+cd code
 chmod u+x experiment_numSNP_holded_version.sh
 ./experiment_numSNP.sh
 ```
@@ -291,7 +296,8 @@ Usage :
 Open the script, change values of variables that are in `var to modify` section and run the script.
 
 Example : 
-```bashcd code
+```bash
+cd code
 chmod u+x experiment_numSNP_genedat.sh
 ./experiment_numSNP_genedat.sh
 ```
@@ -310,7 +316,8 @@ Usage :
 Open the script, change values of variables that are in `var to modify` section and run the script.
 
 Example : 
-```bashcd code
+```bash
+cd code
 chmod u+x experiment_numTask.sh
 ./experiment_numTask.sh
 ```
