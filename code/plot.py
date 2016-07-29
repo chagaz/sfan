@@ -17,8 +17,7 @@ colors = ['darkkhaki', 'royalblue', 'white']
 
 
 
-
-def gene_fake_data (num_tasks) : 
+def gene_random_fake_data (num_tasks) : 
     """ Generate fake data
 
     Parameters
@@ -44,6 +43,34 @@ def gene_fake_data (num_tasks) :
         data[algos_names[0]].append(np.random.uniform(0, upper, size=n))
         data[algos_names[1]].append(np.random.uniform(0, upper, size=n-1))
         data[algos_names[2]].append(np.random.uniform(0, upper, size=n+103))
+    return data
+
+    
+
+def gene_fake_data (num_tasks) : 
+    """ Generate fake data
+
+    Parameters
+    ----------
+    num_tasks : int 
+        Number of tasks. 
+
+    Return
+    -------
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    """
+    data = {}
+    for key in algos_names : 
+        data[key] = []
+    for task_id in xrange (num_tasks) : 
+        data[algos_names[0]].append([9, 10, 11])
+        data[algos_names[1]].append([4, 5, 6])
+        data[algos_names[2]].append([-1,0, 1])
     return data
 ####################################################
 
