@@ -169,7 +169,7 @@ def main():
                     genes[current_Hgs].append(current_data)
 
                 #print ('after', genes[current_Hgs])
-                #print('-------------------')
+                print('.', end = '')
 
     print ('\033[92m' + 'DONE' + '\033[0m')
     End = time.time()
