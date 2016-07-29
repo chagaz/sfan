@@ -628,7 +628,7 @@ class Framework(object):
                 self.xp_indices[fold_idx]['ssIndices'].append( train_indices_ss.tolist() ) 
 
         
-    def save_indices(self, data_dir, simu_id):
+    def save_indices(self, out_dir, simu_id):
         """ Save the cross-validation folds and subsample indices to files.
 
         Parameters
@@ -637,19 +637,19 @@ class Framework(object):
         Generated files
         ---------------
         For each fold_idx:
-            <data_dir>/<simu_id>.fold<fold_idx>.trIndices:
+            <out_dir>/<simu_id>.fold<fold_idx>.trIndices:
                 Space-separated list of training indices.
-            <data_dir>/<simu_id>.fold<fold_idx>.teIndices:
+            <out_dir>/<simu_id>.fold<fold_idx>.teIndices:
                 Space-separated list of test indices.
             For each subsample_idx:
-                <data_dir>/<simu_id>.fold<fold_idx>.ss<ss_idx>.ssIndices
+                <out_dir>/<simu_id>.fold<fold_idx>.ss<ss_idx>.ssIndices
                     Space-separated lists of subsample indices,
                     one line per list / subsample.
         """
         # use np.savetxt ??? why ? 
-        trIndices_fname = data_dir+'/'+simu_id+'.fold%d.trIndices'
-        teIndices_fname = data_dir+'/'+simu_id+'.fold%d.teIndices'
-        ssIndices_fname = data_dir+'/'+simu_id+'.fold%d.ss%d.ssIndices'
+        trIndices_fname = out_dir+'/'+simu_id+'.fold%d.trIndices'
+        teIndices_fname = out_dir+'/'+simu_id+'.fold%d.teIndices'
+        ssIndices_fname = out_dir+'/'+simu_id+'.fold%d.ss%d.ssIndices'
         for fold_idx in xrange(self.num_folds) : 
             with open(trIndices_fname %(fold_idx), 'w') as trIndices_f : 
                 trIndices_f.write(  " ".join(str(i) for i in self.xp_indices[fold_idx]["trIndices"] ) )
