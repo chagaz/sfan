@@ -633,7 +633,11 @@ class Framework(object):
 
         Parameters
         ----------
-        TODO
+        out_dir : dir path
+            fold where indices have to be saved
+        simu_id :  string
+            Name of the simulation, to be used to name files.
+        
         Generated files
         ---------------
         For each fold_idx:
