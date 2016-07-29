@@ -181,8 +181,9 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
     if not sel_list :
-        print "returned sel_list empty !! algo = st ; param = ", params
-        #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace()
+        print "WARNING : returned sel_list empty !! algo = st ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the standart output to get timing info 
@@ -233,10 +234,11 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
     
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
-    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
-        print "PB : returned sel_list empty !! algo = np ; param = ", params
+    if not sel_list :
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace()
+        print "WARNING : returned sel_list empty !! algo = np ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
-        #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
     # Process the output to get timing info 
     timing = '\n'.join(p_out[3+num_tasks:])
@@ -288,9 +290,10 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
-    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
-        print "returned sel_list empty !! algo = msfan ; param = ", params
-        #import pdb ; pdb.set_trace() #DEBUG
+    if not sel_list : 
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace() 
+        print "WARNING : returned sel_list empty !! algo = msfan ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the output to get timing info 
@@ -374,11 +377,12 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     #----------------------------------------
     # Read data : 
 
-    if not selected_features : #DEBUG
+    if not selected_features :
         # Safeguard for when SFAN returns empty list
-        # Avoid not allowed empty selections
+        # Avoid not allowed empty selections 
+        #TODO : fix no sel_list issue#1
         #import pdb; pdb.set_trace() 
-        ### XXX ??? 
+        print ('WARNING : no features was selected on this fold -> give NA predictions') 
         preds = np.array([np.nan ] * len(te_indices) )
     else :
         # read genotypes : 
