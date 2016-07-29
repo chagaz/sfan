@@ -30,7 +30,7 @@ do
     for ((repeat_idx=0; repeat_idx < $num_repeats ; repeat_idx++))
     do
         
-        data_dir=$path"/"$simu_id"/repeat_"$repeat_idx
+        data_dir=$dat_path"/"$simu_id"/repeat_"$repeat_idx
         
         python generate_data.py \
         -k $num_tasks -m $num_features -n $num_samples \
