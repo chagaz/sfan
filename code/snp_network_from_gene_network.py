@@ -2,6 +2,8 @@
 #
 # jean-daniel.granet@mines-paristech.fr
 
+
+from __future__ import print_function
 import sys
 import argparse
 import time
@@ -37,7 +39,7 @@ def main():
     
     #---------------------------------------------------------------------------
     # create a list wich contains SNPs positions. Using PLINK's internal numeric coding for chromosome number
-    print 'Creation of the list of SNPS positions : ',
+    print ('Creation of the list of SNPS positions : ', end="")
     Start = time.time()
     SNPs = list()
     with open(args.snps_list, 'r') as fdMap:
@@ -58,15 +60,15 @@ def main():
                         SNPs.append((int(line_split[0]), int(line_split[3])))
         fdMap.close()
     End = time.time()
-    print '\033[92m' + 'DONE' + '\033[0m'
-    print 'Exec time :' + str(End - Start)
+    print ('\033[92m' + 'DONE' + '\033[0m')
+    print ('Exec time :' + str(End - Start))
     #---------------------------------------------------------------------------
     
     # sort the SNPs array by chromosome
     SNPs.sort(key=itemgetter(0, 1))
     
     # create a sparse matrix of size len(SNPs) x len(SNPs) to create the network
-    print 'Creation of the matrix to save the network : ',
+    print ('Creation of the matrix to save the network : ', end ="")
     net = sp.lil_matrix((len(SNPs), len(SNPs)))
     # Before add net [snp1, snp2] = 1, always check that net [snp2, snp1] is not already 1.
     # It can be the case for example if : 
@@ -76,11 +78,11 @@ def main():
     #                   gene A
     # because snp1 and snp2 are neighbor and they in the same gene
     # Other example : neighbor, and belonging to different gene that interacting
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m')
 
     #---------------------------------------------------------------------------
     # connect each SNPs to the nearest
-    print 'Connect each SNPs to the nearest : ',
+    print ('Connect each SNPs to the nearest : ', end ="")
     Start = time.time()
     
     Chromosome = [(-1,-1)] * 26 # 26 = 22 pairs of autosomes (1-22) + 3 gonosomes : X (23), Y (24), XY (25) + 1 mitochondrial : MT (26)
@@ -101,16 +103,16 @@ def main():
                 net[idxSNP, idxSNP + 1] = 1
         else: # the current studied SNP is the last one
             Chromosome[SNPs[idxSNP][0] - 1] = (Chromosome[SNPs[idxSNP][0] - 1][0], idxSNP)
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m' )
     End = time.time()
-    print 'Exec time :' + str(End - Start)
+    print ('Exec time :' + str(End - Start))
     #---------------------------------------------------------------------------
 
     
     #---------------------------------------------------------------------------
     # read hugogenes.txt and save gene duplicates of each Hgs of the file in
     # into a dictionnary : 
-    print 'Save the genes positions, taking the window into account : ',
+    print ('Save the genes positions, taking the window into account : ', end="")
     Start = time.time()
     genes = dict()
     # key : hugo gene symbol 
@@ -148,8 +150,8 @@ def main():
                 if current_Hgs not in genes.keys() : 
                     genes[current_Hgs] = list() 
 
-                #print 'before', genes[current_Hgs]
-                #print current_data
+                #print ('before', genes[current_Hgs])
+                #print (current_data)
 
                 # handle multi occurence and save new data
                 chromo_num_list = [genes[current_Hgs][i][0] for i in xrange (len (genes[current_Hgs]))]
@@ -166,18 +168,18 @@ def main():
                     # thus just add a new tuple holding current data : 
                     genes[current_Hgs].append(current_data)
 
-                #print 'after', genes[current_Hgs]
-                #print '-------------------'
+                #print ('after', genes[current_Hgs])
+                #print('-------------------')
 
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m')
     End = time.time()
-    print 'Exec time :' + str(End - Start)
+    print ('Exec time :' + str(End - Start))
     #---------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------
     # attach the SNPs to the genes
 
-    print 'Attach each SNPs of a gene to each other : ',
+    print ('Attach each SNPs of a gene to each other : ', end = "")
     Start = time.time()
     for Hgs in genes:
 
@@ -209,14 +211,14 @@ def main():
                     net[SNPs_in_Hgs[SNP_idx1], SNPs_in_Hgs[SNP_idx2]] = 1
                 else : import pdb; pdb.set_trace() 
     
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m')
     End = time.time()
-    print 'Exec time :' + str(End - Start)
+    print ('Exec time :' + str(End - Start) )
     #---------------------------------------------------------------------------
 
     #---------------------------------------------------------------------------
     # connect the SNPs of gene A to the SNPs of gene B
-    print 'Connect each SNP of Hgs A to each SNP of Hgs B : ',
+    print ('Connect each SNP of Hgs A to each SNP of Hgs B : ', end ="") 
     Start = time.time()
     with open(args.hugo_ppi, 'r') as fdAcsn:
         # each line : <hgsA> <name of relationship> <hgsB>
@@ -239,14 +241,14 @@ def main():
                                 net[ SNPA, SNPB] = 1
                             #else : import pdb; pdb.set_trace()
         fdAcsn.close()
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m')
     End = time.time()
-    print 'Exec time :' + str(End - Start)
+    print ('Exec time :' + str(End - Start))
     #---------------------------------------------------------------------------
     import pdb; pdb.set_trace()
     #---------------------------------------------------------------------------
     # write the network into the output file
-    print 'Write the network into the output file : ',
+    print ('Write the network into the output file : ', end ="") 
     # dimacs format
 
     Start = time.time()
@@ -274,14 +276,14 @@ def main():
                 # Remark : need an undirected graph
                 # -> we give the link in both direction
         fdOutput.close()
-    print '\033[92m' + 'DONE' + '\033[0m'
+    print ('\033[92m' + 'DONE' + '\033[0m')
     End = time.time()
-    print 'Exec time :' + str(End - Start)
+    print ('Exec time :' + str(End - Start))
     #---------------------------------------------------------------------------
     
     
     TotalEndTime = time.time()
-    print "Total excution time :" + str(TotalEndTime - TotalStartTime)
+    print ("Total excution time :" + str(TotalEndTime - TotalStartTime))
 
 if __name__ == "__main__":
     main()
