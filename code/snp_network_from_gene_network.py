@@ -148,8 +148,8 @@ def main():
                 if current_Hgs not in genes.keys() : 
                     genes[current_Hgs] = list() 
 
-                print 'before', genes[current_Hgs]
-                print current_data
+                #print 'before', genes[current_Hgs]
+                #print current_data
 
                 # handle multi occurence and save new data
                 chromo_num_list = [genes[current_Hgs][i][0] for i in xrange (len (genes[current_Hgs]))]
@@ -166,8 +166,8 @@ def main():
                     # thus just add a new tuple holding current data : 
                     genes[current_Hgs].append(current_data)
 
-                print 'after', genes[current_Hgs]
-                print '-------------------'
+                #print 'after', genes[current_Hgs]
+                #print '-------------------'
 
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
@@ -208,7 +208,7 @@ def main():
                 if net[SNPs_in_Hgs[SNP_idx2], SNPs_in_Hgs[SNP_idx2]] != 1:
                     net[SNPs_in_Hgs[SNP_idx1], SNPs_in_Hgs[SNP_idx2]] = 1
                 else : import pdb; pdb.set_trace() 
-        print 'bim'
+    
     print '\033[92m' + 'DONE' + '\033[0m'
     End = time.time()
     print 'Exec time :' + str(End - Start)
