@@ -188,7 +188,7 @@ For a visualisation of dimacs networks (do not use to big networks), use :
 Example : 
 ```
 cd code
-Rscript show-dimacs.R ../data/simu_01/simu_01.network.dimacs
+Rscript show-dimacs.R ../data/simu_01/simu_01.network.dimacs 0.00000000001
 ```
 
 The script save the visualisation under `<path>.pdf`, so you can open it later. 
