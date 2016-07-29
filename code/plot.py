@@ -211,7 +211,9 @@ def vertical_barplots(data, name) :
         ax.set_xticks(x_loc)
         ax.set(xticklabels=algos_names, xlabel=task_id)
         #ax.margins(0.05) # Optional
-
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(45)
+    
     fig.tight_layout() #ajuste le cadrage
     plt.savefig(name+'.png', transparent = True)    
     #plt.show()
