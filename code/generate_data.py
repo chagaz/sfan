@@ -59,25 +59,6 @@ class SyntheticDataGenerator(object):
             except OSError:
                 if not os.path.isdir(self.root_dir):
                     raise
-
-    def generate_gwas(self) : 
-        """
-        Generate synthetic data with real biological cancer network from ACSN
-        (https://acsn.curie.fr/) and humain simulated genotype
-        
-        knew from class : 
-        — num_tasks :  number of tasks
-        — num_samples : number of samples
-        — root_dir : path of the directory in which to save the simulated data.
-        
-        knew from global : 
-        — NUM_TOTAL_CAUSAL : total number of causal features
-        
-        #
-        — les chemins vers les fichiers externes nécessaires (réseau réel, liste de SNPs, fichiers néces-
-        saires à la génération de génotypes, etc.)
-
-        """
     
     
     def generate_modular(self):
