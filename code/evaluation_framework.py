@@ -372,7 +372,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     #   of the test set (te)
     # - Save predicted continuous phenotypes in a file. 
     # => it's a regression so il can only be used with continuous phenotype
-    # TODO : Think of how to handle discret phenotypes. 
+    
 
     #----------------------------------------
     # Read data : 
