@@ -10,7 +10,6 @@ import random
 # TODO : fill box + legende
 # TODO : add means as star
 # TODO : add all points 
-# TODO : integrer plot.py code 
 
 
 algos_names = ('SConES', 'MSConESnp', 'MSConES')
