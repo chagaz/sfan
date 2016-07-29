@@ -7,7 +7,6 @@ import random
 # known bug : 
 # should not be used with pdb debugger...
 
-# TODO : fill box + legende
 # TODO : add means as star
 # TODO : add all points 
 
