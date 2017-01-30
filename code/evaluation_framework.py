@@ -1,14 +1,12 @@
 """evaluation_framework.py -- All that is needed to evaluate feature selection algorithms."""
 
 import numpy as np
-import sklearn
-import sklearn.linear_model as lm
-import sklearn.cross_validation as cv
 import tables as tb
 import subprocess
 import shlex
 import math
 
+from sklearn import linear_model, metrics, model_selection 
 
 def consistency_index(sel1, sel2, num_features):
     """ Compute the consistency index between two sets of features.
@@ -73,7 +71,7 @@ def consistency_index_k(sel_list, num_features):
         # the work is done at the second to last element anyway
         for sel2 in sel_list[k1+1:]:
             cidx += consistency_index(set(sel1), set(sel2), num_features)
-    cidx = 2. / (len(sel_list) * (len(sel_list) - 1)) * cidx
+    cidx = 2.  * cidx / (len(sel_list) * (len(sel_list) - 1))
     return cidx
 
 
@@ -403,7 +401,7 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
         #----------------------------------------
 
         # Instantiate a ridge regression
-        model = lm.RidgeCV()
+        model = linear_model.RidgeCV()
 
         # Train the ridge regression on the training set
         model.fit(Xtr, ytr)
@@ -473,7 +471,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         #print "\n all_y_pred_sorted = "
         #print all_y_pred_sorted
         # compute rmse using metrics : 
-        # wanted to use : rmse = sklearn.metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
+        # wanted to use : rmse = metrics.mean_squared_error(all_y_true, all_y_pred_sorted)
         # be if all_y_pred_sorted have NaN, there is a problem
         # -> compute RMSE without NaN ind
 
@@ -486,7 +484,7 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         else : 
             not_NaN_y_true =  [all_y_true[i] for i in not_NaN_idx]
             not_NaN_y_pred_sorted = [all_y_pred_sorted[i] for i in not_NaN_idx]
-            rmse = math.sqrt (sklearn.metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
+            rmse = math.sqrt (metrics.mean_squared_error(not_NaN_y_true, not_NaN_y_pred_sorted) )
 
         #print "rmse = %f" % rmse
         rmse_list.append(rmse)
@@ -556,10 +554,10 @@ def evaluate_classification(causal_features, selected_features, num_features):
         #   - precision_score
         #   - recall_score
         # based on these 2 sets : 
-        acc_list.append( sklearn.metrics.accuracy_score    (y_true, y_pred) )
-        mcc_list.append( sklearn.metrics.matthews_corrcoef (y_true, y_pred) )
-        pre_list.append( sklearn.metrics.precision_score   (y_true, y_pred) )
-        spe_list.append( sklearn.metrics.recall_score      (y_true, y_pred) )
+        acc_list.append( metrics.accuracy_score    (y_true, y_pred) )
+        mcc_list.append( metrics.matthews_corrcoef (y_true, y_pred) )
+        pre_list.append( metrics.precision_score   (y_true, y_pred) )
+        spe_list.append( metrics.recall_score      (y_true, y_pred) )
 
     return acc_list, mcc_list, pre_list, spe_list
 
@@ -613,8 +611,8 @@ def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
                 y_pred[y_pred_indx] = True
 
             # and we compute ppv and tpr based on these 2 sets : 
-            ppv_list.append( sklearn.metrics.accuracy_score(y_true, y_pred) )
-            tpr_list.append( sklearn.metrics.recall_score(y_true, y_pred) )
+            ppv_list.append( metrics.accuracy_score(y_true, y_pred) )
+            tpr_list.append( metrics.recall_score(y_true, y_pred) )
 
     return ppv_list, tpr_list
 
@@ -742,7 +740,9 @@ class Framework(object):
             }
         """
         # use sklearn.cross_validation
-        kf = cv.KFold(self.num_samples, n_folds=self.num_folds, shuffle = True, random_state=seed)
+        kf = model_selection.KFold(n_splits=self.num_folds, shuffle=True,
+                                   random_state=seed).split(np.zeros(self.num_samples))
+
         for fold_idx, (train_indices_f, test_indices_f) in enumerate(kf):
             #print fold_idx, train_indices_f, test_indices_f
             # Generate cross-validation indices
@@ -750,7 +750,8 @@ class Framework(object):
             self.xp_indices[fold_idx]['teIndices'] = test_indices_f.tolist()
             # For each train set, generate self.num_subsamples subsample sets of indices (90% of the train_set_f)
             for i_ss in xrange(self.num_subsamples) : 
-                train_indices_ss, test_indices_ss = cv.train_test_split(train_indices_f, train_size=0.9)
+                train_indices_ss, test_indices_ss = model_selection.train_test_split(train_indices_f,
+                                                                                     train_size=0.9)
                 self.xp_indices[fold_idx]['ssIndices'].append( train_indices_ss.tolist() ) 
 
         
