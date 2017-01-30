@@ -38,7 +38,7 @@ Please contact Chloé-Agathe Azencott at chloe-agathe.azencott@mines-paristech.f
   
   * [NumPy](http://www.numpy.org/)
   * [SciPy](http://www.scipy.org/)
-  * [PyTables](http://www.pytables.org/), at least for data generation.
+  * [PyTables](http://www.pytables.org/)
   * [scikit-learn](http://scikit-learn.org/stable)
   * [Matplotlib](http://matplotlib.org/)
     
@@ -106,11 +106,14 @@ The user can either provide a covariance or a precision matrix between tasks. Th
 If no covariance nor precision matrix is given, a precision matrix with (`<number of tasks>-1+epsilon`) on the diagonal and -1 off the diagonal is used and the value of eta is adjusted to match the formulation of MultiSConES by Sugiyama et al. (2014).
 
 ## Data generation
+
+### Simulate simple data : 
+
 `code/generate_data.py` generates synthetic data for experiments:
-* a modular network (modules are fully connected) over the features;
+* a modular network (modules of `MOD_SIZE` features fully connected) over the features;
 * a genotype (SNP) matrix X of random integers between 0 and 2;
 * a covariance matrix Omega of similarities between tasks;
-* causal features (SNPs), with corresponding weights, generated so as to respect the covariance structure given by
+* for each task, `NUM_CAUSAL_EACH` causal features (SNPs) randomly chosen among the first `NUM_CAUSAL_TOTAL` features, with corresponding weights, generated so as to respect the covariance structure given by
 Omega (inverse of the precision matrix);
 * the corresponding k phenotypes and vectors of node weights (computed as Pearson's correlation).
 
@@ -120,10 +123,101 @@ cd code
 python generate_data.py -k 3 -m 1000 -n 50 ../data/simu_synth_01 simu_01 --verbose
 ```
 
+The number of nodes `MOD_SIZE = 15` in each module, the total number of features possibly causal `NUM_CAUSAL_TOTAL = 30` among which are chosen `NUM_CAUSAL_EACH = 20` causal features for each task 
+are hardcoded in `code/generate_data.py`.
+
+
+### Simulate gwas : 
+
+#### Network generation : 
+
+`code/snp_network_from_gene_network.py` generate the SNPs network using a `.map` file (Example : `data/synthetic_gwas/icogs_snp_list.map`), a `.sif` file (Example : `data/synthetic_gwas/hugo_ppi.sif`), a list of gene (Example : `data/synthetic_gwas/mart_export.txt`) and a window value.
+Example : 
+'''
+python code/snp_network_from_gnee_network.py data/synthetic_gwas/hugo_ppi.sif data/synthetic_gwas/icogs_snp_list.map data/synthetic_gwas/mart_export.txt 10 snp_network.dimacs
+'''
+
+In, for some reasons, you want to modify `code/snp_network_from_gene_network.py`, we provide a bunch of file in `data/synthetic_gwas/tests_snp_network_from_gene_network` to test some situations describded in `data/synthetic_gwas/tests_snp_network_from_gene_network/tested_cases.svg`.
+
+
+* `data/synthetic_gwas/acsn_names.gmt`
+* `data/synthetic_gwas/acsn_ppi_ver2.txt`
+* and `data/synthetic_gwas/icogs_snplist.csv`
+are initial files downloaded from the Internet. They are described in `data/synthetic_gwas/README.txt`.
+
+In order to have the files in the right format from these initial files to use `code/snp_network_from_gene_network.py`, we provide some scripts : 
+* `code/txt2sif.py` : 
+   - Input : 
+      + `.txt` file
+   - Output : 
+      + `.sif` file
+   - Example : 
+  
+    ```bash
+    python code/txt2sif.py data/synthetic_gwas/acsn_ppi_ver2.txt data/synthetic_gwas/acsn_ppi_ver2.sif
+    ```
+
+
+* `code/acsn2hugo.py` :
+   - Inputs : 
+      + `.sif` file
+      + `.gmt` file (Example : `data/synthetic_gwas/acsn_names.gmt`)
+   - Output : 
+      + `.sif` file
+   - Example :
+   
+    ```bash
+    python code/acsn2hugo.py data/synthetic_gwas/acsn_ppi_ver2.sif data/synthetic_gwas/acsn_names.gmt data/synthetic_gwas/hugo_ppi.sif
+    ```   
+
+* `code/csv2map.py` : 
+   - Input: 
+      + `.csv` file 
+   - Output : 
+      + `.map` file
+   - Example : 
+  
+    ```bash
+    python code/txt2ppi.py data/synthetic_gwas/icogs_snp_list.csv data/synthetic_gwas/icogs_snp_list.map
+    ```
+
+For a visualisation about the workflow, see `data/synthetic_gwas/workflow_snp-network-from-real-dat.svg` 
+
+
+## Data visualisation
+For a visualisation of dimacs networks (do not use to big networks), use : 
+`code\show-dimacs.R`. 
+
+Example : 
+```bash
+cd code
+Rscript show-dimacs.R ../data/simu_01/simu_01.network.dimacs 0.00000000001
+```
+
+The script save the visualisation under `<path>.pdf`, so you can open it later. 
+
 ## Synthetic data experiments -- TO BE COMPLETED
+
+For a visualisation of the validation pipeline, see `code/validation-pipeline.svg`.
+
+
 `code/evaluation_framework.py` contains methods and classes needed for evaluation (determining cross-validation sets, computing performance, etc.)
 
 `code/synthetic_data_experiment.py` runs experiments on synthetic data.
+
+`code/plot.py` contains methods needed for plot. To have an overview of what is possible to do with this script, just run : 
+
+```bash
+cd code
+python plot.py
+```
+
+It will output : 
+* horizontal_boxplot.png
+* vertical_boxplot.png
+* vertical_barplot.png
+
+
 
 `code/handle-output.py` uses output of `code/synthetic_data_experiment.py` to produce results 
 - For each fold : 
@@ -143,12 +237,90 @@ python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
 ```
 
 ### Usage on SGE cluster 
-Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of `synthetic_data_experiment.py` is `False`. Moreover, ensure `SEQ_MODE` flag is `False`.
+
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation and ensure DATA_GEN flag of `synthetic_data_experiment.py` is `False`. Moreover, ensure `SEQ_MODE` flag is `False` and set a `tmp_dir` .
+> TODO : Find a way to get tmp_dir automatically.
 
 `synthetic_data_experiment.py` will use a qsub job for each fold. 
 
-#### Runtime performances (on SGE cluster only) 
-Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True. This qsub job on node 15-24 which have the same spec.
+#### Runtime experiment (on SGE cluster only) 
+
+Once `synthetic_data_experiment.py`, optimal parameters are chosen for each algo at each fold. 
+Then, a runtime experiement can be run. 
+Ensure TIME_EXP flag at the begining of `synthetic_data_experiment.py` is True 
+and run `synthetic_data_experiment.py`. 
+
+The script won't search for optimal parameters, but take those chosen previously.
+
+Qsub jobs concerning features selection using all the training set of the fold and opt param 
+are run on nodes from 15 to 24 which have the same spec. So timing can be compared. 
+
+
+#### numSNP experiment
+
+`code/experiment_numSNP.sh` launches `synthetic_data_experiments.py` with different values of `num_features`, but with 
+`num_tasks` , `num_samples`, `num_repeats`, `num_folds`, and `num_subsamples` fixed.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bash
+cd code
+chmod u+x experiment_numSNP.sh
+./experiment_numSNP.sh
+```
+##### Usage on SGE cluster
+
+There are several user of the cluster. Thus, it is important to not launch to much as the same time. 
+
+`code/experiment_numSNP_holded_version.sh` waits for your number of running jobs to be lesser than 100 before running another `synthetic_data_experiments.py`.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bash
+cd code
+chmod u+x experiment_numSNP_holded_version.sh
+./experiment_numSNP.sh
+```
+
+
+Some nodes of the SGE cluster of CBIO has problems using PyTables, so generate data before running experimentation. For this purpose, you can use `code/experiment_numSNP_genedat.sh`. 
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bash
+cd code
+chmod u+x experiment_numSNP_genedat.sh
+./experiment_numSNP_genedat.sh
+```
+
+
+
+
+
+#### numTask experiment
+
+`code/experiment_numTask.sh` generate data and launches `synthetic_data_experiments.py` with different values of `num_tasks`, but with 
+`num_features` , `num_samples`, `num_repeats`, `num_folds`, and `num_subsamples` fixed.
+
+Usage : 
+
+Open the script, change values of variables that are in `var to modify` section and run the script.
+
+Example : 
+```bash
+cd code
+chmod u+x experiment_numTask.sh
+./experiment_numTask.sh
+```
 
 
 
@@ -207,7 +379,11 @@ Then each line corresponds to one tasks, and is a space-separated list of node i
   ```
   for each fold. 
 
+### If using SGE cluster : 
 
+* `<resu_dir>/SGE-output/<num_SNP>r<repeat_idx>f<fold_idx>.o`:
+  Hold prints.
+  > TODO : Find a way to output log and stderr as well  
 
 #### For each repeat : 
 
@@ -236,7 +412,7 @@ space-separated list of value measure
 ## Output of `code/handle-output.py`
 
 ### Results are saved in following files : 
-* `<resu_dir>/<simu_id>.results` :
+* `<resu_dir>/<simu_id>.table.<measure>.tex` :
   Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
 
 
@@ -252,7 +428,11 @@ space-separated list of value measure
   one line per repeat
   for each repeat, one value per task
 
-#### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+#### Analysis files : 
+
+To see what these files look like, see `results/analysis-files.svg`.
+
+##### For each classification measure (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
 a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
 Space-separated lists of PPVs (one value per task and per fold),
 each line corresponds to one repeat. 
@@ -262,7 +442,8 @@ each line corresponds to one repeat.
 * `<resu_dir>/<simu_id>.<algo>.tpr `
 
 
-#### For each repeat, fold and task : 
+
+##### For each repeat, fold and task : 
 * `<resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted` : 
 phenotype prediction of the test set using a ridge-regression trained with the selected features only.
 One value per line, one line per sample

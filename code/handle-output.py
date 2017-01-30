@@ -1,8 +1,66 @@
+# -*- coding: utf-8 -*-
 import synthetic_data_experiments as sde
 import evaluation_framework as ef
 import logging
 import plot
 import numpy as np
+
+
+
+def print_and_save_measure_table(measure_name, data, out_fname): 
+    """ Print measures tables and save them (in LaTeX table format) in file
+
+    Parameters
+    ----------
+    measure_name : string 
+        measure name
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
+    out_fname : filename
+        Path to the output file were LaTeX table has to be printed
+
+    Side effects
+    ------------
+    Create a file named <out_fname> holding the table in LaTeX format.
+
+    """
+
+    header_print = (
+            "-----------------------------------------------------------------------\n"
+            "                      %s\n"
+            "       +--------------------------------------------------------------+\n"
+            "       |                              algo                            |\n"
+            "  task |         SConES     |    MSConESnp       |        MSConES     |\n"
+            "=======+====================+====================+====================+\n"
+    )
+    header_save = "task & sfan &np &msfan \\\\\\hline\n"
+    algos_names = ('SConES', 'MSConESnp', 'MSConES')
+    
+    to_print = ''
+    to_save = ''
+
+    for task_idx in xrange (len (data[algos_names[0]] ) ) : 
+        to_print += '{:^7d}|'.format(task_idx) 
+        to_save += '{:^7d}&'.format(task_idx) 
+        for algo in algos_names : 
+            mean_task_algo = np.mean(data[algo][task_idx])
+            std_task_algo = np.std(data[algo][task_idx])
+            to_print += '{:9.3f} ±{:9.3f}|'.format(mean_task_algo, std_task_algo) 
+            to_save += '{:9.3f} ±{:9.3f}&'.format(mean_task_algo, std_task_algo) 
+        to_save = to_save[:-1] #don't want the last '&'
+        to_save += "\\\\\n" # two step and not to_save[-1] = "\\\\\n" because python strings are immuable
+        to_print+="\n"
+        
+    print  header_print  %measure_name + to_print
+
+    with open(out_fname, 'w') as f : 
+        f.write(header_save+to_save)
+
+
 
 
 def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, num_folds):
@@ -27,7 +85,12 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
 
     Return
     -------
-
+    data : dict of list of list
+        data[algo_name][task_idx][sample_idx] 
+        = the value of the data 
+        for the sample sample_idx, 
+        for the task task_idx, 
+        for the algo algo_name.
     """
     data = {}
     algos = ('SConES', 'MSConESnp', 'MSConES')
@@ -62,6 +125,97 @@ def extract_plotable_data_from_analysis_files(f_names, num_tasks, num_repeats, n
 #####################################################################################################
 #####################################################################################################
 if __name__ == "__main__":
+    """ Handle synthetic_data_experiments.py outputs
+
+    Arguments
+    ---------
+    args.num_tasks: int
+        Number of tasks.
+    args.num_features: int
+        Number of features.
+    args.num_samples: int
+        Number of samples
+    args.num_repeats: int
+        Number of repeats.
+    args.num_folds: int
+        Number of cross-validation folds.
+    args.num_subsamples: int
+        Number of subsamples (for stability evaluation).
+    args.data_dir: filename
+        Path of the directory in which to save the simulated data.
+    args.resu_dir: filename
+        Path of the directory in which to save the simulated data.
+    args.simu_id: string
+        Name of the simulation, to be used to name files within args.root_dir.
+    args.verbose: boolean
+        If true, turn on detailed information logging.
+
+    Generated files
+    ---------------
+
+
+
+    1. Results are saved in following files : 
+
+        <resu_dir>/<simu_id>.table.acc.tex
+        <resu_dir>/<simu_id>.table.mcc.tex
+        <resu_dir>/<simu_id>.table.ppv.tex
+        <resu_dir>/<simu_id>.table.tpr.tex
+        <resu_dir>/<simu_id>.table.rmse.tex
+        <resu_dir>/<simu_id>.table.ci.tex
+            Average/standard deviation values for: consistency index, RMSE, PPV and TPR, as LaTeX table.
+
+
+
+    For each algo in (`sfan`, `msfan_np`, `msfan`):
+
+        <resu_dir>/<simu_id>.<algo>.rmse : 
+          List of final RMSEs 
+          one line per repeat
+          for each repeat, one value per task
+        <resu_dir>/<simu_id>.<algo>.consistency : 
+          List of final Consistency Indices 
+          one line per repeat
+          for each repeat, one value per task
+
+        For each classification measure 
+        (accuracy (acc), Mathieu coefficient (mcc), Prositive Predictive Value (ppv) and True Positive Value (tpr) )
+        a file named `<resu_dir>/<simu_id>.<algo>.<measure>` :
+        <args.resu_dir>/<simu_id>.<algo>.acc
+        <args.resu_dir>/<simu_id>.<algo>.mcc
+        <args.resu_dir>/<simu_id>.<algo>.ppv
+        <args.resu_dir>/<simu_id>.<algo>.tpr 
+            Space-separated lists of PPVs (one value per task and per fold),
+            each line corresponds to one repeat. 
+
+
+        #### For each repeat, fold and task : 
+        <resu_dir>/<repeat_idx>/<simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted : 
+            phenotype prediction of the test set using a ridge-regression trained with the selected features only.
+            One value per line, one line per sample
+    
+    2. Charts :
+        For each measure (ci, mcc, ppv, tpr, rmse, acc), 
+        a chart named <simu_id>.<measure>.png : one boxplot per algorithm, 
+        grouped per task, with error bars. 
+        <args.resu_dir>/<simu_id>.ci.png
+        <args.resu_dir>/<simu_id>.rmse.png
+        <args.resu_dir>/<simu_id>.acc.png
+        <args.resu_dir>/<simu_id>.mcc.png
+        <args.resu_dir>/<simu_id>.ppv.png
+        <args.resu_dir>/<simu_id>.tpr.png
+
+
+    For file format specifications, see README.md
+
+
+    Example
+    -------
+    $ python handle-output.py -k 3 -m 200 -n 100 -r 10 -f 10 -s 10 \
+             ../data/simu_synth_01 ../results/simu_synth_01 simu_01 --verbose
+
+
+    """
     args = sde.get_integrous_arguments_values()
 
     for repeat_idx in xrange(args.num_repeats) : 
@@ -256,21 +410,21 @@ if __name__ == "__main__":
         print predicted_phenotypes_fname
         print xp_indices
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)
+                                        xp_indices)
         print rmse_list
         with open(analysis_files['rmse_st'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
         # Multitask (no precision)
         predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)
+                                        xp_indices)
         print rmse_list
         with open(analysis_files['rmse_msfan_np'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
         # Multitask (precision)
         predicted_phenotypes_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
         rmse_list = ef.compute_ridge_selected_RMSE( phenotypes_fnames, predicted_phenotypes_fname, 
-                                        xp_indices, args.num_tasks)       
+                                        xp_indices)       
         print rmse_list      
         with open(analysis_files['rmse_msfan'], 'a') as f:
             f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
@@ -339,7 +493,11 @@ if __name__ == "__main__":
     
     
     #----------------------------------------------------------------------------
-    # Plots : 
+    # For each measures :
+    #  - extract data of measures from analysis_files, 
+    #  - print tables, 
+    #  - save tables in Latex format, 
+    #  - and Plots
     
     template_name =  args.resu_dir+'/'+args.simu_id+'.%s.png'
     
@@ -349,36 +507,42 @@ if __name__ == "__main__":
         [analysis_files['acc_st'], analysis_files['acc_msfan_np'], analysis_files['acc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("accuracy", data, "%s/%s.table.accuracy.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'accuracy')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['mcc_st'], analysis_files['mcc_msfan_np'], analysis_files['mcc_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("mcc", data, "%s/%s.table.mcc.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'mcc')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ppv_st'], analysis_files['ppv_msfan_np'], analysis_files['ppv_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("ppv", data, "%s/%s.table.ppv.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'ppv')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['tpr_st'], analysis_files['tpr_msfan_np'], analysis_files['tpr_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("tpr", data, "%s/%s.table.tpr.tex"%(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'tpr')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['rmse_st'], analysis_files['rmse_msfan_np'], analysis_files['rmse_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("rmse", data, "%s/%s.table.rmse.tex" %(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'rmse')
 
     data = extract_plotable_data_from_analysis_files(
         [analysis_files['ci_st'], analysis_files['ci_msfan_np'], analysis_files['ci_msfan'] ], 
         args.num_tasks, args.num_repeats, args.num_folds
     )
+    print_and_save_measure_table("ci", data,  "%s/%s.table.ci.tex" %(args.resu_dir, args.simu_id ))
     plot.horizontal_boxplots(data, template_name%'ci')
 
 

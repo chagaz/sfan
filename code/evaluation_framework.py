@@ -78,7 +78,6 @@ def consistency_index_k(sel_list, num_features):
 def consistency_index_task(selection_fname, num_folds, num_tasks, num_features):
     """ Compute consistency indices between the features selected for each fold at each task
 
-    selection_fname, num_folds, num_tasks, num_features
     Arguments
     ---------
     selection_fname : filename
@@ -180,8 +179,9 @@ def run_sfan(num_tasks, network_fname, weights_fnames, params):
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[2:2+num_tasks]]
 
     if not sel_list :
-        print "returned sel_list empty !! algo = st ; param = ", params
-        #import pdb ; pdb.set_trace() #DEBUG #TODO : don't take the algo into account if the pb can't be solved. 
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace()
+        print "WARNING : returned sel_list empty !! algo = st ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the standart output to get timing info 
@@ -232,10 +232,11 @@ def run_msfan_nocorr(num_tasks, network_fname, weights_fnames, params):
     
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
-    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
-        print "PB : returned sel_list empty !! algo = np ; param = ", params
+    if not sel_list :
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace()
+        print "WARNING : returned sel_list empty !! algo = np ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
-        #import pdb ; pdb.set_trace() ###???XXXDEBUG
 
     # Process the output to get timing info 
     timing = '\n'.join(p_out[3+num_tasks:])
@@ -287,9 +288,10 @@ def run_msfan(num_tasks, network_fname, weights_fnames, covariance_fname, params
     # Process the output to get lists of selected features
     sel_list = [[(int(x)-1) for x in line.split()] for line in p_out[3:3+num_tasks]]
 
-    if not sel_list : #TODO : don't take the algo into account if the pb can't be solved. 
-        print "returned sel_list empty !! algo = msfan ; param = ", params
-        #import pdb ; pdb.set_trace() #DEBUG
+    if not sel_list : 
+        #TODO : fix no sel_list issue#1
+        #import pdb ; pdb.set_trace() 
+        print "WARNING : returned sel_list empty !! algo = msfan ; param = ", params
         sel_list = [[] for i in xrange(num_tasks)]
 
     # Process the output to get timing info 
@@ -368,16 +370,17 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
     #   of the test set (te)
     # - Save predicted continuous phenotypes in a file. 
     # => it's a regression so il can only be used with continuous phenotype
-    # TODO : Think of how to handle discret phenotypes. 
+    
 
     #----------------------------------------
     # Read data : 
 
-    if not selected_features : #DEBUG
+    if not selected_features :
         # Safeguard for when SFAN returns empty list
-        # Avoid not allowed empty selections
+        # Avoid not allowed empty selections 
+        #TODO : fix no sel_list issue#1
         #import pdb; pdb.set_trace() 
-        ### XXX ??? 
+        print ('WARNING : no features was selected on this fold -> give NA predictions') 
         preds = np.array([np.nan ] * len(te_indices) )
     else :
         # read genotypes : 
@@ -417,14 +420,15 @@ def run_ridge_selected(selected_features, genotype_fname, phenotype_fname,
 
 
 
-def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_tasks):
+def compute_ridge_selected_RMSE(phenotype_fnames, y_pred_template, xp_indices):
     """ Compute RMSE (Root Mean Squared Error)
 
     Arguments
     ---------
-    y_true_fname: filename
-        Path to phenotype data.
-    y_pred_fname: string
+    phenotype_fnames: aray of filename
+        Path to phenotype datas.
+        (one path per task)
+    y_pred_template: string
         Template of path where were write list of predictions on the test set
     xp_indices: list of dictionaries
         fold_idx
@@ -433,8 +437,6 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
             'teIndices': list of test indices,
             'ssIndices': list of list of subsample indices
         }
-    num_tasks : int
-        Number of tasks.
     
 
     Return
@@ -443,14 +445,14 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         List of rmse task per task.
     """
     rmse_list = []
-    for task_idx in range(num_tasks):
+    for task_idx, phenotype_fname in enumerate( phenotype_fnames ) :
         #print "\n\n\n\n==== tache num %d" %task_idx
         # For n inds :
         # RMSE = sqrt { (1/n)  [sum from m=1 to n : (ypred_m - ytrue_m)^2 ]  }
 
         # read all_y_true :
-        #print '\ni read phenotype_fname[task_idx = %d] = %s' %(task_idx, phenotype_fname[task_idx]) 
-        with open(phenotype_fname[task_idx], 'r') as f_true:
+        #print '\ni read phenotype_fnames[task_idx = %d] = %s' %(task_idx, phenotype_fnames[task_idx]) 
+        with open(phenotype_fname, 'r') as f_true:
             all_y_true = [float(y) for y in f_true.read().split()]
         #print "\nall_y_true = "
         #print all_y_true
@@ -462,8 +464,9 @@ def compute_ridge_selected_RMSE(phenotype_fname, y_pred_fname, xp_indices, num_t
         all_y_pred_indices = [index for sublist in [fold['teIndices'] for fold in xp_indices] for index in sublist]
         all_y_pred = list()
 
-        for fold_idx in xrange(len(xp_indices)) : #TODO : add arg : arg.num_fold ?? 
-            with open(y_pred_fname%(fold_idx, task_idx), 'r') as f_pred:
+        num_folds = len(xp_indices)
+        for fold_idx in xrange(num_folds) :
+            with open(y_pred_template%(fold_idx, task_idx), 'r') as f_pred:
                 content = f_pred.read().split()
                 all_y_pred.extend(float(y) for y in content)
          
@@ -507,10 +510,6 @@ def evaluate_classification(causal_features, selected_features, num_features):
 
     Returns
     -------
-                # accuracy_score
-                # matthews_corrcoef
-                # precision_score
-                # recall_score
     acc_list: list
         List of Accuracy, task per task.
         fraction of correct predictions = predictions matching observations.
@@ -562,6 +561,7 @@ def evaluate_classification(causal_features, selected_features, num_features):
     return acc_list, mcc_list, pre_list, spe_list
 
 
+<<<<<<< HEAD
 def compute_ppv_sensitivity(causal_fname, selected_list, num_features):
     """ Compute PPV (Positive Predicted Values) = Accuracy = Precision
     and sensitivity (true positive rate) for all tasks.
@@ -683,7 +683,6 @@ def extract_res_from_files(f_names, num_tasks, num_repeat, num_folds = None):
     return means, std
 
 
-    
 class Framework(object):
     """ Setting up evaluation framework.
 
@@ -755,28 +754,32 @@ class Framework(object):
                 self.xp_indices[fold_idx]['ssIndices'].append( train_indices_ss.tolist() ) 
 
         
-    def save_indices(self, data_dir, simu_id):
+    def save_indices(self, out_dir, simu_id):
         """ Save the cross-validation folds and subsample indices to files.
 
         Parameters
         ----------
-        TODO
+        out_dir : dir path
+            fold where indices have to be saved
+        simu_id :  string
+            Name of the simulation, to be used to name files.
+        
         Generated files
         ---------------
         For each fold_idx:
-            <data_dir>/<simu_id>.fold<fold_idx>.trIndices:
+            <out_dir>/<simu_id>.fold<fold_idx>.trIndices:
                 Space-separated list of training indices.
-            <data_dir>/<simu_id>.fold<fold_idx>.teIndices:
+            <out_dir>/<simu_id>.fold<fold_idx>.teIndices:
                 Space-separated list of test indices.
             For each subsample_idx:
-                <data_dir>/<simu_id>.fold<fold_idx>.ss<ss_idx>.ssIndices
+                <out_dir>/<simu_id>.fold<fold_idx>.ss<ss_idx>.ssIndices
                     Space-separated lists of subsample indices,
                     one line per list / subsample.
         """
         # use np.savetxt ??? why ? 
-        trIndices_fname = data_dir+'/'+simu_id+'.fold%d.trIndices'
-        teIndices_fname = data_dir+'/'+simu_id+'.fold%d.teIndices'
-        ssIndices_fname = data_dir+'/'+simu_id+'.fold%d.ss%d.ssIndices'
+        trIndices_fname = out_dir+'/'+simu_id+'.fold%d.trIndices'
+        teIndices_fname = out_dir+'/'+simu_id+'.fold%d.teIndices'
+        ssIndices_fname = out_dir+'/'+simu_id+'.fold%d.ss%d.ssIndices'
         for fold_idx in xrange(self.num_folds) : 
             with open(trIndices_fname %(fold_idx), 'w') as trIndices_f : 
                 trIndices_f.write(  " ".join(str(i) for i in self.xp_indices[fold_idx]["trIndices"] ) )

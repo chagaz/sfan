@@ -59,7 +59,8 @@ class SyntheticDataGenerator(object):
             except OSError:
                 if not os.path.isdir(self.root_dir):
                     raise
-
+    
+    
     def generate_modular(self):
         """
         Generate synthetic data with a modular network and a genotype matrix
@@ -205,7 +206,6 @@ class SyntheticDataGenerator(object):
 
             g.close()
         logging.info("Network saved under %s\n" % fname)
-
 
 
 

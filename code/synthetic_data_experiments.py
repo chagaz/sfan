@@ -12,6 +12,11 @@ SEQ_MODE = True
 NUM_VALUES=3 #range param
 
 
+tmp_dir= "/tmp"
+#tmp_dir = "/share/data40T/athenais/tmp"
+
+
+
 # Importing local libraries first,
 # because otherwise Error in `python': free(): invalid pointer
 import multitask_sfan
@@ -36,8 +41,8 @@ import random
 def get_arguments_values(): 
     """ Use argparse module to get arguments values.
 
-    Returns
-    -------
+    Return
+    ------
     args : Namespace object
         Namespace object populated with arguments converted from strings to objects 
         and assigned as attributes of the namespace object.
@@ -67,15 +72,15 @@ def get_arguments_values():
 def check_arguments_integrity(args): 
     """ Check integrity of arguments pass through the command line. 
 
-    Parameters
-    ----------
+    Parameter
+    ---------
     args : namespace object
         Its attributes are arguments names 
         and contain arguments values. 
 
-    Side effects
-    ------------
-    Exit the script printing why if one arg is not integrous. 
+    Side effect
+    -----------
+    If one arg is not integrous, exit the script printing why. 
     """
     try:
         assert(args.num_tasks >= 1)
@@ -131,8 +136,9 @@ def check_arguments_integrity(args):
 
 def get_integrous_arguments_values(): 
     """ Get arguments passed through command line and check their integrity.
-    Returns
-    -------
+
+    Return
+    ------
     args : namespace object
         Its attributes are arguments names 
         and contain arguments values (str or int according to code specifications). 
@@ -144,13 +150,13 @@ def get_integrous_arguments_values():
 def create_dir_if_not_exists(dir_name): 
     """ Create a dir named <dir_name> if it does not already exists. 
 
-    Parameters
-    ----------
+    Parameter
+    ---------
     dir_name : str
         Path of the wanted new dir. 
 
-    Side effects
-    ------------
+    Side effect
+    -----------
     Create a dir named <dir_name> if it does not already exists.
     """
     if not os.path.isdir(dir_name):
@@ -174,8 +180,7 @@ def get_analysis_files_names(resu_dir, simu_id):
     Returns
     -------
     analysis_files : dictionary
-        key : <measure>_<algo> 
-        value : filename
+        analysis_files[<measure abbreviation>_<algo>] = filename
     """
     # - to hold accuracy values  
     acc_st_fname = '%s/%s.sfan.acc' % (resu_dir, simu_id) 
@@ -362,7 +367,7 @@ def get_tmp_weights_fnames(args, genotype_fname, phenotype_fnames, ssIndices):
 
                 # Save to temporary file tmp_weights_f_list[task_idx]
                 # Create temporary file of name tmp_fname (use tempfile)
-                fd, tmp_fname = tempfile.mkstemp(dir = tempfile.gettempdir())
+                fd, tmp_fname = tempfile.mkstemp(dir = tmp_dir) #TODO : use arg.tmpdir / change TMP TMPDIR TEMP
                 # /!\ tmp_fname is open, fd is the file object
                 #-> close it to avoid 'Too many open files' error
                 os.close(fd)
@@ -423,28 +428,87 @@ def fetch_tmp_weights_fnames(resu_dir, simu_id, fold_idx) :
         tmp_weights_fnames = [line.split() for line in f.readlines()]
     return tmp_weights_fnames
 
-def run_fold(fold_idx, args, lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, indices, genotype_fname, network_fname , tmp_weights_fnames, covariance_fname , causal_fname, phenotype_fnames, scores_fnames, resu_dir):
-    """TODO
+def run_fold(   fold_idx, 
+                args, 
+                lbd_eta_values, lbd_eta_mu_values_np, lbd_eta_mu_values, 
+                indices, 
+                genotype_fname, network_fname , 
+                tmp_weights_fnames, 
+                covariance_fname, causal_fname, phenotype_fnames, scores_fnames, 
+                resu_dir
+            ):
+    """ Run the fold n° <fold_idx> of a repeat
+
+    Parameters
+    ----------
+    fold_idx : int 
+        Index of the current fold. 
+    args : Namespace object
+        Its attributes are arguments names 
+        and contain arguments values (str or int according to code specifications).
+    lbd_eta_values : list of strings
+        Values of hyperparameters for sfan, in the format:
+        "-l <lambda -e <eta>".
+    lbd_eta_mu_values_np : list of strings
+        Values of hyperparameters for msfannp, in the format:
+        "-l <lambda -e <eta> -m <mu>".
+    lbd_eta_mu_values : list of strings
+        Values of hyperparameters for msfan, in the format:
+        "-l <lambda -e <eta> -m <mu>".
+    indices : list of dictionaries
+        fold_idx
+        {
+            'trIndices': list of train indices,
+            'teIndices': list of test indices,
+            'ssIndices': list of list of subsample indices
+        }
+    genotype_fname : filename
+        Path to genotype data.
+    network_fname  : filename
+        Path to the network file.
+
+    tmp_weights_fnames : list of list of strings
+        [subsample_idx][task_idx] = tmp filename
+
+    covariance_fname : filename
+        Path to the covariance matrix file.
+
+    causal_fname : filename
+        Path to the causal weights file.
+
+    phenotype_fnames : filename
+        Path to the phenotype data file.
+
+    scores_fnames : filename
+        Path to the observed scores file.
+    resu_dir : dirname
+        Path to the <args.resu_dir>/repeat_<repeat_idx> directory.
+
+    Side effect 
+    -----------
+    If SEQ_MODE = False, launch qsub job arrays.
+
     """
     analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
 
+    # If real TIME_EXP (no DEBUG_MODE) : 
+    #   Do not search for opt_param but take those found before
     if not DEBUG_MODE and TIME_EXP :
 
         # For each algorithm, get optimal parameters saved in file
-        path = "/share/data40T/athenais/exp_changeNbSNP/opt_param/numSNP_%d/repeat_%d"  %(args.num_features, resu_dir[-1]) #on cluster
-
+        # use rstrinp in case there is \n
         # Single task
-        fname = '%s/%s.sfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.sfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params_st = f.read()
+            opt_params_st = f.read().rstrip() 
         # Multitask (no precision)
-        fname = '%s/%s.msfan_np.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.msfan_np.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params_np = f.read()[-1] # to remove \n
+            opt_params_np = f.read().rstrip() 
         # Multitask (precision)
-        fname = '%s/%s.msfan.fold_%d.parameters' % (path, args.simu_id, fold_idx)
+        fname = '%s/%s.msfan.fold_%d.parameters' % (resu_dir, args.simu_id, fold_idx)
         with open(fname, 'r') as f:
-            opt_params = f.read()[-1] # to remove \n
+            opt_params = f.read().rstrip()
 
     elif not DEBUG_MODE and not TIME_EXP: 
         logging.info ("======== Feature selection :")
@@ -807,382 +871,9 @@ def run_repeat(repeat_idx, args, analysis_files):
     # print analysis_files -> in main
 
 
-def run_predictions(fold_idx, args, resu_dir, data_dir, trIndices, teIndices ):
-    # can't be in the qsub run fold due to pytable utilisation.
-
-    genotype_fname = '%s/%s.genotypes.txt' % (data_dir, args.simu_id)
-    phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
-                        (data_dir, args.simu_id, task_idx) \
-                        for task_idx in range(args.num_tasks)]
-
-    #------------------------------------------------------------------
-    logging.info( "======== Prediction using opt param")
-
-    # need to know selected_<algo> (list of list :list of sel features, for each task)
-    # saved in files '<resu_dir>/<args.simu_id>.<algo>.fold_<fold_idx>.selected_features'
-    # one line per task, list of sel feature on each line. 
-    selected_st = []
-    fname = '%s/%s.sfan.fold_%d.selected_features' % \
-        (resu_dir, args.simu_id, fold_idx)
-    with open(fname, 'r') as f :
-        for line in f : #list of selected feature for a task
-            selected_st.append([int(x) for x in line.split()])
-
-    selected_np=[]
-    fname = '%s/%s.msfan_np.fold_%d.selected_features' % \
-        (resu_dir, args.simu_id, fold_idx)
-    with open(fname, 'r') as f :
-        for line in f : #list of selected feature for a task
-            selected_np.append([int(x) for x in line.split()])
-
-    selected = []
-    fname = '%s/%s.msfan.fold_%d.selected_features' % \
-        (resu_dir, args.simu_id, fold_idx)
-    with open(fname, 'r') as f :
-        for line in f : #list of selected feature for a task
-            selected.append([int(x) for x in line.split()])
-
-
-
-    # For each algorithm, for each task,
-    # predict on the test set using a ridge-
-    # regression trained with the selected features only.
-
-    for task_idx in range(args.num_tasks):
-        logging.info ('task n. %d' %task_idx)
-        # Single task
-        logging.info("st")
-        fname = '%s/%s.sfan.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected_st[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-
-        # Multitask (no precision)
-        logging.info("np")
-        fname = '%s/%s.msfan_np.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected_np[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-
-        # Multitask (precision)
-        logging.info("msfan")
-        fname = '%s/%s.msfan.fold_%d.task_%d.predicted' % \
-                (resu_dir, args.simu_id, fold_idx, task_idx)
-        ef.run_ridge_selected(selected[task_idx], genotype_fname,
-                              phenotype_fnames[task_idx],
-                              trIndices, teIndices, fname)
-    #------------------------------------------------------------------
-
-def print_analysis_files(args, resu_dir, data_dir, xp_indices):
-    """TODO
-    """
-
-    analysis_files = get_analysis_files_names(args.resu_dir, args.simu_id)
-
-    phenotype_fnames = ['%s/%s.phenotype_%d.txt' % \
-                        (data_dir, args.simu_id, task_idx) \
-                        for task_idx in range(args.num_tasks)]
-
-
-    # Concatenate ppv and tpr files :
-    bash_cmd = "head -c -1 -q"
-    #bash_cmd = "cat %s/repeat%d/%s.<algo>.fold*.ppv | tr -d '\n'" % (args.resu_dir, repeat_idx, args.simu_id)
-    # problem : 
-    # Expanding the * glob is part of the shell, 
-    # but by default subprocess does not send your commands via a shell, 
-    # so the command is executed (ls, head, or whatever), then a literal * is used as an argument.
-    # -> supply shell=True to execute the command through a shell interpreter
-    #    (security priblem)
-    # -> use the glob module
-    #    (quicker (no process startup overhead), more reliable and cross platform)
-
-    #----------------------------------------------------------------------
-    # print to file ppv : 
-    logging.info( "======== Print ppv file")
-    # for each repeat, each fold print ppv in its own file 
-    # we want to concatenate these files in one line we print in analysis_files['pvv<algo>']
-       
-    template_f_names = resu_dir+"/"+args.simu_id+".%s.fold_*.ppv"
-
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'sfan'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['ppv_st'], 'a') as f:
-        f.write("%s\n" %output)
-    
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan_np'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['ppv_msfan_np'], 'a') as f:
-        f.write("%s\n" %output)
-
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['ppv_msfan'], 'a') as f:
-        f.write("%s\n" %output)
-
-    #----------------------------------------------------------------------
-    # print to file tpr : 
-    logging.info( "======== Print tpr file")
-    # for each repeat, each fold print pr in its own file 
-    # we want to concatenate these files in one line we print in analysis_files['tpr<algo>']
-    template_f_names = resu_dir+"/"+args.simu_id+".%s.fold_*.tpr"
-    
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'sfan'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['tpr_st'], 'a') as f:
-        f.write("%s\n" %output)
-
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan_np'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['tpr_msfan_np'], 'a') as f:
-        f.write("%s\n" %output)
-
-    process = subprocess.Popen(shlex.split(bash_cmd)+glob.glob(template_f_names % 'msfan'), stdout=subprocess.PIPE)
-    output = process.communicate()[0]
-    with open(analysis_files['tpr_msfan'], 'a') as f:
-        f.write("%s\n" %output)
-
-                        
-    #----------------------------------------------------------------------
-    logging.info( "======== Compute RMSE")
-    # For each algorithm, and for each task, compute RMSE
-    # using :
-    #   - an external function 
-    #   - the predictions saved in files (fold per fold)
-    #   - the true values given by phenotype_fnames[task_idx] and te_indices
-    # save to file '%s/%s.<algo>.rmse' % (args.resu_dir, args.simu_id)
-    # => rmse_st_fname ; rmse_np_fname ; rmse_fname
-    # Files structure : 
-    # each line = a repeat
-    # on each line there are several RMSE values, one per task
-
-    # Single task
-    predicted_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    xp_indices, args.num_tasks)
-    with open(analysis_files['rmse_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    # Multitask (no precision)
-    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    xp_indices, args.num_tasks)
-    with open(analysis_files['rmse_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    # Multitask (precision)
-    predicted_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.task_%d.predicted' 
-    rmse_list = ef.compute_ridge_selected_RMSE( phenotype_fnames, predicted_fname, 
-                                    xp_indices, args.num_tasks)             
-    with open(analysis_files['rmse_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in rmse_list]))
-    #----------------------------------------------------------------------
-
-    #-----------------------------------------------------------------------
-    logging.info( "======== Compute CI ")
-    # For each algorithm, and for each task, compute consistency index
-    # between the features selected for each fold.
-    # Use an external function using ef.consistency_index_k()
-    # use the selected features saved to files
-    # save to file '%s/%s.<algo>.consistency' % (args.resu_dir, args.simu_id)
-    # File structure : 
-    # each line = a repeat
-    # on each line there are several ci values, one per task
-
-    # Single task
-    selection_fname = resu_dir+'/'+args.simu_id+'.sfan.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_st'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
-    # Multitask (no precision)
-    selection_fname = resu_dir+'/'+args.simu_id+'.msfan_np.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_msfan_np'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
-    # Multitask (precision)
-    selection_fname = resu_dir+'/'+args.simu_id+'.msfan.fold_%d.selected_features'
-    ci_list = ef.consistency_index_task(selection_fname, args.num_folds, args.num_tasks, args.num_features)
-    with open(analysis_files['ci_msfan'], 'a') as f:
-        f.write('%s \n' % ' '.join(['%.2f ' % x for x in ci_list]))
-
-    #-----------------------------------------------------------------------
-    logging.info( "analysis_files outputed")
-
-
-
-
-def print_plot_files(f_name, means_to_plot, std_to_plot):
-    """ Print some means and std in a plot module understandable file format.
-
-    Parameters
-    ----------
-    f_name : filename
-        Path to the output file.
-    means_to_plot : list of means 
-        (one per task)
-    std_to_plot : list of std
-        (one per task)
-
-    /!\ : 
-    len(means_to_plot) and len(std_to_plot) should be equal.
-
-    Side effects
-    ------------
-    Print a file named <f_name>. 
-    Its format is the following : 
-    Space-separated list of means (one per task) | Space-separated list of std (one per task)
-    (one line per algo : st, np and msfan)
-    """
-    algos = ['st', 'np', 'msfan']
-    with open(f_name, 'w') as f: 
-        for algo in algos : 
-            f.write(
-                ' '.join (str(item) for item in means_to_plot[algo])+
-                '|'+
-                ' '.join (str(item) for item in std_to_plot[algo])+'\n'
-            )
-
-def print_save_res_measures(means, std, fname):
-    """ Print out & save with LaTeX format a measure table.
-    
-    Parameters
-    ----------
-    means : list of means
-        (one per measure)
-    std : list of std
-        (one per measure)
-    fname : filename
-        Path to the output file.
-
-    /!\ : 
-    means and std should have the same length
-    
-    Side effects
-    ------------
-    Create a file named <fname> holding the table in LaTeX format.
-
-    """
-    #------------------
-    # Print out measures tables
-    # and save them (with LaTeX table format) in plain text file
-
-    header_print = (
-            "-----------------------------------------------------------------------\n"
-            "{:^80}\n"
-            "       +--------------------------------------------------------------+\n"
-            "       |                              algo                            |\n"
-            "  task |         sfan       |          np        |          msfan     |\n"
-            "=======+====================+====================+====================+\n"
-    )
-    header_save = "task & sfan &np &msfan \\\\\\hline\n"
-    algos = ['st', 'np', 'msfan']
-    for measure in means : 
-        to_print = ''
-        to_save = ''
-        for task_idx in xrange (len (means[measure]['st'] ) ) : 
-            to_print += '{:^7d}|'.format(task_idx) 
-            to_save += '{:^7d}&'.format(task_idx) 
-            for algo in algos : 
-                to_print += '{:9.3f} ±{:9.3f}|'.format(means[measure][algo][task_idx], std[measure][algo][task_idx]) 
-                to_save += '{:9.3f} ±{:9.3f}&'.format(means[measure][algo][task_idx], std[measure][algo][task_idx]) 
-            to_save = to_save[:-1] #don't want the last '&'
-            to_save += "\\\\\n" # two step and not to_save[-1] = "\\\\\n" because python strings are immuable
-            to_print+="\n"
-        
-        print header_print.format(measure) + to_print
-
-        with open(fname%measure, 'w') as f : 
-            f.write(header_save+to_save)
-
-
-
-def handle_measures_results(analysis_files, args): 
-    """TODO
-    """
-    # For each measure compute average/mean +- standard deviation per task for 
-    means, std = extract_res_means_and_std(analysis_files, args)
-    
-
-    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
-    print_save_res_measures(means, std, fname)
-
-    # Plots : 
-
-    for measure in means : 
-        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
-        print_plot_files(f_name, means[measure], std[measure])
-        plot.bar_plot(measure, f_name) 
-
-
-def extract_res_means_and_std(analysis_files, args):
-    """
-    TODO
-    """
-    # For each measure compute average/mean +- standard deviation per task for each algo
-    means = {}
-    std = {}
-
-    # for : 
-
-    # RMSE : 
-    means["rmse"], std["rmse"] = ef.extract_res_from_files(
-        [   analysis_files['rmse_st'],
-            analysis_files['rmse_msfan_np'],
-            analysis_files['rmse_msfan']
-        ],
-        args.num_tasks,
-        args.num_repeats
-    ) 
-    # consistency index : 
-    means["ci"], std["ci"]= ef.extract_res_from_files(
-        [   analysis_files['ci_st'],
-            analysis_files['ci_msfan_np'],
-            analysis_files['ci_msfan']
-        ],
-        args.num_tasks,
-        args.num_repeats
-    )
-    # PPVs : 
-    means["ppv"], std["ppv"] = ef.extract_res_from_files(
-        [   analysis_files['ppv_st'],
-            analysis_files['ppv_msfan_np'],
-            analysis_files['ppv_msfan']
-        ],
-        args.num_tasks,
-        args.num_repeats,
-        args.num_folds # needed to handle particular file organisation fer foldt then per task
-    )
-    # sensitivities : 
-    means["tpr"],std["tpr"] = ef.extract_res_from_files(
-        [   analysis_files['tpr_st'],
-            analysis_files['tpr_msfan_np'],
-            analysis_files['tpr_msfan']
-        ],
-        args.num_tasks,
-        args.num_repeats,
-        args.num_folds # needed to handle particular file organisation fer foldt then per task
-    )
-    return means, std
-
-def handle_measures_results(analysis_files, args): 
-    """TODO
-    """
-    # For each measure compute average/mean +- standard deviation per task for each algo
-    means, std = extract_res_means_and_std(analysis_files, args)
-    
-
-    fname = args.resu_dir+'/'+args.simu_id+'.results_%s'
-    print_save_res_measures(means, std, fname)
-
-    # Plots : 
-
-    for measure in means : 
-        f_name = "%s/%s.%s_plot.values" %(args.resu_dir, args.simu_id, measure)
-        print_plot_files(f_name, means[measure], std[measure])
-        if SEQ_MODE : #XXX cluster  no display name and no $DISPLAY environment variable
-            plot.bar_plot(measure, f_name) 
 
 def main():
-    """ Sequentially run validation experiments on synthetic data.
+    """ Run validation experiments on synthetic data .
 
     Arguments
     ---------
@@ -1210,11 +901,11 @@ def main():
     Generated files
     ---------------
     1. Simulated data
-    For each repeat, under <data_dir>/repeat_<repeat_id>:
+    For each repeat, under <args.data_dir>/repeat_<repeat_id>:
         <simu_id>.readme:
             README file describing the simulation paramters
         <simu_id>.task_similarities.txt:
-            Matrix of precision between tasks
+            Matrix of covariance between tasks
         <simu_id>.causal_features:
             Lists of causal features.
             One list per task. Indices start at 0.
@@ -1232,6 +923,9 @@ def main():
                 Node weights (of size args.num_features) for task <task_id>.
                 Computed as Pearson correlation.
 
+    2. Results
+    For each repeat, under <args.resu_dir>/repeat_<repeat_idx>:
+
         For each fold_idx:
             <simu_id>.<fold_idx>.trIndices
                 Space-separated list of training indices.
@@ -1241,10 +935,7 @@ def main():
                 <data_dir>/<simu_id>.<fold_idx>.<ss_idx>.ssIndices
                     Space-separated lists of subsample indices,
                     one line per list / subsample.
-
-    2. Results
-    For each repeat, under <resu_dir>/repeat_<repeat_idx>:
-        For each fold_idx:
+        
             For each algo in ('sfan', 'msfan_np', 'msfan'):
                 <simu_id>.<algo>.fold_<fold_idx>.parameters
                      Optimal parameters.
@@ -1257,29 +948,8 @@ def main():
                 <simu_id>.<algo>.fold_<fold_idx>.task_<task_idx>.predicted
                     Predictions, on the test set, of a ridge regression
                     trained only on the selected features.
-    
-    Under <resu_dir>:
-        For each algo in ('sfan', 'msfan_np', 'msfan'):
-            <simu_id>.<algo>.rmse:
-                Space-separated lists of RMSEs (one per task)
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.consistency:
-                Space-separated lists of consistency index (one per task)
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.ppv
-                Space-separated lists of PPVs per task, per fold,
-                each line corresponds to one repeat. 
-            <simu_id>.<algo>.tpr
-                Space-separated lists of sensitivities per task, per fold,
-                each line corresponds to one repeat. 
-            <simu_id>.results
-                Average/standard deviation values for: consistency index, RMSE,
-                PPV and sensitivity.
-            TODO: Plot files.
-    
+        
     For file format specifications, see README.md
-
-
     
     Example
     -------
@@ -1319,6 +989,10 @@ def main():
     #    if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
     #       raise
     create_dir_if_not_exists(args.resu_dir)
+
+    if not SEQ_MODE: 
+        # Create SGE-outputs dir if it does not xist
+        create_dir_if_not_exists('%s/SGE-outputs' % args.resu_dir)
     #-------------------------------------------------------------------------
 
 
@@ -1342,6 +1016,16 @@ def main():
 
 if __name__ == "__main__":
     
+
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
     main()
     
     print("THE END")

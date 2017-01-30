@@ -208,6 +208,7 @@ class Sfan(object):
     networks_f: filename(s)
         List of paths of network files, space-separated.
         If the same network is to be used for all files, only specify one file.
+        /!\ All networks must have the same number of nodes.
     node_weights_f: filename(s)
         List of paths of network node weights (i.e. feature relevance scores),
         space-separated.
@@ -247,6 +248,7 @@ class Sfan(object):
         networks_f: filename(s)
             List of paths of network files, space-separated.
             If the same network is to be used for all files, only specify one file.
+            /!\ All networks must have the same number of nodes.
         node_weights_f: filename(s)
             List of paths of network node weights (i.e. feature relevance scores),
             space-separated.
@@ -734,7 +736,7 @@ def main() :
     parser = argparse.ArgumentParser(description="Solve multi-task problem",
                                      add_help=True)
     parser.add_argument("-k", "--num_tasks", help="Number of tasks", type=int)
-    parser.add_argument("-w", "--networks", help="Paths of networks", nargs='+')
+    parser.add_argument("-w", "--networks", help="Paths of networks. /!\ All networks must have the same number of nodes.", nargs='+')
     parser.add_argument("-r", "--node_weights", help="Paths of node weights", nargs='+')
     parser.add_argument("-t", "--test", help="Run tests", action='store_true')
     parser.add_argument("-c", "--covariance_matrix", help="Path to the covariance matrix")
