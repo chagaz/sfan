@@ -74,6 +74,8 @@ data/*
 !data/simu_ms
 # and that is part of synthetic gwas : 
 !data/synthetic_gwas
+# and for the structured sparsity examples
+!data/struct_spars
 
 #Temporary files
 *~
